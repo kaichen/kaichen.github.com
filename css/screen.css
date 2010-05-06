@@ -1,0 +1,22 @@
+.container { font-size:14px; }
+
+#header { margin:2em 1em; }
+
+#header h1 { font-weight:normal;margin-bottom:1em; }
+
+#content {}
+
+#content ul.links { list-style-type:none; }
+#content ul.links li { margin-right:8px;display:inline; }
+#content ul.links li a { font-weight:bold;font-size:16px; }
+
+#content ul.posts { padding-left:2em;list-style-type:none; }
+#content ul.posts li { margin:0px;padding:0px; }
+#content ul.posts li a { line-height:1.1em;letter-spacing:1px; }
+
+#content pre { background-color:#000;margin: 0.5em 2em 0.5em 0px;padding: 0.5em; }
+#content pre code { font-family:monospace !important;color:#ccc; }
+
+#footer { color:#CCCCCC;font-size:10px;margin:20px auto;text-align:center; }
+
+.date  { font-family:monospace !important;margin-right:1em;color:#CCCCCC;font-style:italic; }
