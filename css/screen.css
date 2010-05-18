@@ -1,7 +1,9 @@
+* {color:#333333;font:12px/18px "Lucida Grande","Lucida Sans Unicode",Arial,Verdana,sans-serif;}
+
 .container { font-size:14px; }
 
-.container #header { margin:2em 1em; }
-.container #header h1 { font-weight:normal;margin-bottom:1em; }
+.container #header { margin:3em 1em; }
+.container #header h1 { font-weight:normal;margin-bottom:0.2em; }
 .container #header h4 { font-size:1.1em;line-height:1.25;margin-bottom:1.25em; }
 
 .container #content {}
