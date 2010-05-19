@@ -16,8 +16,9 @@ body { color:#222222;background:none repeat scroll 0 0 #F9F9F9; }
 .container #content ul.posts li { margin:0px;padding:0px; }
 .container #content ul.posts li a { line-height:1.1em;letter-spacing:1px; }
 
-.container #content pre { background-color:#000;margin: 0.5em 2em 0.5em 0px;padding: 0.5em; }
-.container #content pre code { font-family:monospace !important;color:#ccc; }
+.container #content pre { background-color:#EEEEEE;border:1px solid #DDDDDD;;margin: 0.5em 2em 0.5em 0px;padding: 0.2em 0.4em; }
+.container #content pre.terminal { background-color:#333333;color:#F3F3F3;border:1px solid black; }
+.container #content pre code { font-family:monospace !important;color:#E3E3E3; }
 
 .container #footer { color:#CCCCCC;font-size:10px;margin:20px auto;text-align:center; }
 
