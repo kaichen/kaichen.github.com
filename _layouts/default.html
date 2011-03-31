@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
     <head>
         <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-        <title>The Kai Way | Kai Chen's Blog</title>
+        <title>{{page.title}}</title>
         <meta name="author" content="Kai Chen" />
         <link rel="stylesheet" href="/css/reset.css" type="text/css" media="screen, projection" />
         <link rel="stylesheet" href="/css/typography.css" type="text/css" media="screen, projection" />
@@ -17,15 +17,17 @@
         <a href="http://github.com/kaichen"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
         <div class='container'>
             <div id='header'>
-                <h1>The Kai Way</h1>
-                <h4>pragmatically digging for real reasons behind problems</h4>
+              <h1><a href="/">The Kai Way</a></h1>
+              <h4>pragmatically digging for real reasons behind problems</h4>
             </div>
             <div id='content'>
                 {{ content }}
             </div>
             <div id='footer'>
               <p class='left'>
-                Copyright &copy; 2009-2011 by  <a class='name' href="mailto:kaichenxyz@gmail.com">Kai Chen</a>
+                &copy; 2009-2011 by
+                <a class='name' href="mailto:kaichenxyz@gmail.com">Kai Chen</a>
+                <span>updated at {{site.time | date: "%Y-%m-%d %H:%M:%S"}}</span>
               </p>
               <p class='right'>
                 Awesomely hosted by <a href="http://pages.github.com/">Github Pages</a>.
