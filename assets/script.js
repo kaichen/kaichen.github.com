@@ -1,0 +1,3 @@
+(function() {
+  $(function() {});
+}).call(this);
