@@ -9,4 +9,6 @@ guard 'bundler' do
   # watch(/^.+\.gemspec/)
 end
 
-guard 'sass', :input => '_assets', :output => 'assets'
+guard 'process', :name => 'Compass', :command => 'bundle exec compass compile' do
+  watch(%r{\Asass/(.+)\.sass\Z})
+end
