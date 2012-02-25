@@ -1,7 +1,7 @@
 body {
   color: #222222;
   background: none repeat scroll 0 0 #f9f9f9;
-  font-family: Helvetica Neue, Arial, sans-serif; }
+  font-family: "helvetica neue", arial, helvetica, freesans, "liberation sans", "numbus sans l", sans-serif; }
 
 /* HEADER */
 #header {
@@ -23,8 +23,8 @@ body {
 
 /* CONTENT */
 .bio {
-  color: #488ac7;
-  font-size: 24px;
+  color: #333;
+  font-size: 34px;
   line-height: 36px; }
 
 #content ul.posts {
@@ -37,7 +37,7 @@ body {
     padding: 0px; }
     #content ul.posts li a {
       margin-left: 32px;
-      line-height: 1.1em;
+      line-height: 32px;
       letter-spacing: 1px; }
 #content pre {
   background-color: #eeeeee;
@@ -71,9 +71,11 @@ body {
 
 /* FOOTER */
 #footer {
+  padding-top: 24px;
   color: #aaaaaa;
   font-size: 18px;
-  margin: 20px auto;
+  margin: 0 auto;
+  margin-top: 24px;
   text-align: left; }
   #footer p {
     margin-bottom: 10px; }

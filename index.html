@@ -3,12 +3,7 @@ layout: default
 title: The Kai Way
 ---
 
-<div class="bio">
-  <p>I'm Kai Chen, web developer at <a href="http://intridea.com">Intridea</a>, familiar with ruby and javascript. Programming via vim at Mac OSX, interesting in rubyonrails, nodejs, iOS, Android development.</p>
-</div>
-
 <ul class="posts">
-  <h3>Recent posts:</h3>
   <li><span class="date">08 JAN 2012</span>&raquo;<a href="http://cn.intridea.com/2012/01/play-a-http-toy-server-with-eventmachine/">Play a HTTP Toy Server with EventMachine</a></li>
   {% for post in site.posts %}
     <li><span class="date">{{post.date | date: "%d %^b %Y"}}</span>&raquo;<a href="{{post.url}}">{{post.title}}</a></li>
