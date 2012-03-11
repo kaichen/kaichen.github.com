@@ -264,21 +264,22 @@ body {
 #post .body ul, #post .body ol {
   margin-left: 1.4em;
   margin-top: 0.5em;
+  margin-bottom: 0.5em;
 }
-/* line 118, ../_assets/styles.sass */
+/* line 119, ../_assets/styles.sass */
 #post .body ul {
   list-style-type: disc;
 }
 
 /* FOOTER */
-/* line 122, ../_assets/styles.sass */
+/* line 123, ../_assets/styles.sass */
 #footer {
   color: #aaaaaa;
   font-size: 18px;
   margin: 20px auto;
   text-align: left;
 }
-/* line 127, ../_assets/styles.sass */
+/* line 128, ../_assets/styles.sass */
 #footer a {
   color: inherit;
   text-decoration: inherit;
@@ -293,20 +294,20 @@ body {
 #footer a:hover {
   color: #338080;
 }
-/* line 130, ../_assets/styles.sass */
+/* line 131, ../_assets/styles.sass */
 #footer p {
   margin-bottom: 10px;
 }
-/* line 132, ../_assets/styles.sass */
+/* line 133, ../_assets/styles.sass */
 #footer .left {
   float: left;
 }
-/* line 134, ../_assets/styles.sass */
+/* line 135, ../_assets/styles.sass */
 #footer .right {
   float: right;
 }
 
-/* line 137, ../_assets/styles.sass */
+/* line 138, ../_assets/styles.sass */
 .date {
   font-family: monospace !important;
   margin-right: 1em;
@@ -314,7 +315,7 @@ body {
   font-style: italic;
 }
 
-/* line 143, ../_assets/styles.sass */
+/* line 144, ../_assets/styles.sass */
 div.date {
   margin: 14px 0;
 }
