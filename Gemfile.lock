@@ -47,6 +47,7 @@ GEM
       syntax (>= 1.0.0)
     multi_json (1.1.0)
     posix-spawn (0.3.6)
+    redcarpet (2.1.1)
     sass (3.1.15)
     spoon (0.0.1)
     syntax (1.0.0)
@@ -63,3 +64,4 @@ DEPENDENCIES
   guard-coffeescript
   guard-process
   jekyll
+  redcarpet
