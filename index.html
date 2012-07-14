@@ -3,36 +3,14 @@ layout: default
 title: The Kai Way
 ---
 
-<ul class="posts">
-  {% for post in site.posts %}
-    <li><span class="date">{{post.date | date: "%d %^b %Y"}}</span>&raquo;<a href="{{post.url}}">{{post.title}}</a></li>
-  {% endfor %}
-  <li><span class="date">08 JAN 2012</span>&raquo;<a href="http://cn.intridea.com/2012/01/play-a-http-toy-server-with-eventmachine/">Play a HTTP Toy Server with EventMachine</a></li>
-</ul>
+{% for post in site.posts %}
+  <article class="post">
+    <header>
+      <h1><a href="{{post.url}}">{{post.title}}</a></h1>
+    </header>
+    <p class="date">{{post.date | date: "%b %d, %Y"}}</p>
+    <section class="body">{{ post.content }}</section>
+    <a href="{{page.url}}#comment">Write some comment?</section>
+  </article>
+{% endfor %}
 
-<ul class='links'>
-  <li>
-    <img alt="github" src="/assets/github_favicon.png">
-    <span class="link"><a href="http://github.com/kaichen" rel='kaichen'>Github</a></span>
-  </li>
-  <li>
-    <img alt="twitter" src="/assets/twitter_favicon.png">
-    <span class="link"><a href="https://twitter.com/_kaichen" rel="kaichen">Twitter</a></span>
-  </li>
-  <li>
-    <img alt="linkedin" src="/assets/linkedin_favicon.png">
-    <span class="link"><a href="http://www.linkedin.com/pub/kai-chen/13/780/290" rel="kaichen">Linkedin</a></span>
-  </li>
-  <li>
-    <img alt="pinboard" src="/assets/pinboard_favicon.png">
-    <span class="link"><a href="http://pinboard.in/u:kaichen" rel="kaichen">Pinboard</a></span>
-  </li>
-  <li>
-    <img alt="weibo" src="/assets/weibo_favicon.png">
-    <span class="link"><a href="http://weibo.com/kaichenxyz" rel="kaichen">Weibo</a></span>
-  </li>
-  <li>
-    <img alt="weibo" src="/assets/unknown_favicon.png">
-    <span class="link"><a href="http://chenk85.heroku.com" rel='kaichen'>Older Archive</a></span>
-  </li>
-</ul>
