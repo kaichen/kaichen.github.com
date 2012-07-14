@@ -7,7 +7,7 @@ title: Instance Property of CoffeeScript
 你把一个property定义为某个对象(非立即值)时，那所有的
 Instance都会指向同一个内存地址上。
 
-{% highlight coffee-script %}
+{% highlight coffeescript %}
 class Foo
   favSites: ["Google"]
 {% endhighlight %}
@@ -27,7 +27,7 @@ Foo = (function() {
 这里容易犯错的地方就是当有实例去修改上面提到的共享
 内存地址的内容，这样就会得到一个奇怪的结果。
 
-{% highlight coffee-script %}
+{% highlight coffeescript %}
 foo1 = new Foo
 foo2 = new Foo
 
@@ -38,7 +38,7 @@ alert foo2.favSites # => ["Google", "Github"]
 当不想出现这种情况时最好避免直接把Instance Property定义在
 Class Contructor的prototype上。
 
-{% highlight coffee-script %}
+{% highlight coffeescript %}
 class Foo
   constructor: (@options = {}) ->
     @favSites = ["Google"]
