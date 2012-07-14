@@ -624,7 +624,7 @@ td {
 }
 /* line 14, ../sass/screen.scss */
 body {
-  background: url("/img/page_bg.png") repeat;
+  background: url("/assets/page_bg.png") repeat;
   font-size: 1em;
   color: #333333;
   font-family: "helvetica neue", arial, helvetica, freesans, "liberation sans", "numbus sans l", sans-serif;
