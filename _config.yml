@@ -1,4 +1,4 @@
 auto: true
 server: true
-markdown: redcarpet
+markdown: kramdown
 pygments: true
