@@ -1,34 +1,56 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
     <title>{{page.title}}</title>
     <meta name="author" content="Kai Chen" />
-    <link rel="stylesheet" href="/assets/styles.css" type="text/css" media="screen, projection" />
     <meta property="qc:admins" content="45533755153117116375" />
+
+    <link rel="stylesheet" href="/assets/screen.css" type="text/css" media="screen" />
+    <script src="/assets/modernizr-2.5.3.min.js"></script>
   </head>
   <body>
-    <a href="http://github.com/kaichen"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
+    <!--[if lt IE 7]>
+      <p class="chromeframe">
+        Your browser is <em>ancient!</em>
+        <a href="http://browsehappy.com/">Upgrade to a different browser</a>
+        or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a>
+        to experience this site.
+      </p>
+    <![endif]-->
+  
+    <div class="page">
+      <header role="header" id="page-header">
+        <hgroup>
+          <h1><a href="/">The Kai Way</a></h1>
+          <h2>Pramatic programming</h2>
+        </hgroup>
+        <nav>
+          <ul>
+            <li><a href="/achive">Achive</a></li>
+            <li><a href="https://github.com/kaichen">Fork</a></li>
+            <li><a href="http://twitter.com/_kaichen">Follow</a></li>
+            <li><a href="/about">About</a></li>
+          </ul>
+        </nav>
+      </header>
 
-    <div id='container'>
-      <div id='header'>
-        <h1><a href="/">The Kai Way</a></h1>
-        <h4>Pragmatically digging for real reasons behind problems</h4>
+      <div role="main" class="page-content">
+        <section class="inner">
+          {{ content }}
+        </section>
       </div>
 
-      <div id='content'>{{ content }}</div>
-
-      <div id='footer'>
-        <p class='left'>
-          &copy;&nbsp;2009-2012&nbsp;
-          <a class='name' href="mailto:kaichenxyz@gmail.com">Kai Chen</a>
-        </p>
-      </div>
+      <footer role="footer" id="page-footer">
+        <p>&copy; Kai</p>
+      </footer>
     </div>
 
-    <script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.1.min.js"></script>
-    <script type="text/javascript" src="/assets/script.js"></script>
     <script type="text/javascript">
       var _gaq = _gaq || [];
       _gaq.push(['_setAccount', 'UA-16480900-1']);
