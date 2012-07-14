@@ -1,0 +1,17 @@
+---
+layout: default
+title: The Kai Way - Blog Archive
+---
+
+<article>
+  <ul class="archive">
+  {% for post in site.posts %}
+    <li>
+      <time>
+        {{post.date | date: "%b %d %Y"}}
+      </time>
+      <a class="post-title" href="{{post.url}}">{{post.title}}</a>
+    </li>
+  {% endfor %}
+  </ul>
+</article>
