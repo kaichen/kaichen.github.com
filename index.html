@@ -6,7 +6,7 @@ title: The Kai Way
 {% for post in site.posts limit:3 %}
   <article class="post">
     <header>
-      <h1><a href="{{post.url}}">{{post.title}}</a></h1>
+      <h1 class="post-title"><a href="{{post.url}}">{{post.title}}</a></h1>
     </header>
     <p class="date">{{post.date | date: "%b %d, %Y"}}</p>
     <section class="body">{{ post.content }}</section>
