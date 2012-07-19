@@ -728,12 +728,11 @@ time {
     /* line 94, ../sass/screen.scss */
     .page .page-content article.post {
       margin-top: 1em;
-      border-top: 2px solid #ccc;
+      border-bottom: 5px solid #155C8C;
       margin-bottom: 2em; }
       /* line 98, ../sass/screen.scss */
       .page .page-content article.post:first-child {
-        margin-top: 0;
-        border-top: none; }
+        margin-top: 0; }
       /* line 101, ../sass/screen.scss */
       .page .page-content article.post:last-child {
         margin-bottom: 0; }
