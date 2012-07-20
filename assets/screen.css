@@ -839,3 +839,12 @@ time {
       .page .page-content ul.archive a {
         text-decoration: none;
         color: #0096f1; }
+
+pre {
+  background-color: #F0F0F0;
+  border-top: 1px solid #CCC;
+  border-bottom: 1px solid #CCC;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-family: Bitstream Vera Sans Mono,monospace;
+}
