@@ -1,4 +1,7 @@
-# Got a HHKB
+---
+layout: post
+title: Got a HHKB Pro2
+---
 
 本文写在[HHKB](http://en.wikipedia.org/wiki/Happy_Hacking_Keyboard)入手3个月后，觉着要使用一段时间之后才能写出比较客观的感受。这个键盘是在[4月11日](http://weibo.com/2051369563/ye9QmzIwW)老婆偷偷买了送给我的。
 
