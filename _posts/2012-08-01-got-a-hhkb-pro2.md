@@ -9,6 +9,15 @@ title: Got a HHKB Pro2
 
 ![My Keyboard](http://ww3.sinaimg.cn/bmiddle/7a456a5bjw1drw179o1apj.jpg)
 
+## HHKB
+
+HHKB是Happy Hacking Keyboard的缩写，PFU出品，HHKB系列只有三种型号，HHKB
+Pro2 Type-S，HHKB Pro2和HHKB
+Lite2。其中Type-S的价格要比普通的Pro2再贵个1K左右。
+
+值得一提的是HHKB Pro2是静电电容键盘，而HHKB
+Lite2是薄膜键盘，都并非是机械键盘。
+
 ## 外形
 
 这个是个白色无刻的键盘，我理想中的HHKB只有白色无刻和黑色同刻这两款，就觉得这两款感觉上非常Cool，一让人看到就有种装X的感觉。在连接方面，键盘带了一根可以拆卸的USB连接线。
