@@ -1,0 +1,48 @@
+--- 
+layout: post
+title: 持续集成笔记本
+---
+五一的两天空余时间，读完了<a href="http://www.amazon.com/Continuous-Integration-Improving-Addison-Wesley-Signature/dp/0321336380/ref=sr_11_1?ie=UTF8&amp;qid=1200534624&amp;sr=11-1">持续集成</a>这本书。
+
+Continuous Integration，持续集成，简称CI。这是一项业界推荐的软件开发实践，是XP中提到的实践之一。CI有四个特征：
+
+> 与版本控制系统的连接
+> 构建脚本
+> 某种类型的反馈机制
+> 集成源代码变更的过程
+
+CI的价值在于：
+
+> 减少风险
+> 减少重复过程
+> 在随时随地生成可部署的软件
+> 对开发团队的软件产品建立起更大的产品信心
+
+CI的步骤：
+
+> “I Build So Consistently”。四个步骤：“Identify”，“Build”，“Share”，“Continuous”。
+
+CI的实践：
+
+经常提交代码
+> 不要提交无法构建的代码
+> 立即修复无法集成的构建
+> 编写自动化的开发者测试
+> 必须通过所有测试和审查
+> 执行私有构建
+> 避免签出无法构建的代码
+
+CI可以缓解一些关键的风险：
+> 没有可部署的软件
+> 很晚才发现缺陷
+> 缺乏项目可见性
+> 低品质的软件
+
+CI系统的创建：
+> 持续数据库集成
+> 持续测试
+> 持续审查
+> 持续部署
+> 持续反馈
+
+Rails 的CI系统有来自TW的<a href="http://cruisecontrolrb.thoughtworks.com/">cruisecontrolrb</a>

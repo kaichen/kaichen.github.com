@@ -1,0 +1,71 @@
+--- 
+layout: post
+title: First Laptop
+---
+<img src="http://lh3.ggpht.com/chenk85/SAK47kDaDbI/AAAAAAAAABQ/W32IL9wxtZI/20080414261.jpg?imgmax=576" alt="2601" />
+
+买回来了本本HP6520s（KS260PA）。6850RMB（一本，一电，一鼠，一包，一清洁）+135RMB（1条KS的内存）。
+
+<!--more-->
+
+<img src="http://lh4.ggpht.com/chenk85/SAK470DaDcI/AAAAAAAAABY/QFcMY8AxAKc/20080414262.jpg?imgmax=576" alt="2602" />
+
+<img src="http://lh4.ggpht.com/chenk85/SAK470DaDdI/AAAAAAAAABg/2jmA1rOWH2c/20080414263.jpg?imgmax=576" alt="2603" />
+
+买本本的经历比较简单，一开始去本地HP代理问过一下价格，然后就叫他拿货，之后就去到验机（看序列号是否一致），测试（用Ubuntu的Live CD），带回来。
+
+在中关村的资料：http://detail.zol.com.cn/notebook/index139838.shtml
+
+配置上的确是不错的，迅驰4.5的T8100，加了1G的内存，升到2G，加上是800的前端，速度果然是飞快。发热也不厉害，电池能顶3个小时左右。唯一不满的地方就是屏幕，显示效果有点差，好像看网上的评价，基本都是说显示效果差。
+
+    [chenkai@localhost ~]$ cat /proc/cpuinfo
+    processor	: 0
+    vendor_id	: GenuineIntel
+    cpu family	: 6
+    model		: 23
+    model name	: Intel(R) Core(TM)2 Duo CPU     T8100  @ 2.10GHz
+    stepping	: 6
+    cpu MHz		: 800.000
+    cache size	: 3072 KB
+    physical id	: 0
+    siblings	: 2
+    core id		: 0
+    cpu cores	: 2
+    fdiv_bug	: no
+    hlt_bug		: no
+    f00f_bug	: no
+    coma_bug	: no
+    fpu		: yes
+    fpu_exception	: yes
+    cpuid level	: 10
+    wp		: yes
+    flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm constant_tsc arch_perfmon pebs bts pni monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr sse4_1 lahf_lm ida
+    bogomips	: 4194.59
+    clflush size	: 64
+    processor	: 1
+    vendor_id	: GenuineIntel
+    cpu family	: 6
+    model		: 23
+    model name	: Intel(R) Core(TM)2 Duo CPU     T8100  @ 2.10GHz
+    stepping	: 6
+    cpu MHz		: 800.000
+    cache size	: 3072 KB
+    physical id	: 0
+    siblings	: 2
+    core id		: 1
+    cpu cores	: 2
+    fdiv_bug	: no
+    hlt_bug		: no
+    f00f_bug	: no
+    coma_bug	: no
+    fpu		: yes
+    fpu_exception	: yes
+    cpuid level	: 10
+    wp		: yes
+    flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm constant_tsc arch_perfmon pebs bts pni monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr sse4_1 lahf_lm ida
+    bogomips	: 4191.10
+    clflush size	: 64
+
+CPU是最强的部分:)
+
+买回来后就装上了Arch Linux，详见我另一日志。
