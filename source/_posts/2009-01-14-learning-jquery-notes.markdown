@@ -1,6 +1,7 @@
---- 
+---
 layout: post
-title: learning jquery notes
+title: "Learning jQuery Notes"
+categories: ["jQuery", "JavaScript"]
 ---
 
 以下内容是Learning JQuery一书的前六章笔记摘要，基本的JQuery操作就在这里了。很多地方只是提一下，具体要用时还是去查[官方文档](http://docs.jquery.com)。

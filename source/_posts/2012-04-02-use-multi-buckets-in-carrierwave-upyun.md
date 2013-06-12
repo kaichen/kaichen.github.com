@@ -2,7 +2,7 @@
 layout: post
 title: carrierwave-upyun配置多个不同buckets
 comments: true
-categories: [Ruby]
+categories: ["Ruby", "Ruby on Rails"]
 ---
 
 # 背景

@@ -1,6 +1,8 @@
 ---
 layout: post
 title: Learning tinyrb 1
+comments: false
+categories: ["Ruby"]
 ---
 
 <a href="http://code.macournoyer.com/tinyrb/">Tinyrb</a>，一个Ruby的实现，
