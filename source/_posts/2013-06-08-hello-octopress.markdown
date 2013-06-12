@@ -2,8 +2,7 @@
 layout: post
 title: "Hello Octopress"
 date: 2013-06-08 23:06
-comments: true
-categories:
 ---
 
-开始使用Octopress这个Blog Engine
+开始使用[Octopress](http://octopress.org/) Blog Engine，加上[whitespace](https://github.com/lucaslew/whitespace)
+这个Theme。
