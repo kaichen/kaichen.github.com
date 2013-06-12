@@ -1,12 +1,13 @@
 $blockquote: $type-border !default;
-$sans: "PT Sans", "Helvetica Neue", Arial, sans-serif !default;
-$serif: "PT Serif", Georgia, Times, "Times New Roman", serif !default;
-$mono: Menlo, Monaco, "Andale Mono", "lucida console", "Courier New", monospace !default;
-$heading-font-family: "PT Serif", "Georgia", "Helvetica Neue", Arial, sans-serif !default;
-$header-title-font-family: $heading-font-family !default;
-$header-subtitle-font-family: $heading-font-family !default;
 
 // Fonts
+$sans: "Open Sans","Helvetica Neue", Arial, sans-serif !default;
+$serif: "PT Serif", Georgia, Times, "Times New Roman", serif !default;
+$mono: Menlo, Monaco, "Andale Mono", "lucida console", "Courier New", monospace !default;
+$heading-font-family: "Fjalla One", "Georgia", "Helvetica Neue", Arial, sans-serif !default;
+$header-title-font-family: $heading-font-family !default;
+$header-subtitle-font-family: $serif !default;
+
 .heading {
   font-family: $heading-font-family;
 }
@@ -80,11 +81,9 @@ strong { font-weight: bold; }
 
 em { font-style: italic; }
 
-sup, sub { font-size: 0.75em; position: relative;  display: inline-block; padding: 0 .2em; line-height: .8em;}
+sup, sub { font-size: 0.8em; position: relative;  display: inline-block; }
 sup { top: -.5em; }
 sub { bottom: -.5em; }
-
-a[rev='footnote']{ font-size: .75em; padding: 0 .3em; line-height: 1; }
 
 q { font-style: italic;
   &:before { content: "\201C"; }
@@ -100,6 +99,8 @@ del, s { text-decoration: line-through; }
 abbr, acronym { border-bottom: 1px dotted; cursor: help; }
 
 pre, code, tt { @extend .mono; }
+
+sub, sup { line-height: 0; }
 
 hr { margin-bottom: 0.2em; }
 
@@ -161,4 +162,3 @@ article blockquote {
   white-space: pre-wrap;
   word-wrap: break-word;
 }
-
