@@ -35,7 +35,7 @@ s.add_dependency 'sprockets-rails', '~> 2.0.0.rc4'
   集成代码，Sprockets为Rails带来了著名的Assets Pipeline，Rails 3.1引入
 - [bundler](https://github.com/carlhuda/bundler), 管理依赖Rubygem的版本
 
-除了Bundler和sprockets-rails外的几个Act***框架都是放在
+除了Bundler和sprockets-rails外的几个Act\*\*\*框架都是放在
 [Rails的Repo](https://github.com/rails/rails)里，还有以下介绍的大部分***-rails
 的Rails与其它库的集成都是放在[Rails的Github账号](https://github.com/rails)下的，
 如sprockets-rails。
