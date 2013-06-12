@@ -1,0 +1,42 @@
+--- 
+layout: post
+title: 体验Rails 2.1.rc1
+---
+无须升级整个系统的Rails，只需要在项目中的Rakefile中加入下面的代码，然后运行rake rails:freeze:edge：
+
+    namespace :rails do
+      namespace :freeze do
+        desc 'Lock to latest Edge Rails, for a specific release use RELEASE=1.2.0'
+        task :edge do
+          require 'open-uri'
+          version = ENV["RELEASE"] || "edge"
+          target = "rails_#{version}.zip"
+          url = "http://dev.rubyonrails.org/archives/#{target}"
+     
+          chdir 'vendor' do
+            puts "Downloading Rails from #{url}"
+            File.open('rails.zip', 'wb') do |dst|
+              open url do |src|
+                while chunk = src.read(4096)
+                dst &lt;&lt; chunk
+              end
+            end
+          end
+     
+          puts 'Unpacking Rails'
+          rm_rf 'rails'
+          `unzip rails.zip`
+          %w(rails.zip rails/Rakefile rails/cleanlogs.sh rails/pushgems.rb rails/release.rb).each do |goner|
+            rm_f goner
+          end
+        end
+     
+        puts 'Updating current scripts, javascripts, and configuration settings'
+        Rake::Task['rails:update'].invoke
+        end
+      end
+    end
+
+这段代码其实是Rails2.1里的rails:freeze:edeg的Rake任务代码，因为Rails的代码库已经迁移至github，好像svn不提供新的版本，现在获取Rails最新版本的方法一是到github那里clone下来，要么就到http://dev.rubyonrails.org/archives/下载一个打包好的zip文件。
+
+其实最傻瓜的方法就是直接下载http://dev.rubyonrails.org/archives/rails_edge.zip然后解压到vendor/那里，其实上面贴的rake脚本也是做了这个事情:-)

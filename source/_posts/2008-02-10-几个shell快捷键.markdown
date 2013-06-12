@@ -1,0 +1,36 @@
+--- 
+layout: post
+title: Shell快捷键
+---
+
+有点菜鸟向了，有了这几个快捷键就能和很多视频里的高手那样高速地在shell上编辑命令。。。
+<!--more-->
+
+<blockquote>[Ctrl + r]查找和执行历史命令
+[Ctrl + p] 或 [Ctrl + n] 快速向前或向后滚动查找一个历史命令</blockquote>
+
+<blockquote>[Ctrl + a] 跳转至命令行首    Ahead of line
+[Ctrl + e] 跳转至命令行尾    End of line
+
+[Ctrl + f] 向前跳转一个字符  jump Forward one character
+[Ctrl + b] 向后跳转一个字符  jump Backward one character
+
+[Alt + f] 向前跳转到下一个字的第一个字符
+[Alt + b] 向后跳转到下一个字的第一个字符</blockquote>
+
+<blockquote>[Ctrl + w] 向后删除一个字，用来对付刚刚输入的错误字很有用
+
+[Ctrl + u] 从光标当前位置删除所有字符至行首
+[Ctrl + k] 从光标当前位置删除所有字符至行尾
+
+[Ctrl + d] 删除光标当前位置的字符
+
+[Ctrl + y] 粘贴最后一个被删除的字
+
+[Alt + d] 删除从光标当前位置，到当前字的结尾字符</blockquote>
+
+<blockquote>Ctrl + l 相当于clear 命令</blockquote>
+
+注意，在GUI下记得把shell的Alt+f快捷键打开菜单栏的选项关掉。。。
+
+参考自：<a href="http://www.linuxsir.org/main/node/151">《快速编辑 Shell 命令行》</a>

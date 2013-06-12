@@ -1,0 +1,23 @@
+--- 
+layout: post
+title: Install ArchLinux on HP6520s
+---
+安装Arch的方法很简单，但是记得在分区时要把swap设置到大于等于内存容量，才能休眠。一开始没有设好swap，结果怎么也休眠不了。
+
+由于本本的特殊性要安装下列软件包：
+
+* apci,apcid - 高级电源支持
+* dus hal udev - 自动挂载
+* pmtools - 休眠
+* powertop - 本本节能工具
+* hotkey-setup laptop-mode-tools - 笔记本支持工具
+* cpudyn cpufreqd cpufrequtils CPU支持
+* iwlwifi-3945-ucode - 无线网卡驱动
+
+参考
+* http://wiki.archlinux.org/index.php/Laptop
+* http://wiki.archlinux.org/index.php/Pm-utils
+* http://wiki.archlinux.org/index.php/Cpufrequtils
+* http://wiki.archlinux.org/index.php/Networkmanager
+
+安装并设置了这些后就能很好的支持到笔记本的各种特性，如休眠，Fn键，自动降频，电池电量显示，无线等。
