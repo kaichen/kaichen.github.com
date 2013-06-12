@@ -9,3 +9,38 @@
 @import "partials";
 @import "plugins/**/*";
 @import "custom/styles";
+
+body {
+  > nav {
+    background: #FFFFFF;
+    font-size: 16px;
+    border-bottom: 1px solid #F2F2F2;
+    padding-left: 0px;
+    padding-right: 0px;
+
+    a {
+         text-decoration: none;
+         font-size: 18px;
+         padding-left: 10px;
+         padding-right: 10px;
+         padding-top: none;
+    }
+    form .search {
+      border-radius: 0.2em 0.2em 0.2em 0.2em;
+      box-shadow: none;
+      border: 0px;
+      padding-top: 0.3em;
+      padding-bottom: 0.3em;
+      padding-left: 0.5em;
+      padding-right: 0.5em;
+    }
+
+    li + li {
+      border-left: 0px;
+
+      a {
+        border: 0px;
+      }
+    }
+  }
+}
