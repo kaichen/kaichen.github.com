@@ -6,7 +6,7 @@ comments: true
 categories: ["Ruby on Rails", "Inspect Rails", "Ruby"]
 ---
 
-> 本文是[Inspect Rails](/inspect-rails)一书的一部分
+> 本文是[Inspect Rails][0]的一部分，[Inspect Rails][0]是由我写的讲解Rails内部的实现与设计的一本书，欢迎阅读
 
 我们平时安装Rails时，执行的是`gem install rails`，安装的Rubygem名称就叫rails，而
 这个Rubygem其实只是个没有代码的Meta Gem，它的作用就是定义rails依赖的组件，从

@@ -1,7 +1,6 @@
 ---
 layout: page
 title: "Inspect Rails"
-date: 2013-06-12 21:22
 comments: false
 sharing: true
 footer: true
@@ -40,3 +39,11 @@ footer: true
   - SQL Generation
   - Association Mapping
 - ActionMailer
+
+评论、问题、意见或建议都可以发表在本书自带的 Disqus 论坛里， 也可以通过 [豆瓣][1] 、 [Ruby China][2] 或 [Twitter][0] 联系我， 我会尽可能地回复。
+
+要获得本书的最新动态，可以订阅我博客的[RSS](http://thekaiway.com/atom.xml)。
+
+[0]: https://twitter.com/_kaichen
+[1]: http://www.douban.com/people/chenk85/
+[2]: http://ruby-china.org/_kaichen
