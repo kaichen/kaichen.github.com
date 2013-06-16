@@ -15,8 +15,7 @@ footer: true
   - Assets Pipeline带来的依赖
   - Rails Doc
 - Rails Applcation
-  - Railite
-  - Rails Engine
+  - [Railite Hierarchy](/2013/06/14/rails-internal-hierarchy/)
   - Code Loading
   - Rails Application
   - Rails Middleware
