@@ -106,9 +106,9 @@ Rails Engine是一个Rack Middleware，它实现了`call`方法，所以能Mount
 
 认领豆瓣九点博客 doubanclaim9d06ad90d53e2fc8
 
-[0]: [/inspect-rails]
-[1]: [http://www.ruby-doc.org/stdlib-2.0/libdoc/tsort/rdoc/TSort.html]
-[2]: [/inspect-rails/comming-soon]
-[3]: [https://github.com/plataformatec/devise]
-[4]: [http://en.wikipedia.org/wiki/Singleton_pattern]
-[5]: [http://en.wikipedia.org/wiki/Convention_over_configuration]
+[0]: /inspect-rails
+[1]: http://www.ruby-doc.org/stdlib-2.0/libdoc/tsort/rdoc/TSort.html
+[2]: /inspect-rails/comming-soon
+[3]: https://github.com/plataformatec/devise
+[4]: http://en.wikipedia.org/wiki/Singleton_pattern
+[5]: http://en.wikipedia.org/wiki/Convention_over_configuration
