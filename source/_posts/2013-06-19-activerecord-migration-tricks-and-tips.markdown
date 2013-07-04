@@ -29,17 +29,17 @@ integer类型的字段，并赋以对应的名字(一般为对应模型的单数
 
 这里列出文档中的一个非常好的例子，这个例子非常明显地体现了使用这个API的好处。
 
-%{codeblock lang:ruby}%
+{% codeblock lang:ruby %}
 create_table :taggings do |t|
   t.references :tag, index: { name: 'index_taggings_on_tag_id' }
   t.references :tagger, polymorphic: true, index: true
   t.references :taggable, polymorphic: { default: 'Photo' }
 end
-%{endcodeblock}%
+{% endcodeblock %}
 
 以上的代码等价于下面较长的代码：
 
-%{codeblock lang:ruby}%
+{% codeblock lang:ruby %}
 create_table :taggings do |t|
   t.integer :tag_id, :tagger_id, :taggable_id
   t.string  :tagger_type
@@ -47,7 +47,7 @@ create_table :taggings do |t|
 end
 add_index :taggings, :tag_id, name: 'index_taggings_on_tag_id'
 add_index :taggings, [:tagger_id, :tagger_type]
-%{endcodeblock}%
+{%  endcodeblock %}
 
 此外，`references`这个API也被alias为更容易记住的`belongs_to`。
 
@@ -66,7 +66,7 @@ add_index :taggings, [:tagger_id, :tagger_type]
 up和down两个方法，但有时就是需要写两个方向的代码。比如下面这个例子，在添加了first_name和last_name两个字段
 后，在up这个方法上需要从full_name字段提取出first_name和last_name，而down的方法又需要合并出full_name的数据，这就是[reversible](http://api.rubyonrails.org/classes/ActiveRecord/Migration.html#method-i-reversible)的使用场景。
 
-%{codeblock lang:ruby}%
+{% codeblock lang:ruby %}
 class SplitNameMigration < ActiveRecord::Migration
   def change
     add_column :users, :first_name, :string
@@ -84,13 +84,14 @@ class SplitNameMigration < ActiveRecord::Migration
     revert { add_column :users, :full_name, :string }
   end
 end
+{% endcodeblock %}
 
 ## revert
 
 某些时候写反向的逻辑会比正向的逻辑好写一点，比如有时我们会用`unless`而不是`if`。Migration里的
 [revert](http://api.rubyonrails.org/classes/ActiveRecord/Migration.html#method-i-revert)方法就能提供这样的形式去编写数据库改动。
 
-%{codeblock lang:ruby}%
+{% codeblock lang:ruby %}
 class FixTLMigration < ActiveRecord::Migration
   def change
     revert do
@@ -104,11 +105,11 @@ class FixTLMigration < ActiveRecord::Migration
     end
   end
 end
-%{endcodeblock}%
+{% endcodeblock %}
 
 同时`revert`这个方法也支持传入一个Migration的名字，其作用是执行该Migration的down方法，当某个Migration已经同步上代码库后，希望撤销这个Migration时特别有用。
 
-%{codeblock lang:ruby}%
+{% codeblock lang:ruby %}
 require_relative '2012121212_tenderlove_migration'
 
 class FixupTLMigration < ActiveRecord::Migration
@@ -120,4 +121,4 @@ class FixupTLMigration < ActiveRecord::Migration
     end
   end
 end
-%{endcodeblock}%
+{% endcodeblock %}
