@@ -17,8 +17,8 @@ footer: true
 - Rails Applcation
   - [Railite Hierarchy](/2013/06/14/rails-internal-hierarchy/)
   - Code Loading
-  - Rails Application
-  - Rails Middleware
+  - Rails Application booting under hook
+  - Rails Middleware Stack
 - ActionDispatch
   - HTTP Hack base on Rack
   - Middlewares

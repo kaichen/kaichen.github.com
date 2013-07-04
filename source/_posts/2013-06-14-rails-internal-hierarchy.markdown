@@ -6,7 +6,7 @@ comments: true
 categories: ["Ruby on Rails", "Ruby"]
 ---
 
-> 本文是[Inspect Rails][0]的一部分，[Inspect Rails][0]是由我写的讲解Rails内部的实现与设计的一本书，欢迎阅读
+> 本文是[Inspect Rails][0]的一部分，[Inspect Rails][0]是由我正在编写的讲解Rails内部的实现与设计的一本书，欢迎阅读
 
 Rails 内部有清晰的层级结构，以实现Rails应用程序和Rails插件的配置以及初始化。
 
@@ -101,10 +101,6 @@ Rails Engine是一个Rack Middleware，它实现了`call`方法，所以能Mount
 关于Rails的启动流程和Middleware Stack等话题会在后续的章节中展开并详细讲解。
 
 本节暂时到此。
-
----
-
-认领豆瓣九点博客 doubanclaim9d06ad90d53e2fc8
 
 [0]: /inspect-rails
 [1]: http://www.ruby-doc.org/stdlib-2.0/libdoc/tsort/rdoc/TSort.html
