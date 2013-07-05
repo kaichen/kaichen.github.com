@@ -51,6 +51,21 @@ add_index :taggings, [:tagger_id, :tagger_type]
 
 此外，`references`这个API也被alias为更容易记住的`belongs_to`。
 
+## change\_table
+
+在Migration里提供了Schema操作的API都操作了两种形式，比如`add_column`和`column`。在`create_table`里
+可以使用如`column`比较简短形式的API，这与Form Helper在Form Buildler里可以使用不带`_tag`后缀的API一致。
+
+当我们需要去对同一个表做多次操作的时候，可以通过`change_table`来化简代码，在`change_table`的代码块中，
+可以使用简短形式的API
+
+{% codeblock lang:ruby %}
+change_table(:suppliers) do |t|
+  t.column :name, :string, limit: 60  
+  t.remove :company_id
+end
+{% endcodeblock %}
+
 ## create\_join\_table/drop\_join\_table
 
 当我们使用多对多(has_and_belongs_to_many)关联时需要创建关联表，而关联Schema很简单，只是
@@ -59,6 +74,18 @@ add_index :taggings, [:tagger_id, :tagger_type]
 只需要将对应两个表的表名作为参数传进去。
 
 对应的也有一个[drop_join_table](http://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-drop_join_table)API去帮我们删除这种关联表。
+
+## change\_column\_default/change\_column\_null
+
+业务总是在不断变化的，有时数据库里一些字段可能会由非空改为允许为空，修改默认值。当你把这些规则放到数据库时就
+需要修改对应的字段和数据。
+
+{% codeblock lang:ruby %}
+change_column_null(:users, :nickname, false)
+change_column_default(:accounts, :authorized, 1)
+{% endcodeblock %}
+
+`change_column_default`会做两个事情，首先是把对应的字段填上指定的默认值，之后再修改Schema。
 
 ## reversible
 
@@ -122,3 +149,7 @@ class FixupTLMigration < ActiveRecord::Migration
   end
 end
 {% endcodeblock %}
+
+## At the end
+
+最后，提示一下，以上的API有些在Rails 3.x中没有加入，在Rails 4.0上以上的API可以找到。
