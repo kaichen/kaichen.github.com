@@ -10,13 +10,14 @@ footer: true
 
 目前完成度已经有30%，正在陆续整理并发布上来。
 
-- Ruby on Rails框架的构成
-  - [Ruby on Rails的组件](/2013/06/12/dependencies-of-rails)
-  - Assets Pipeline带来的依赖
+- Framework Structure
+  - [Components](/2013/06/12/dependencies-of-rails)
+  - Assets Pipeline Dependences
   - Rails Doc
 - Rails Applcation
   - [Railite Hierarchy](/2013/06/14/rails-internal-hierarchy/)
-  - Code Loading
+  - [File Convension](/2013/07/12/rails-paths/)
+  - [Code Loading](/2013/07/04/code-loading-of-rails/)
   - Rails Application booting under hook
   - Rails Middleware Stack
 - ActionDispatch
@@ -32,7 +33,7 @@ footer: true
   - Template handler
 - ActiveRecord
   - ORM Pattern
-  - ActiveRecord Object的组装
+  - Assemble ActiveRecord Object
   - Attribute Serialization
   - Database Connection
   - SQL Generation
