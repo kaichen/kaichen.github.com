@@ -6,7 +6,7 @@ comments: true
 categories: ["Ruby on Rails", "Ruby"]
 ---
 
-> 本文是[Inspect Rails][/inspect-rails]的一部分，[Inspect Rails][/inspect-rails]是由我正在编写的讲解Rails内部的实现与设计的一本书，欢迎阅读
+> 本文是[Inspect Rails](/inspect-rails)的一部分，[Inspect Rails](/inspect-rails)是由我正在编写的讲解Rails内部的实现与设计的一本书，欢迎阅读
 
 Rails 内部有清晰的层级结构，以实现Rails应用程序和Rails插件的配置以及初始化。
 
