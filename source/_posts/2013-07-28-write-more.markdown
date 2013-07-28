@@ -8,6 +8,8 @@ categories: ["Writing"]
 
 现在写独立博客的人越来越少, 大家都跑到新媒体上去发表自己的观点。我现在倾向于在独立博客上写, 能保持自己的节奏。现在还一直在创作着的独立博客写作者们, 比如[XDite](http://blog.xdite.net/), [阮一峰的网络日志](http://www.ruanyifeng.com/blog/)和[酷壳](http://coolshell.cn/), 我都是非常佩服, 同时也非常羡慕他们有这么多的读者。
 
+最近看到的一个博客[坚强2002](http://www.cnblogs.com/me-sa/), 作者在[豆瓣上发帖](http://www.douban.com/group/topic/23688164/)说要坚持写出一千篇以上的Erlang学习笔记, 这也是非常值得敬佩的一个博客作者。
+
 ## 目的
 
 最主要的目的, 正如我在[Inspect Rails](/inspect-rails)中写的, 是积累和沉淀, 在工作了这么些年后总想到能留下什么。
