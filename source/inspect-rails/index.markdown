@@ -33,7 +33,7 @@ footer: true
   - Template handler
 - ActiveRecord
   - ORM Pattern
-  - Assemble ActiveRecord Object
+  - [Assemble ActiveRecord Object](/2013/07/26/assemble-ar-object)
   - Attribute Serialization
   - Database Connection
   - SQL Generation
