@@ -38,7 +38,7 @@ def persisted?
 end
 {% endcodeblock %}
 
-在AR对象里持久化状态, 由一个名为`new_record`和一个名为`destroyed`的布尔型实例变量标记决定。在构造未持久化状态的对象时就是将`new_record`设置为false, 反之则是true。而无论哪种方式构造出来的对象, 它的`destroyed`标记都为false, 因为你不可能查询出一个不存在的AR对象, 也不可能创建还未持久化就被删除的AR对象。这个事实反映了[ActiveRecord](http://www.martinfowler.com/eaaCatalog/activeRecord.html)这个模式的本质，即对象与数据库记录一一对应。
+在AR对象里持久化状态, 由一个名为`new_record`和一个名为`destroyed`的布尔型实例变量标记决定。在构造未持久化状态的对象时就是将`new_record`设置为true, 反之则是false。而无论哪种方式构造出来的对象, 它的`destroyed`标记都为false, 因为你不可能查询出一个不存在的AR对象, 也不可能创建还未持久化就被删除的AR对象。这个事实反映了[ActiveRecord](http://www.martinfowler.com/eaaCatalog/activeRecord.html)这个模式的本质，即对象与数据库记录一一对应。
 
 关于持久化状态的变更, 我们先来说说`destroyed`。`destroyed`这个标记, 它的状态变化只通过两个API能改变, `delete`和`destroy`（这里省略了`destory!`, 因为`destory!`也是调用的`destroy`的)。在AR对象里, 被标记为`destroyed`的对象不会马上消失, 只有离开了作用域后才会被回收。
 
