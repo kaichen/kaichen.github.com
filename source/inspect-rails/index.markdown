@@ -29,7 +29,7 @@ footer: true
   - Renderers
   - Template Lookup
   - Handle Template
-  - Output Buffer
+  - [Safe Output Buffer](/2013/08/17/actionview-safe-buffer)
 - ActiveRecord
   - ORM Pattern
   - [Assemble ActiveRecord Object](/2013/07/26/assemble-ar-object)
