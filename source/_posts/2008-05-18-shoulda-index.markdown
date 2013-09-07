@@ -1,14 +1,13 @@
---- 
+---
 layout: post
-title: Shoulda教程索引
+title: "Shoulda教程索引"
 ---
 终于把这个框架的文档翻译完了。最后一篇的缩进真是搞死我了，如果wp的编辑器更加强些就好了。
 
-* <a href="http://redworld.blog.ubuntu.org.cn/2008/05/03/shoulda%ef%bc%9a%e8%ae%a9testunit%e4%b9%9fbdd/">Shoulda：让Test::Unit也BDD</a>
-* <a href="http://redworld.blog.ubuntu.org.cn/2008/05/10/shoulda%e6%95%99%e7%a8%8b1/">Shoulda教程之一—基本的should语句</a>
-* <a href="http://redworld.blog.ubuntu.org.cn/2008/05/10/shoulda%e6%95%99%e7%a8%8b2/">Shoulda教程之二—上下文</a>
-* <a href="http://redworld.blog.ubuntu.org.cn/2008/05/11/shoulda%e6%95%99%e7%a8%8b3/">Shoulda教程之三—测试ActiveRecord模型</a>
-* <a href="http://redworld.blog.ubuntu.org.cn/2008/05/18/shoulda%e6%95%99%e7%a8%8b%e4%b9%8b%e5%9b%9b%e2%80%94%e6%b5%8b%e8%af%95%e6%8e%a7%e5%88%b6%e5%99%a8/">Shoulda教程之四—测试控制器</a>
+* [Shoulda教程之一—基本的should语句](/2008/05/10/shoulda-tutor1)
+* [Shoulda教程之二—上下文](/2008/05/10/shoulda-tutor2)
+* [Shoulda教程之三—测试ActiveRecord模型](2008/05/11/shoulda-tutor3)
+* [Shoulda教程之四—测试控制器](/2008/05/18/shoulda-tutor4)
 
 其实看到Shoulda这个框架之后我会有很多思考，思考之前的BDD或TDD是不是太麻烦了，比如每次Fun Test都是要些mock Model，然后才能测试每次每次都是在重复，而每次页面的测试（Rspec里才有分离出来的测试）每次都要先构造出页面中要调用的对象，再assigns页面要调用到的元素之后再测试。整个过程非常繁琐，虽然这样可以很细粒度地测试到整个应用，但一点也不DRY（或许我的水平还不够）。
 
