@@ -1,0 +1,282 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>FxRuby part1 - The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="FxRuby，一个更新较为频繁的Ruby GUI 开发库。今年还出了本书，今晚刚好有空，吃了饭后，6：30开始到现在9：30，看完了它的入门例子。其实是因为今晚不用开工，而想起了一个想做很久的事情，就是开发一个编辑器，一个能够用Ruby作为配置和开发语言的编辑器， &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io/2008/07/01/fxruby%E5%88%9D%E4%BD%93%E9%AA%8Cpart1">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">FxRuby Part1</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-07-01T00:00:00+08:00" pubdate data-updated="true">Jul 1<span>st</span>, 2008</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>FxRuby，一个更新较为频繁的Ruby GUI 开发库。今年还出了本书，今晚刚好有空，吃了饭后，6：30开始到现在9：30，看完了它的入门例子。其实是因为今晚不用开工，而想起了一个想做很久的事情，就是开发一个编辑器，一个能够用Ruby作为配置和开发语言的编辑器，就像Emacs能用Lisp在其上开发一样，而且能支持Rails，Rspec，Rake语法和开发辅助（如MVC跳转）等等，这是个妄想:-)</p>
+
+<p><a href="http://pragprog.com/titles/fxruby/fxruby"><img src="http://www.fxruby.org/images/fxruby-book.jpg" alt="FxRuby book" /></a>
+<a href="http://pragprog.com/titles/fxruby/fxruby"><a href="http://pragprog.com/titles/fxruby/fxruby">http://pragprog.com/titles/fxruby/fxruby</a>
+</a></p>
+
+<p>先来看看它的HelloWorld的代码：
+    require &lsquo;fox16&rsquo;
+    include Fox
+    class HelloWindow &lt; FXMainWindow
+      def initialize(app)
+        super(app, &ldquo;Hello, World!&rdquo; , :width =&gt; 200, :height =&gt; 100)
+      end
+      def create
+        super
+        show(PLACEMENT_SCREEN)
+      end
+    end
+    if <strong>FILE</strong> == $0
+      FXApp.new do |app|
+        HelloWindow.new(app)
+        app.create
+        app.run
+      end
+    end</p>
+
+<p>HW没什么太多好讲的，有些东西要提一提就Ok了。GUI应用，肯定有个明显的入口点，就是<a href="http://www.fxruby.org/doc/api/classes/Fox/FXApp.html">FxApp</a>的实例，因为是Desktop app，所以一般都有个主窗体，在FxRuby中是<a href="http://www.fxruby.org/doc/api/classes/Fox/FXMainWindow.html">FXMainWindow</a>的实例。FxRuby中，App实例创建之后还要调用create和run两个方法，主窗体的构造函数要做的事情是设置好主窗体的属性，App的create方法会调用会调用每个下级控件的create方法，在create中要加入的就是显示的方式(好像窗体才需要)等等。从上面的HW就可以看到这些。
+<a href="http://www.fxruby.org/doc/ch03s05.html">
+FxRuby官方手册</a>中还有另一个复杂一点点的HelloWorld。</p>
+
+<p>入门例子是个相册管理的桌面应用，名曰Picture Book。这个例子书中用了5 Chapter（2－6）来讲，基本讲到了常用的Gui组件。</p>
+
+<p>好像太长了，拆开放到另一个日志上吧。</p>
+
+<p>参考Link：</p>
+
+<p>FxRuby官站：<a href="http://www.fxruby.org/"><a href="http://www.fxruby.org/">http://www.fxruby.org/</a></a></p>
+
+<p>FxRuby的Rdoc：<a href="http://www.fxruby.org/doc/api/"><a href="http://www.fxruby.org/doc/api/">http://www.fxruby.org/doc/api/</a></a></p>
+
+<p>FxRuby在线手册：<a href="http://www.fxruby.org/doc/book.html"><a href="http://www.fxruby.org/doc/book.html">http://www.fxruby.org/doc/book.html</a></a></p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Kai Chen</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-07-01T00:00:00+08:00" pubdate data-updated="true">Jul 1<span>st</span>, 2008</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://kaichen.github.io/2008/07/01/fxruby%E5%88%9D%E4%BD%93%E9%AA%8Cpart1" data-via="" data-counturl="http://kaichen.github.io/2008/07/01/fxruby%E5%88%9D%E4%BD%93%E9%AA%8Cpart1" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2008/06/27/%E6%9C%89%E7%9C%BC%E4%B8%8D%E8%AF%86ror" title="Previous Post: 有眼不识Ruby on Rails">&laquo; 有眼不识Ruby on Rails</a>
+      
+      
+        <a class="basic-alignment right" href="/2008/07/01/fxruby%E5%88%9D%E4%BD%93%E9%AA%8Cpart2" title="Next Post: FxRuby part2">FxRuby part2 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'thekaiway';
+      
+        
+        var disqus_script = 'count.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

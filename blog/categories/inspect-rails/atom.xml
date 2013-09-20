@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Inspect Rails | The Kai Way]]></title>
+  <link href="http://kaichen.github.io/blog/categories/inspect-rails/atom.xml" rel="self"/>
+  <link href="http://kaichen.github.io/"/>
+  <updated>2013-09-20T23:29:29+08:00</updated>
+  <id>http://kaichen.github.io/</id>
+  <author>
+    <name><![CDATA[Kai Chen]]></name>
+    <email><![CDATA[kaichenxyz@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Dependencies of Rails]]></title>
+    <link href="http://kaichen.github.io/2013/06/12/dependencies-of-rails"/>
+    <updated>2013-06-12T21:43:00+08:00</updated>
+    <id>http://kaichen.github.io/2013/06/12/dependencies-of-rails</id>
+    <content type="html"><![CDATA[<blockquote><p>本文是<a href="/inspect-rails">Inspect Rails</a>的一部分，<a href="/inspect-rails">Inspect Rails</a>是由我正在编写的讲解Rails内部的实现与设计的一本书，欢迎阅读</p></blockquote>
+
+<p>我们平时安装Rails时，执行的是<code>gem install rails</code>，安装的Rubygem名称就叫rails，而
+这个Rubygem其实只是个没有代码的Meta Gem，它的作用就是定义rails依赖的组件，从
+rails的gemspec看到</p>
+
+<p>{% codeblock lang:ruby %}</p>
+
+<h1>rails.gemspec</h1>
+
+<p>s.add_dependency &lsquo;activesupport&rsquo;, version
+s.add_dependency &lsquo;actionpack&rsquo;,    version
+s.add_dependency &lsquo;activerecord&rsquo;,  version
+s.add_dependency &lsquo;actionmailer&rsquo;,  version
+s.add_dependency &lsquo;railties&rsquo;,      version</p>
+
+<p>s.add_dependency &lsquo;bundler&rsquo;,         &lsquo;>= 1.3.0&rsquo;, &lsquo;&lt; 2.0&rsquo;
+s.add_dependency &lsquo;sprockets-rails&rsquo;, &lsquo;~> 2.0.0.rc4&rsquo;
+{% endcodeblock %}</p>
+
+<p>以上的依赖声明说明了Rails依赖于哪些组件，首先有几个active或action打头的Rubygem</p>
+
+<ul>
+<li>activesupport, 对Ruby语言的一些扩展，Rails的所有核心组件都是依赖于它</li>
+<li>actionpack, 包含了处理Web请求逻辑，包含了MVC中的Controller和View</li>
+<li>activerecord, 以Active Record模式为基础的ORM</li>
+<li>actionmailer, 包含邮件发送和接收逻辑</li>
+<li>railties, 把以上的组件组合起来</li>
+<li><a href="https://github.com/rails/sprockets-rails">sprockets-rails</a>, <a href="https://github.com/sstephenson/sprockets">Sprockets</a>的Rails
+集成代码，Sprockets为Rails带来了著名的Assets Pipeline，Rails 3.1引入</li>
+<li><a href="https://github.com/carlhuda/bundler">bundler</a>, 管理依赖Rubygem的版本</li>
+</ul>
+
+
+<p>除了Bundler和sprockets-rails外的几个Act***框架都是放在
+<a href="https://github.com/rails/rails">Rails的Repo</a>里，还有以下介绍的大部分***-rails
+的Rails与其它库的集成都是放在<a href="https://github.com/rails">Rails的Github账号</a>下的，
+如sprockets-rails。</p>
+
+<p>当然，各个组件还引用了其它的依赖</p>
+
+<ul>
+<li><a href="https://github.com/jimweirich/builder">builder</a>, 创建XML数据的DSL</li>
+<li><a href="https://github.com/rack/rack">rack</a>, Ruby的Web Server接口，我们知道Rails是
+一个基于Rack的Web框架</li>
+<li><a href="https://github.com/brynary/rack-test">rack-test</a>, rack的测试框架</li>
+<li><a href="https://github.com/kwatch/erubis">erubis</a>, 最快的ERB渲染引擎</li>
+<li><a href="https://github.com/rails/arel">arel</a>, 基于关系代数的SQL生成框架</li>
+<li><a href="https://github.com/jimweirich/rake">rake</a>, 不解释</li>
+<li><a href="https://github.com/wycats/thor">thor</a>, rake的替代品，在Rails中只用到了Thor的
+文件操作功能去构建Generator</li>
+</ul>
+
+
+<p><a name='req-deps' href='#req-deps'></a></p>
+
+<h2>必要组件</h2>
+
+<p>Rails在gemspec里声明是核心组件，但并非是必要的组件，比如Assets Pipeline，
+ActiveRecord和AtionMailer不是一定需要包含在你的Rails Application里。</p>
+
+<p>Rails 应用程序首先必须是个Rails Application，所以需要railites去维护整个程序的
+加载和目录结构等。除此以外，Rails是个Web Framework，所以actionpack也是其必要的
+组件之一。剩下的一个必要组件是，ActiveSupport，所有组件的必要依赖。</p>
+
+<p><a name='opt-deps' href='#opt-deps'></a></p>
+
+<h2>可选组件</h2>
+
+<p>AcitveRecord，在Rails 3之后属于可替换的组件。由于在Actionpack里如Routing和Form
+Helper严重依赖于ActiveRecord，所以Rails Core Team就抽象出了ActiveModel去解开
+这个依赖，将Routing和Form Helper等需要调用到的部分，以Module的形式定义好接口，
+只要包含或者实现了ActiveModel接口就能完美地与ActionPack协作。</p>
+
+<p>ActionMailer，不是所有的Rails应用都有发邮件的需求，显然这不是必要的组件。</p>
+
+<p>Sprockets，为Rails提供Assets Pipeline功能，但并不是所有人都喜欢它。在Rails应用
+生成器里也提供了这个选项，去掉Assets Pipeline功能。</p>
+
+<p>Test::Unit，Rails默认的测试框架，但由于Test::Unit是Ruby语言自带的，当开发者不想
+直接使用它的时候，Rails只是关闭相关的代码生成器。另外，其他任何的测试框架都只是
+Test::Unit的包装，添加了Syntax Sugar而已。</p>
+]]></content>
+  </entry>
+  
+</feed>

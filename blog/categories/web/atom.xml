@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Web | The Kai Way]]></title>
+  <link href="http://kaichen.github.io/blog/categories/web/atom.xml" rel="self"/>
+  <link href="http://kaichen.github.io/"/>
+  <updated>2013-09-20T23:29:29+08:00</updated>
+  <id>http://kaichen.github.io/</id>
+  <author>
+    <name><![CDATA[Kai Chen]]></name>
+    <email><![CDATA[kaichenxyz@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Rails ujs]]></title>
+    <link href="http://kaichen.github.io/2013/08/16/rails-ujs"/>
+    <updated>2013-08-16T23:06:00+08:00</updated>
+    <id>http://kaichen.github.io/2013/08/16/rails-ujs</id>
+    <content type="html"><![CDATA[<p>UJS是Rails 3引入的JavaScript框架与Rails的抽象层。我们知道Rails一些Helper是依赖于JavaScript框架的，比如Ajax Form，Ajax Link等，并且在Rails 3之前默认集成的JavaScript框架是<a href="http://prototypejs.org/">Prototype</a>，再这之后才换成了社区呼声很高的<a href="http://jquery.org/">jQuery</a>。</p>
+
+<p>如前面所说UJS是个抽象层，它需要在每个框架上实现对应的接口，比如官方实现了<a href="https://github.com/rails/jquery-ujs">jquery-ujs</a>和<a href="https://github.com/rails/prototype-ujs">prototype-ujs</a>。本篇主要以<a href="https://github.com/rails/jquery-ujs">jquery-ujs</a>为例来讲解UJS。jquery-ujs代码很短，只有500行不到，想先浏览一下整个代码可访问<a href="https://github.com/rails/jquery-ujs/blob/master/src/rails.js">Github的jquery-ujs repo</a>。</p>
+
+<h2>data-confirm</h2>
+
+<p>先从最简单confirm例子入手。比如，在某些链接上让用户在点击链接后再次确认一次，我们一般会这么写</p>
+
+<p>{% codeblock lang:ruby %}
+link_to &ldquo;Visit Other Site&rdquo;, &ldquo;<a href="http://www.rubyonrails.org/">http://www.rubyonrails.org/</a>&rdquo;, data: { confirm: &ldquo;Are you sure?&rdquo; }
+{% endcodeblock %}</p>
+
+<p>这里和普通的链接不同的地方只是在于多加了一个<code>data-confirm</code>属性，然后UJS帮你实现了弹出确认框。这其中的实现方法很简单，写过jQuery的同学都会，就是监听所有链接的<code>click</code>事件，当这个被点击链接上有<code>data-confirm</code>属性时，取出<code>data-confirm</code>中的文本，弹出确认框，并根据用户的操作选择是否中断这个点击事件的处理。</p>
+
+<h2>data-method</h2>
+
+<p>然后我们来看看，另外一种比较常见的链接用法，让链接点击时使用非GET方法请求对应的URL，代码如下</p>
+
+<p>{% codeblock lang:ruby %}
+link_to(&ldquo;Sign Out&rdquo;, sign_out_path, method: :delete)
+{% endcodeblock %}</p>
+
+<p>这里传入的<code>method</code>参数，生成HTML时会被转换为<code>data-method="delete"</code>。与前面一个例子一样，UJS在这个链接的click事件上监听，当这个链接有<code>data-method</code>属性时，创建一个隐藏的<code>form</code>标签，并附带上名为<code>_method</code>参数，值为<code>data-method</code>属性值的<code>input</code>标签，最后将这个构造的表单提交。</p>
+
+<p>通过这样的小技巧，Rails开发者就能通过<code>&lt;a&gt;</code>标签以任何想要的HTTP Method请求对应的链接。</p>
+
+<h2>Ajax Form</h2>
+
+<p>在Rails 3之后的<code>form_tag</code>和<code>form_for</code>上传入<code>remote: true</code>就能实现表单的Ajax提交，同样这个事情，UJS也是通过监听所有的Form标签的<code>submit</code>事件，然后检测标签上的<code>data-remote</code>属性来实现的。</p>
+
+<p>对于开发者，在传入了<code>remote: true</code>之后要怎样去插入对应的Ajax处理器呢？UJS在对应Ajax提交阶段上触发了Rails自定义的<code>ajax:xxx</code>事件。</p>
+
+<p>{% codeblock lang:javascript %}
+beforeSend: function(xhr, settings) {
+  if (settings.dataType === undefined) {
+    xhr.setRequestHeader(&lsquo;accept&rsquo;, &lsquo;<em>/</em>;q=0.5, &rsquo; + settings.accepts.script);
+  }
+  return rails.fire(element, &lsquo;ajax:beforeSend&rsquo;, [xhr, settings]);
+},
+success: function(data, status, xhr) {
+  element.trigger(&lsquo;ajax:success&rsquo;, [data, status, xhr]);
+},
+complete: function(xhr, status) {
+  element.trigger(&lsquo;ajax:complete&rsquo;, [xhr, status]);
+},
+error: function(xhr, status, error) {
+  element.trigger(&lsquo;ajax:error&rsquo;, [xhr, status, error]);
+}
+{% endcodeblock %}</p>
+
+<p>所以基于UJS我们可以这样直接在<code>form</code>元素上绑定上对应的Ajax提交处理代码</p>
+
+<p>{% codeblock lang:javascript %}
+$(&ldquo;#myform&rdquo;).on(&ldquo;ajax:success&rdquo;, function () {
+  alert(&ldquo;Post successfully:)&rdquo;)
+}).on(&ldquo;ajax:error&rdquo;, function () {
+  alert(&ldquo;Post fail:(&rdquo;)
+})
+{% endcodeblock %}</p>
+
+<p>UJS在Ajax表单提交了之后，还会将该表单中的<code>button</code>和<code>input[type='submit']</code>都加上<code>disable</code>属性，防止用户多次点击引发多次提交。</p>
+
+<p>此外，UJS实现的Ajax Form上还有两个特殊的事件</p>
+
+<ul>
+<li><code>ajax:aborted:required</code> 当表单提交的时候，有未填的<code>input</code>标签时会触发这个事件，你可以选择去处理</li>
+<li><code>ajax:aborted:file</code> 我们知道通过正常的方式是无法通过AJAX来提交文件的，当表单里包含了文件字段的时候，这个事件会被触发，在这里可以去实现自己的文件提交逻辑。比如<a href="https://github.com/JangoSteve/remotipart">remotipart</a>通过这个事件实现了Ajax Form的文件提交。</li>
+</ul>
+
+
+<h2>选择器</h2>
+
+<p>UJS的所有功能都通过预设的选择器，绑定事件处理逻辑到对应元素上，以下是选择器的定义</p>
+
+<p>{% codeblock lang:javascript %}
+$.rails = {
+    // Link elements bound by jquery-ujs
+    linkClickSelector: &lsquo;a[data-confirm], a[data-method], a[data-remote], a[data-disable-with]&rsquo;,</p>
+
+<pre><code>// Button elements boud jquery-ujs
+buttonClickSelector: 'button[data-remote]',
+
+// Select elements bound by jquery-ujs
+inputChangeSelector: 'select[data-remote], input[data-remote], textarea[data-remote]',
+
+// Form elements bound by jquery-ujs
+formSubmitSelector: 'form',
+
+// Form input elements bound by jquery-ujs
+formInputClickSelector: 'form input[type=submit], form input[type=image], form button[type=submit], form button:not([type])',
+
+// Form input elements disabled during form submission
+disableSelector: 'input[data-disable-with], button[data-disable-with], textarea[data-disable-with]',
+
+// Form input elements re-enabled after form submission
+enableSelector: 'input[data-disable-with]:disabled, button[data-disable-with]:disabled, textarea[data-disable-with]:disabled',
+
+// Form required input elements
+requiredInputSelector: 'input[name][required]:not([disabled]),textarea[name][required]:not([disabled])',
+
+// Form file input elements
+fileInputSelector: 'input[type=file]',
+
+// Link onClick disable selector with possible reenable after remote submission
+linkDisableSelector: 'a[data-disable-with]'
+</code></pre>
+
+<p>}
+{% endcodeblock %}</p>
+
+<p>这提供可配置对应选择器的机会，比方说使用某个jQuery插件，它通过<code>data-remote</code>去标记别的事情。那么在不修改这个插件的情况下想让UJS继续工作，我们可以重新配置UJS的选择器</p>
+
+<p>{% codeblock lang:javascript %}
+$.rails.formSubmitSelector = &lsquo;form([data-ajax-form])&rsquo;;
+{% endcodeblock %}</p>
+
+<h2>CSRF Token</h2>
+
+<p>UJS还会在每次表单提交上自动附带上CSRF Token。Rails 3之后强制所有的非幂等HTTP请求需要带上CSRF token作安全校验，用来防止XSS攻击。这就要求开发者在每次写Ajax请求的时候，都需要手动把这部分的token带上，UJS也通过jQuery的<a href="http://api.jquery.com/jQuery.ajaxPrefilter/">ajaxPrefilter</a>接口，让每次的Ajax请求都自动附带上CSRF token。</p>
+
+<p>另外，每次UJS初始化时，会为页面上所有表单都加上带有CSRF Token的隐藏<code>input</code>标签，让表单在提交时都能自动带上CSRF Token。</p>
+
+<h2>从UJS学到了什么</h2>
+
+<ul>
+<li>jquery-ujs的所有事件绑定都是绑定在document，等到事件触发后再分发到对应的事件处理逻辑里，不需要在初始化时查找对应的元素并绑定事件</li>
+<li>充分利用HTML5的<code>data</code>属性来解耦事件处理逻辑，将各种参数序列化到<code>data</code>属性</li>
+<li>利用jQuery的自定义事件更好地定制自己的事件处理流程</li>
+</ul>
+
+
+<h2>参考</h2>
+
+<ul>
+<li><a href="http://www.alfajango.com/blog/rails-3-remote-links-and-forms/">http://www.alfajango.com/blog/rails-3-remote-links-and-forms/</a></li>
+<li><a href="http://www.alfajango.com/blog/rails-3-remote-links-and-forms-data-type-with-jquery/">http://www.alfajango.com/blog/rails-3-remote-links-and-forms-data-type-with-jquery/</a></li>
+<li><a href="http://railscasts.com/episodes/205-unobtrusive-javascript">http://railscasts.com/episodes/205-unobtrusive-javascript</a></li>
+<li><a href="http://net.tutsplus.com/tutorials/javascript-ajax/using-unobtrusive-javascript-and-ajax-with-rails-3/">http://net.tutsplus.com/tutorials/javascript-ajax/using-unobtrusive-javascript-and-ajax-with-rails-3/</a></li>
+</ul>
+
+]]></content>
+  </entry>
+  
+</feed>

@@ -1,0 +1,746 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="以下内容是Learning JQuery一书的前六章笔记摘要，基本的JQuery操作就在这里了。很多地方只是提一下，具体要用时还是去查官方文档。 Selecter 基本通过工厂方法$()进行选择，可以选择标签名（Tag），ID（id），类（Class）。 通过子元素组合符（&gt;） &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io/blog/page/4">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div class="blog-index">
+  
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2009/01/14/learning-jquery-notes">Learning jQuery Notes</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-01-14T00:00:00+08:00" pubdate data-updated="true">Jan 14<span>th</span>, 2009</time>
+        
+         | <a href="/2009/01/14/learning-jquery-notes#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>以下内容是Learning JQuery一书的前六章笔记摘要，基本的JQuery操作就在这里了。很多地方只是提一下，具体要用时还是去查<a href="http://docs.jquery.com">官方文档</a>。</p>
+
+<h2>Selecter</h2>
+
+<p>基本通过工厂方法<code>$()</code>进行选择，可以选择标签名（Tag），ID（id），类（Class）。</p>
+
+<p>通过子元素组合符（&gt;）可以选择到后代元素</p>
+
+<p>当需要通过属性进行选择时可以使用XPath语法：<code>tag[@attribute]</code>。更好的选择过滤符$=，^=，*=。</p>
+
+<p>JQuery特有的自定义选择符，以冒号开头（:）</p>
+
+<ul>
+<li><code>:not</code> 反向选择</li>
+<li><code>:eq(index)</code> 通过下标对数组进行选择</li>
+<li><code>:odd</code> 索引为奇数的元素</li>
+<li><code>:even</code> 索引为偶数的元素</li>
+<li><code>:nth-child(index)</code> 通过索引访问子元素</li>
+<li><code>:contains(string)</code> 包含指定字符串的元素</li>
+</ul>
+
+
+<p>选择到元素后可通过JQuery的特有遍历方式进行遍历</p>
+
+<p><code>filter()</code> 可以调用自定义选择符进行过滤
+<code>parent()</code> 取得父元素
+<code>next()</code> 取得下一个同辈元素
+<code>siblings()</code> 取得所有同辈元素
+<code>find()</code> 通过标签加选择符进行过滤</p>
+
+<p>通过<code>get(0)</code>或者<code>$(el)[0]</code>可以直接返回DOM元素</p>
+
+<h2>Event</h2>
+
+<p><code>$(document).ready()</code>是注册事件处理器的入口，它会在HTML下载完毕并解析为DOM树时自动执行，并且是按顺序执行注册的处理器。</p>
+
+<p>一般的形式：</p>
+
+<pre><code>$(document).ready(function(){
+    # codes....
+});
+</code></pre>
+
+<p>事件绑定是使用bind()函数进行的，常见形式：</p>
+
+<p><code>$(el).bind(event, function-define);</code></p>
+
+<p>bind到元素上的事件不会覆盖，即可为元素同个事件定义多个事件处理器并让其按顺序执行。</p>
+
+<p><code>bind()</code>的简写形式是直接调用与事件同名函数，如<code>click(functions-define)</code>。</p>
+
+<p><code>toggle()</code>方法接受两个函数参数，在第一次单击时会调用第一个函数，第二次则调用第二个函数并循环这个过程。</p>
+
+<p><code>toggleClass(classname)</code>方法会为元素切换指定的类。</p>
+
+<p><code>hover()</code>方法与<code>toggle()</code>方法类似，接受两个函数的参数，分别在鼠标指针进入和离开该元素范围时执行。</p>
+
+<p><code>unbind()</code>方法可以解除元素的事件处理器绑定，提供两个参数，一个事件名，和函数名。</p>
+
+<p><code>one()</code>方法可以绑定一次性事件，即绑定完成后解除。</p>
+
+<p><code>trigger()</code>方法可以模拟事件的发生。参数为事件名。其简写形式为不带任何参数的事件名同名函数。</p>
+
+<h2>Effect</h2>
+
+<p><code>css()</code>方法可以接受属性名和值来对元素的style进行设置。两种调用形式<code>css(property, value)</code>，<code>css(property1 : value1, property2 : value2...)</code>。</p>
+
+<p><code>css()</code>方法也可以取得对应属性名的值。</p>
+
+<p>BTW，<code>css()</code>方法类似reader和writer。</p>
+
+<p><code>hide()</code>和<code>show()</code>方法可以对元素进行隐藏和显示。</p>
+
+<p>所有的效果都可以加上速度参数：slow normal fast。</p>
+
+<p><code>fadeIn()</code>，<code>fadeOut()</code>和<code>fadeTo()</code>修改元素的不透明度。</p>
+
+<p><code>slideDown()</code>和<code>slideUp()</code>修改元素的高度。</p>
+
+<p><code>animate()</code>方法可以同时修改元素的多个属性。</p>
+
+<p>效果函数可以带上第二个参数作为回调函数，在效果完成后调用。</p>
+
+<p>效果的顺序原则：</p>
+
+<ol>
+<li>一组元素上的效果</li>
+<li>当在一个.antimate()方法中以多个属性的方式应用时，是同时发生的。</li>
+<li>当以方法连缀的形式应用时，是按顺序发生的（排队效果）。</li>
+<li>多组元素上的效果</li>
+<li>默认情况下是同时发生的。</li>
+<li>当在事件处理程序的回调函数中应用时，是按顺序发生的（排队效果）。</li>
+</ol>
+
+
+<h2>DOM</h2>
+
+<p><code>addClass()</code>和<code>removeClass()</code>，<code>togleClass()</code>可以对元素的类进行增删。</p>
+
+<p><code>attr()</code>和<code>removeAttr()</code>可以对元素属性进行操作。</p>
+
+<p><code>each(function(index){})</code>可以对元素组进行迭代。</p>
+
+<p><code>clone()</code>方法可以进行深度复制</p>
+
+<p><code>insertBefore()</code>，<code>before()</code>，<code>insertAfter()</code>，<code>after()</code>方法用于在相邻位置插入新元素。insertXxx和Xxx存在着被动与主动的关系。</p>
+
+<p><code>append()</code>，<code>appendTo()</code>，<code>prepend()</code>，<code>prependTo()</code>用于元素中插入新元素。</p>
+
+<p><code>wrap()</code>用于在元素外插入新元素，即用新元素包裹自身。</p>
+
+<p><code>html()</code>，<code>text()</code>使用新元素或文本进行替换</p>
+
+<p><code>empty()</code>移除元素</p>
+
+<p><code>remove()</code>移除元素及其后代元素</p>
+
+<h2>Ajax</h2>
+
+<p><code>load()</code>方法可以直接请求html片段并直接插入元素中。</p>
+
+<p><code>$.getJSON()</code>方法可以请求json文档，第二个参数可以带上回调函数。</p>
+
+<p><code>$.get()</code>和<code>$.post()</code>两个方法可以模拟GET和POST请求，并支持回调函数。第二个参数可以加上一个参数map。</p>
+
+<p><code>$('#form').find('input').serialize()</code>可以序列化表单数据。</p>
+
+<p><code>ajaxStart()</code>和<code>ajaxStop()</code>是两个Ajax请求的监听器，在请求开始时会调用注册在前一个函数的回调处理器，在请求结束时会调用后一个函数的回调处理器。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/10/04/have-two-days-holiday">国庆节两天假期</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-10-04T00:00:00+08:00" pubdate data-updated="true">Oct 4<span>th</span>, 2008</time>
+        
+         | <a href="/2008/10/04/have-two-days-holiday#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>趁着国庆给自己放假两天。</p>
+
+<p>那天踢了一下球之后那天晚上基本无法工作，太累，就简单地作一些翻译的文档的整理。第二天（亦就是昨天2号）也是很累，全身酸痛，从肩膀到腰到腿，好像才两个月没有踢球就这样了，看来身体越来越不行了。然后懵懵地就到了晚上，基本不知道自己在作什么，晚上有点精神，配置了一下实验室的服务器，把redmine从lighttpd迁移到apache2+passenger2的环境，并把svn库整理了一下。服务器上的所有软件包作更新，删除掉无用的包，再换个sever的内核（Ubuntu系统，原来用generic内核），还有更新rubygems。顺便把服务器的配置写份文档，并写了几个配置脚本，以后交给师弟来弄了。由于把服务器配置为a2+p2所以试了一下部署，结果发现capistrano一些问题，下篇post再谈。</p>
+
+<p>今天早上起来又很困，结果就顺便把自己的电脑的环境清理一下。上个星期因为自己编译了gnome2.24结果把整个gnome搞坏了，所以最近一直用着KDEmod，其实很不爽。这次就趁火打劫地把gnome和kdemod整个完整删掉，换个轻量级的环境，一开始是openbox+rox+fbpanel+feh，配置挺烦一下，弄到最后换成openbox+rox+lxpanel。中间折腾了一下panel，又折腾了一下session，还要分配好rox和openbox的分工（有多种分工方法，最后选了rox负责桌面背景但不接管桌面，openbox接管桌面菜单）。因为有段时间看过openbox和rox的文档，所以用起来觉得还挺习惯，快捷键的操作很爽。下午再把firefox清理了一下，直接删了配置目录，自己再去下插件，网速有些问题，弄了一个钟。晚上学习如何查英文paper，大概摸出个门道。</p>
+
+<p>在配置服务器的时候发现Ubuntu和其它发行版的目录结构差好多，比如apache的配置方法和在arch和贱兔的差好多，模块和站点的设置竟然是要在XX-available目录的文件link到XX-enable目录中，不是直接写个文件丢进去。本来还想配个git仓库的，后来觉得算了。在清理系统时，发现旧的rubygems竟然占了1G多，原来很多过时的gems还呆在里面。遂运行gem cleanup，过程很漫长，觉得那个依赖计算也是有问题，而且有内存泄漏问题，竟然有段时间把我的内存吃完了（2G），不知道是程序的问题还是GC的问题。</p>
+
+<p>什么叫放假，不干活就是放假。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/09/23/open-source-camp-guangzhou-%E5%B0%8F%E8%AE%B0">Open Source Camp Guangzhou小记</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-09-23T00:00:00+08:00" pubdate data-updated="true">Sep 23<span>rd</span>, 2008</time>
+        
+         | <a href="/2008/09/23/open-source-camp-guangzhou-%E5%B0%8F%E8%AE%B0#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>第一次参加开源活动，感觉不错，不过topic都是科普性质，有些失望。会议上其实cpug的大妈带了一帮人马来会课，还霸占了M1会议室+<em>+，而大部分topic都讲得比较科普。我去听的三个topic是老外讲agile，香港同胞讲香港活动，最后听了Pyer洗脑。petty chen和Pyer的前两个topic错过了。其中自己和老外有一些问答，感觉自己的英语至少有人能听得懂了，咔咔咔。和香港同胞有些讨论，会后想mail&#8217;他，可是发去的mail给弹回来了，他的msn，gtalk等都没有连上-</em>-</p>
+
+<p>感觉这种活动是结交朋友为主的。看到很多传说中的大牛（其实很多不认识），如cpug的大妈（真人比相片年轻），petty chen，俞黎敏等等。和<a href="http://yulimin.javaeye.com/">俞黎敏</a>打了下招呼（他在<a href="http://yulimin.javaeye.com/blog/245167">blog post</a>中提了下我^_^）。petty chen很有主持天赋。Pyer很拽。</p>
+
+<p>PS：抽奖系统有点龊，不是随机序，是字母序循环，然后还不会自动去除已中奖的人，导致有人连拿两次奖。</p>
+
+<p>会议相片在：
+<a href="http://www.haokanbu.com/story/113420/">http://www.haokanbu.com/story/113420/</a>
+<a href="http://picasaweb.google.com/epaulin/OscampGuangzhou2008">http://picasaweb.google.com/epaulin/OscampGuangzhou2008</a></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/09/18/last-year-in-hzu">Last Year in Hzu</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-09-18T00:00:00+08:00" pubdate data-updated="true">Sep 18<span>th</span>, 2008</time>
+        
+         | <a href="/2008/09/18/last-year-in-hzu#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>这是在惠州学院的最后一年写下的。</p>
+
+<p>一早起来就看到了pluskid的这篇<a href="http://pluskid.lifegoo.com/?p=455#comment-1608">post</a>，看完后很想把自己的想法写下来。</p>
+
+<p>从上学期末开始，我就一直泡在实验室，一边开发一边学习，和同学们也疏远了。到了大学的末期，和身边的人可以用分道扬镳这个词来形容，有的已经为了生活在外打拼，有的为了考研苦读，有的还是一直蹲在宿舍玩着游戏看着电影。每个人怀着不同的想法，正走在各人选择不同的路上。记得那时刚来到的时候，大家三五成群，一般都一个宿舍全体一起去吃饭，一起出去玩，或者是一个班的同学组织去什么活动。现在比较多时间是一个人骑着单车在去实验室的路上，或是搭着女友去上课。</p>
+
+<p>现在每天都很忙，我是那种遇到了自己想做的事情就会接下来做的那样，不会考虑太多自己的时间精力等问题，所以现在身上事情挺多，同时要忙着3，4项事情，还要自己学习看书。但一旦答应了别人就要帮别人做完做好事情，不过以后我回把一段时间内要做的事情控制在2件左右，以我的精力并没用能力作那么多事情。</p>
+
+<p>对于未来，经过一段时间的思考。大概已经有了答案。就是找份payment不错的remote work，这样就有很多时间学习。出国的梦想已经破灭，但是我还是想能有很多时间学习，但又不想考研不想在国内读研（另一方面国内考研难度也不低），所以基于这些考虑，这个选择是不错的，还可以留在惠州这里陪着女友。</p>
+
+<p>最后一年，在搬出去外面住之前可能大部分时间都会在实验室里渡过。到了上学期末，托和索老师做项目的福，得到了这个实验室的资源。好像比较好的学校的话，都会有这种资源提供给学生的吧，而且是让学生自己以社团的形式参与并开发出一些东西，比如pluskid所在的浙大。希望这个实验室能够给更多的学生，带来好处，让他们能够在这里开发，学习，交流，这对于来到这间学校的学生来说，是莫大的好处。可是这仅仅是我个人的天真想法，这学期本来想吸纳一些07级的学生进来，可是经过考察和了解后，发现他们还是差远了，差远不是说技术人品等，而是觉悟想法，他们现在还没有那种老老实实呆在实验室学习的觉悟，也没有太多关于以后的想法。竟然还有一个因为想参与进来但不想带电脑来又不想没时间，一直在和我和老师做些原则上的无谓争论。最后只加进来了两个06级的师弟，结果还不错^_^真心地祝福后来的同学能够好好利用这个资源，提高自身的价值。</p>
+
+<p>现在每天都很累，咖啡喝了不少，睡眠不足。不过前两天病了一下，在床上躺了两天，觉得很无聊，头又痛又晕基本不能工作。所以要好好保重好身体，要革命先得有革命的本钱。</p>
+
+<p>要学习的东西还很多，人生才刚刚开始没多久，路还很长。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/09/11/rails-i18n-feature">Rails I18n Feature</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-09-11T00:00:00+08:00" pubdate data-updated="true">Sep 11<span>th</span>, 2008</time>
+        
+         | <a href="/2008/09/11/rails-i18n-feature#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>最近在其中一个项目中需要对Rails app进行i18n，时不时会查查Rails源码，昨日在insoshi的mailist中看到了这个link：</p>
+
+<p><a href="http://rails-i18n.org/wiki"><a href="http://rails-i18n.org/wiki">http://rails-i18n.org/wiki</a></a></p>
+
+<p>建议对此有兴趣的人去看看，基本上把i18n都讲得比较清楚。其中还有个demo：</p>
+
+<p><a href="http://github.com/clemens/i18n_demo_app/tree/master"><a href="http://github.com/clemens/i18n_demo_app/tree/master">http://github.com/clemens/i18n_demo_app/tree/master</a></a></p>
+
+<p>我clone下来看看后顺手就也加上了zh_CN的locale configure，我先fork了一个分支，花了一个钟，完工pull，不知什么时候才会被merge。大家如果想要了解Rails22的i18n可以看看我汉化过的Demo，enjoy：</p>
+
+<p><a href="http://github.com/maninred/i18n_demo_app"><a href="http://github.com/maninred/i18n_demo_app">http://github.com/maninred/i18n_demo_app</a></a></p>
+
+<p>Rails越来越多功能，但也越来越臃肿了。还可以看到Ruby也有很多i18n资源。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/09/11/check-spelling-on-rails">Check Spelling on Rails</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-09-11T00:00:00+08:00" pubdate data-updated="true">Sep 11<span>th</span>, 2008</time>
+        
+         | <a href="/2008/09/11/check-spelling-on-rails#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>A few days ago I need to do spell checking for a rails project, but can&rsquo;t find a ready-to-use plugin, so I implemented one.</p>
+
+<p>I use the<a href="http://aspell.net/"> Aspell </a>Lib to do the checking work, and ajax for editing.</p>
+
+<p>First you need to install the Aspell and at lease one dictionary.</p>
+
+<p>Mac:
+<strong>  sudo port install aspell aspell-dict-en</strong></p>
+
+<p>Ubuntu:
+<strong>  sudo apt-get install aspell libaspell-dev aspell-en</strong></p>
+
+<p>Arch:
+<strong>  sudo pacman -S aspell aspell-en </strong></p>
+
+<p>And install the Aspell Ruby binding: <a href="http://github.com/fauna/raspell/tree/master">raspell</a></p>
+
+<p><strong>    sudo gem install raspell</strong></p>
+
+<p>Add a controller:</p>
+
+<pre><code># app/controllers/spelling_controller.rb
+class SpellingController &lt;&lt; ApplicationController
+  def check
+    render :update do |page|
+      page.replace_html 'check-result', SpellingChecker.check_spell(params[:text])
+    end
+  end
+end
+</code></pre>
+
+<p>Add a SpellingChecker Class to Lib
+    # lib/spelling_checker.rb
+    class SpellingChecker</p>
+
+<pre><code>  def self.check_spell text
+    speller = Aspell.new("en_US")
+    speller.suggestion_mode = Aspell::NORMAL
+    wrongs = []
+    text.gsub(/[\w\']+/) do |word|
+      wrongs &lt;&lt; word unless speller.check(word)
+    end
+    wrongs.uniq.each do |wrong|
+      text.sub!(wrong, "&lt;span class='wrong'&gt;#{wrong}&lt;/span&gt;")
+    end
+    return text
+  end
+
+end
+</code></pre>
+
+<p>in the view:
+    <label for="description">Description: </label>
+    <div id="check-desc" style="display:none;">
+      &lt;%=link_to_function &lsquo;Resume editing&rsquo;, &ldquo;ttoggleChecking()&rdquo; %>
+      <br />
+      <div id="check-result">Checking&hellip;</div>
+    </div>
+    <div id="edit-desc">
+      &lt;%=link_to_function &lsquo;Check spelling&rsquo;, &ldquo;new Ajax.Updater({ success:toggleChecking()},
+                                                              &lsquo;/spelling/check&rsquo;,
+                                                              {method:&lsquo;get&rsquo;, parameters:{text:$F(&lsquo;ticket_description&rsquo;)}});&rdquo; %>
+      <br />
+      &lt;%= f.text_area :description, :cols => 84, :rows => 10 %>
+    </div>
+    <script type='text/javascript'>
+      function toggleChecking() {
+        $(&lsquo;edit-desc&rsquo;, &lsquo;check-desc&rsquo;).invoke(&lsquo;toggle&rsquo;);
+      }
+    </script></p>
+
+<p>This is what it looks like:</p>
+
+<p><a href="http://www.chenk85.com/wp-content/uploads/2008/09/feedbackmine.png"><img src="http://www.chenk85.com/wp-content/uploads/2008/09/feedbackmine.png" alt="" title="check_spelling1" width="500" height="167" class="aligncenter size-full wp-image-128" /></a></p>
+
+<p><a href="http://www.chenk85.com/wp-content/uploads/2008/09/feedbackmine2.png"><img src="http://www.chenk85.com/wp-content/uploads/2008/09/feedbackmine2.png" alt="" title="checkspelling2" width="500" height="168" class="aligncenter size-full wp-image-129" /></a></p>
+
+<p><a href="http://www.chenk85.com/wp-content/uploads/2008/09/feedbackmine3.png"><img src="http://www.chenk85.com/wp-content/uploads/2008/09/feedbackmine3.png" alt="" title="checkspelling3" width="500" height="172" class="aligncenter size-full wp-image-130" /></a></p>
+
+<p>That is it, quite sample, isn&rsquo;t it? I would like to make a plugin for it, but no much time recently.</p>
+
+<p>Thank yawl for pointing out my grammar misstake.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/08/22/a-rspec-cheetsheet">A Rspec Cheetsheet</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-08-22T00:00:00+08:00" pubdate data-updated="true">Aug 22<span>nd</span>, 2008</time>
+        
+         | <a href="/2008/08/22/a-rspec-cheetsheet#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>from:<a href="http://coldfire.org.ua/blog/?p=26"><a href="http://coldfire.org.ua/blog/?p=26">http://coldfire.org.ua/blog/?p=26</a></a></p>
+
+<p>a rspec cheetsheet, cool!</p>
+
+<p><img src="http://coldfire.org.ua/blog/wp-content/uploads/2007/04/rspec_cheetsheet.thumbnail.png" alt="rspec cheetsheet thumbail" /></p>
+
+<p>download: <a href="http://coldfire.org.ua/blog/wp-content/uploads/2007/04/rspec_cheetsheet.png"><a href="http://coldfire.org.ua/blog/wp-content/uploads/2007/04/rspec_cheetsheet.png">http://coldfire.org.ua/blog/wp-content/uploads/2007/04/rspec_cheetsheet.png</a></a></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/08/06/get-start-java-network-app-dev">Get Start Java Network App Dev</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-08-06T00:00:00+08:00" pubdate data-updated="true">Aug 6<span>th</span>, 2008</time>
+        
+         | <a href="/2008/08/06/get-start-java-network-app-dev#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>如果你要开发一个Java的network app，有很多不错的opensource project帮助你开始开发。</p>
+
+<p>比较基础和底层的话可以试试HttpClient，<a href="http://hc.apache.org">hc.apache.org</a>，按照它官方的教程，六步走。这个框架提供了Http访问的能力，加上Java的multithread能力，虽然效率不及noblocking io那么高但胜在文档资料多。这个一个初学者的好起点。</p>
+
+<p>高级点的就是mina，<a href="http://mina.apache.org">mina.apache.org</a>，一个高性能高扩展能力的network app框架。基于Java的nio，并发能力得以保证，并在比较高层次进行封装。不过这个东西文档不多是弱点。值得一提的是Logo，so Cool。</p>
+
+<p>当你的network app需要大量的数据处理时，使用hadoop是个不错解决方案，<a href="http://hadoop.apache.org">hadoop.apache.org/</a>。这个MapReduce实现，非常著名，不用我废话了:P Hbase是Hadoop的一个子项目，是Bigtable的实现。Hbase有Ruby的客户端，Hbase-ruby。</p>
+
+<p>另hypertable也是一个值得注意的Bigtable实现，<a href="http://www.hypertable.org/">hypertable.org</a>。</p>
+
+<p>现在的Network app常常需要有搜索功能，这时就需要Lunece，Solr，Nutch啦。Lunece也是不用介绍的。Solr很多人也熟悉，一个企业级搜索服务器，是Lunece的的扩展，提供了web管理界面等。Netch，一个通用型的Web搜索引擎，其实就一大Crawler，他的存储基于hadoop，原dadoop是其子项目。</p>
+
+<p>以上的项目好像基本上都是Apache的Project，现在的Apache项目都有Wiki了，以前貌似没有，进步了。</p>
+
+<p>这就是我最近开发Crawler遇到的几个Java Framework。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  <div class="pagination">
+    
+      <a class="prev" href="/blog/page/5/">&larr; Older</a>
+    
+    <a href="/blog/archives">Blog Archives</a>
+    
+    <a class="next" href="/blog/page/3/">Newer &rarr;</a>
+    
+  </div>
+</div>
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'thekaiway';
+      
+        
+        var disqus_script = 'count.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

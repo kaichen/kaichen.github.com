@@ -1,0 +1,326 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>zh周蟒 - The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="周蟒是中文的Python，支持简体和繁体，用它就能进行中文来写代码。 周蟒的官方主页：
+http://code.google.com/p/zhpy/ 簡介 周蟒 (zhpy) 是一種簡單易學、功能強大的程式語言。它具有高效率的高階資料結構、簡單而有效的物件導向程式設計方式。並讓你可以使用純中文語句 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io/2007/10/08/zhpy%E5%91%A8%E8%9F%92%EF%BC%8C%E5%AE%9E%E7%8E%B0%E7%94%A8%E4%B8%AD%E6%96%87%E5%86%99%E4%BB%A3%E7%A0%81%E7%9A%84%E6%84%BF%E6%9C%9B">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Zh周蟒</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2007-10-08T00:00:00+08:00" pubdate data-updated="true">Oct 8<span>th</span>, 2007</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>周蟒是中文的Python，支持简体和繁体，用它就能进行中文来写代码。</p>
+
+<p>周蟒的官方主页：
+<a href="http://code.google.com/p/zhpy/">http://code.google.com/p/zhpy/</a></p>
+
+<blockquote><p>   簡介</p>
+
+<p>   周蟒 (zhpy) 是一種簡單易學、功能強大的程式語言。它具有高效率的高階資料結構、簡單而有效的物件導向程式設計方式。並讓你可以使用純中文語句 (繁體或簡體) 來編寫程式。 馬上照著 咬一口周蟒語言 一書學習吧!
+   周蟒是什麼?</p>
+
+<pre><code>   * 友善而易於學習的中文程式語言
+   * 清晰可讀的語法
+   * 直觀的物件導向能力
+   * 方便的動態物件類型
+   * 透過模組有架構地組織程式
+   * 多平台適用(Windows, Linux, Mac)的程式語言
+   * 全功能的中文版本 Python 語言
+</code></pre>
+
+<p>   特點</p>
+
+<pre><code>   * 周蟒是全功能的 Python 程式語言。
+         o 周蟒本身就是個 python 模組
+         o 擁有所有 python 程式語言的功能與特性
+         o 可以在周蟒中使用所有的 python 模組
+   * 安裝容易
+         o 可使用 easy_install 命令線上安裝
+         o 檔案體積小 (=0.8)
+         o 可在作業系統中當作中文腳本執行
+         o 可在 Python 互動式直譯器中測試周蟒中文程式
+   * 擴充性好
+         o 可以混用繁簡中英 關鍵詞/保留字
+         o 可以自訂參考字表
+   * 發展性高
+         o 周蟒, python 程式碼可互相轉換 (&amp;gt;=0.8)
+         o 可用周蟒程式碼生成英文 python source
+         o 可用 python 程式碼生成繁簡體周蟒程式
+         o 產生的 python source 可應用在任何 python 程式中
+         o zhpy 換上日韓關鍵字也可以擴展成日蟒, 韓蟒
+   * 完整測試
+         o 超過60筆單元測試(unittest)與文件測試(doctest)
+         o 完整的範例測試與命令行測試
+</code></pre>
+
+<p>   周蟒背後的哲學有三:</p>
+
+<pre><code>   * 把事情做好 (Getting Things Done)
+   * 程式碼被閱讀的機會比被修改的機會多 (Code is read much more than it it written)
+   * 一致的表達 (There should be one obvious way to do it)
+</code></pre>
+
+<p>   程式語言再怎麼修改得接近自然語言, 都仍然具有程式語言的邏輯與規則, 周蟒語言的目的並不是接近中文自然語言，而是做出一個實用的中文程式語言。</p>
+
+<p>   周蟒的長處是在於發揮 &ldquo;完全相容 Python 程式語言&rdquo; 的中文程式語言的優點， 所有語法，關鍵詞都依照 Python 的風格。學習周蟒後要橋接到 Python 語言相當容易。</p>
+
+<p>   由設計目的跟設計哲學產生出的周蟒，其寫作特色有：</p>
+
+<pre><code>   * Python 程式語言 + 中文支援
+   * 互動式直譯器
+   * 白話關鍵詞
+   * 縮排與關鍵詞前後留白
+   * 使用數學運算符號, 英文標點
+</code></pre></blockquote>
+
+<p>最简单的例子：
+    印出 &lsquo;哈啰, 世界&rsquo;
+这就是中文的HelloWorld，是不是看起来很有亲切感。这句和以下等价：
+    print &lsquo;哈囉, 世界&rsquo;
+函数定义也是中文的：</p>
+
+<pre><code>#!/usr/bin/env zhpy
+# 檔名: function1.py
+定義 說哈囉():
+    印出 '哈囉, 世界!' # 函式主體
+說哈囉() # 呼叫函式
+</code></pre>
+
+<p>想了解多一点可以看看这个“咬一口周蟒中文程式語言”教程，看看不会花很多时间，大概一个下午就可以了。</p>
+
+<p>安装文件：
+<a href="http://zhpy.googlecode.com/files/zhpy-1.1.zip">http://zhpy.googlecode.com/files/zhpy-1.1.zip</a></p>
+
+<p>api文档：
+<a href="http://zhpy.googlecode.com/files/apidocs1.1.zip">http://zhpy.googlecode.com/files/apidocs1.1.zip</a></p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Kai Chen</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2007-10-08T00:00:00+08:00" pubdate data-updated="true">Oct 8<span>th</span>, 2007</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://kaichen.github.io/2007/10/08/zhpy%E5%91%A8%E8%9F%92%EF%BC%8C%E5%AE%9E%E7%8E%B0%E7%94%A8%E4%B8%AD%E6%96%87%E5%86%99%E4%BB%A3%E7%A0%81%E7%9A%84%E6%84%BF%E6%9C%9B" data-via="" data-counturl="http://kaichen.github.io/2007/10/08/zhpy%E5%91%A8%E8%9F%92%EF%BC%8C%E5%AE%9E%E7%8E%B0%E7%94%A8%E4%B8%AD%E6%96%87%E5%86%99%E4%BB%A3%E7%A0%81%E7%9A%84%E6%84%BF%E6%9C%9B" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2007/10/03/tddbyex%E4%B9%A6%E4%B8%AD%E8%B5%84%E9%87%91%E4%BE%8B%E5%AD%90ruby%E5%AE%8C%E6%95%B4%E9%87%8D%E7%8E%B0" title="Previous Post: TDD by Example书中的例子Ruby版">&laquo; TDD by Example书中的例子Ruby版</a>
+      
+      
+        <a class="basic-alignment right" href="/2007/10/09/ruby-lang%E4%B8%8Aruby%E4%B8%8Ejava%E7%9A%84%E5%AF%B9%E6%AF%94%E6%96%87%E7%AB%A0" title="Next Post: Ruby与Java对比">Ruby与Java对比 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'thekaiway';
+      
+        
+        var disqus_script = 'count.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

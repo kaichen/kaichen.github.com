@@ -1,0 +1,400 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Rails 2.0: Nested Resource - The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="Rails2.0中提供了一套更好的嵌套资源的处理方法（更加形象化）。 比如有两个model: 1
+2
+3
+4
+5
+6
+7
+8
+# app/model/project.rb
+class Project &lt; ActiveRecord::Base has_many :tasks
+end
+# app &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io/2008/03/02/rails-2-0-nesting-resource">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Rails 2.0: Nested Resource</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-03-02T20:00:00+08:00" pubdate data-updated="true">Mar 2<span>nd</span>, 2008</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>Rails2.0中提供了一套更好的嵌套资源的处理方法（更加形象化）。</p>
+
+<p>比如有两个model:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># app/model/project.rb</span>
+</span><span class='line'><span class="k">class</span> <span class="nc">Project</span> <span class="o">&lt;</span> <span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Base</span>
+</span><span class='line'>  <span class="n">has_many</span> <span class="ss">:tasks</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'><span class="c1"># app/model/task.rb</span>
+</span><span class='line'><span class="k">class</span> <span class="nc">Task</span> <span class="o">&lt;</span> <span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Base</span>
+</span><span class='line'>  <span class="n">belongs_to</span> <span class="ss">:project</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>在migrate中可以用referece类型来表示引用外键，比如在创建task的migrate中</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">create_table</span> <span class="ss">:tasks</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+</span><span class='line'>  <span class="c1">#...</span>
+</span><span class='line'>  <span class="n">t</span><span class="o">.</span><span class="n">references</span> <span class="ss">:project</span>
+</span><span class='line'>  <span class="c1">#...</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>路由规则定义如下：</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># config/routes.rb</span>
+</span><span class='line'><span class="ss">ActionController</span><span class="p">:</span><span class="ss">:Routing</span><span class="o">::</span><span class="no">Routes</span><span class="o">.</span><span class="n">draw</span> <span class="k">do</span> <span class="o">|</span><span class="n">map</span><span class="o">|</span>
+</span><span class='line'>  <span class="n">map</span><span class="o">.</span><span class="n">resources</span> <span class="ss">:projects</span> <span class="k">do</span> <span class="o">|</span><span class="n">project</span><span class="o">|</span>
+</span><span class='line'>    <span class="n">project</span><span class="o">.</span><span class="n">resources</span> <span class="ss">:tasks</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>比较好的一个方法调用Task所属Project的方法是用before_filter调用一个方法来设置：</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">ArticlesController</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span> <span class="no">ApplicationController</span>
+</span><span class='line'>  <span class="n">before_filter</span> <span class="ss">:load_project</span>
+</span><span class='line'>  <span class="c1">#...</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">load_project</span>
+</span><span class='line'>    <span class="vi">@project</span> <span class="o">=</span> <span class="no">Project</span><span class="o">.</span><span class="n">find</span> <span class="n">params</span><span class="o">[</span><span class="ss">:project_id</span><span class="o">]</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>把Controller中的涉及内嵌资源的find和new的调用改一下：</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="vi">@project</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">find</span> <span class="c1">#=&gt; 代替原来的Tasks.find</span>
+</span><span class='line'><span class="vi">@projece</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">build</span> <span class="c1">#=&gt; 代替原来的Tasks.new</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>还有把Controller中的redirect_to方法的参数修改一下：</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">redirect_to</span><span class="p">(</span><span class="o">[</span><span class="vi">@project</span><span class="p">,</span> <span class="vi">@task</span><span class="o">]</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>那在Task的view中应该做如下处理</p>
+
+<p>在生成表单时，传入一个数组给form_for方法：</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">form_for</span><span class="p">(</span><span class="o">[</span><span class="vi">@project</span><span class="p">,</span> <span class="vi">@task</span><span class="o">]</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>调用TasksController的new方法：</p>
+
+<pre><code>new_project_task_path
+# =&gt; domain/projects/:id/tasks/new
+</code></pre>
+
+<p>调用TasksController的show方法：</p>
+
+<pre><code>link_to 'Show', [@project, @task]
+# =&gt; domain/projects/:id/tasks/:id
+</code></pre>
+
+<p>调用TasksController的edit方法：</p>
+
+<pre><code>link_to 'Edit' edit_project_task_path
+# =&gt; domain/projects/:id/tasks/:id/edit
+</code></pre>
+
+<p>或者</p>
+
+<pre><code>link_to 'Delete', [:edit, @project, @task]
+# =&gt; domain/projects/:id/tasks/:id/edit
+</code></pre>
+
+<p>调用TasksController的destory方法：</p>
+
+<pre><code>link_to 'Delete', [@project, @task], :confirm =&amp;gt; 'Are you sure?', :method =&amp;gt; :delete
+# =&gt; domain/projects/:id/tasks/:id
+</code></pre>
+
+<p>通过这些方法就能让内嵌资源使用时更加优雅，而不用在导向时指定controller和action，再传入父资源和子资源的id。这些xx_path方法会帮你查找routes.rb的路由定义，然后生成url，当然这一切都是基于Rails2.0提倡的RESTful。</p>
+
+<p>参考文章：
+<a href="http://www.akitaonrails.com/2007/12/12/rolling-with-rails-2-0-the-first-full-tutorial">http://www.akitaonrails.com/2007/12/12/rolling-with-rails-2-0-the-first-full-tutorial</a></p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Kai Chen</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-03-02T20:00:00+08:00" pubdate data-updated="true">Mar 2<span>nd</span>, 2008</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/ruby/'>Ruby</a>, <a class='category' href='/blog/categories/ruby-on-rails/'>Ruby on Rails</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://kaichen.github.io/2008/03/02/rails-2-0-nesting-resource" data-via="" data-counturl="http://kaichen.github.io/2008/03/02/rails-2-0-nesting-resource" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2008/02/27/%E8%AF%BE%E7%A8%8B" title="Previous Post: 大三的课程">&laquo; 大三的课程</a>
+      
+      
+        <a class="basic-alignment right" href="/2008/03/06/%E5%9B%9B%E7%BA%A7%E9%80%9A%E8%BF%87" title="Next Post: 通过了英语4级考试">通过了英语4级考试 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'thekaiway';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://kaichen.github.io/2008/03/02/rails-2-0-nesting-resource.html';
+        var disqus_url = 'http://kaichen.github.io/2008/03/02/rails-2-0-nesting-resource';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

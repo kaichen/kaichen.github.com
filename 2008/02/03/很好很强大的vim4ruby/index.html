@@ -1,0 +1,291 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>用Vim做Ruby开发 - The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="最新的配置文件在http://github.com/kaichen/dotfiles 今天终于找到了最后一个插件，Ruby Snippets，终于打造出自己觉得最强Ruby开发利器的Vim，写下来记下来。。。 Ruby Snippets的演示：
+http://eustaquiorangel.com &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io/2008/02/03/%E5%BE%88%E5%A5%BD%E5%BE%88%E5%BC%BA%E5%A4%A7%E7%9A%84vim4ruby">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">用Vim做Ruby开发</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-02-03T00:00:00+08:00" pubdate data-updated="true">Feb 3<span>rd</span>, 2008</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>最新的配置文件在<a href="http://github.com/kaichen/dotfiles">http://github.com/kaichen/dotfiles</a></p>
+
+<p>今天终于找到了最后一个插件，Ruby Snippets，终于打造出自己觉得最强Ruby开发利器的Vim，写下来记下来。。。</p>
+
+<p>Ruby Snippets的演示：
+<a href="http://eustaquiorangel.com/blog/show/438">http://eustaquiorangel.com/blog/show/438</a></p>
+
+<p>Rails.vim的演示：
+<a href="http://www.youtube.com/watch?v=30P8DSNOZuU&amp;amp;mode=related&amp;amp;search=rcov%20rails%20testing%20ruby">http://www.youtube.com/watch?v=30P8DSNOZuU&amp;amp;mode=related&amp;amp;search=rcov%20rails%20testing%20ruby</a></p>
+
+<p>我的插件列表：</p>
+
+<p>vim-ruby gem install vim-ruby &ndash;remote &amp;&amp; vim-ruby-install.rb
+rails.vim
+<a href="http://www.vim.org/scripts/script.php?script_id=1567">http://www.vim.org/scripts/script.php?script_id=1567</a>
+rubysnippets
+<a href="http://www.vim.org/scripts/script.php?script_id=1966">http://www.vim.org/scripts/script.php?script_id=1966</a>
+project
+<a href="http://www.vim.org/scripts/script.php?script_id=69">http://www.vim.org/scripts/script.php?script_id=69</a>
+NERD_tree
+<a href="http://www.vim.org/scripts/script.php?script_id=1658">http://www.vim.org/scripts/script.php?script_id=1658</a>
+bufexplorer
+<a href="http://www.vim.org/scripts/script.php?script_id=42">http://www.vim.org/scripts/script.php?script_id=42</a>
+taglist
+<a href="http://www.vim.org/scripts/script.php?script_id=273">http://www.vim.org/scripts/script.php?script_id=273</a>
+winmanager
+<a href="http://www.vim.org/scripts/script.php?script_id=95">http://www.vim.org/scripts/script.php?script_id=95</a>
+matchit
+<a href="http://www.vim.org/scripts/script.php?script_id=39">http://www.vim.org/scripts/script.php?script_id=39</a>
+svncommand
+<a href="http://www.vim.org/scripts/script.php?script_id=922">http://www.vim.org/scripts/script.php?script_id=922</a>
+surround
+<a href="http://www.vim.org/scripts/script.php?script_id=1697">http://www.vim.org/scripts/script.php?script_id=1697</a>
+supertab
+<a href="http://www.vim.org/scripts/script.php?script_id=1643">http://www.vim.org/scripts/script.php?script_id=1643</a></p>
+
+<p>加上上面的插件后，VIM就很好很强大，有rails.vim（目前支持Rails2.0）的跳转和快捷的rake执行等等的优点不用多说了，而vim- ruby则提供了高亮和代码补全等，今天找到的Ruby Snippets就实现了类似Textmate的模板补全（让我眼红了很久的功能）。nerd-tree和bufexplorer，winmanager 组成了一个代码浏览文件浏览的强大功能，svncommand和surround分别提供了svn支持和标签补全。。。</p>
+
+<p>这样的VIM真是很好很强大。。。</p>
+
+<p>上图：</p>
+
+<p><img src="http://ruby-lang.org.cn/forums/attachments/month_0802/20080203_215faadbbaa0aa3e0d92RmplWRMwwMsQ.png" alt="image" /></p>
+
+<p>参考的资料：
+- <a href="http://wiki.rubyonrails.org/rails/pages/HowtoUseVimWithRails">http://wiki.rubyonrails.org/rails/pages/HowtoUseVimWithRails</a>
+- <a href="http://www.upulife.com/leo/?p=191">http://www.upulife.com/leo/?p=191</a>
+- <a href="http://www.upulife.com/leo/?p=196">http://www.upulife.com/leo/?p=196</a>
+- <a href="http://blog.csdn.net/wooin/archive/2007/10/31/1858917.aspx">http://blog.csdn.net/wooin/archive/2007/10/31/1858917.aspx</a></p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Kai Chen</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-02-03T00:00:00+08:00" pubdate data-updated="true">Feb 3<span>rd</span>, 2008</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://kaichen.github.io/2008/02/03/%E5%BE%88%E5%A5%BD%E5%BE%88%E5%BC%BA%E5%A4%A7%E7%9A%84vim4ruby" data-via="" data-counturl="http://kaichen.github.io/2008/02/03/%E5%BE%88%E5%A5%BD%E5%BE%88%E5%BC%BA%E5%A4%A7%E7%9A%84vim4ruby" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2008/01/30/%E7%BF%BB%E8%AF%91%E6%9D%A5%E8%87%AArails-envy%E7%9A%84rails-cache%E6%95%99%E7%A8%8B-part2" title="Previous Post: 译文 Rails Cache教程2">&laquo; 译文 Rails Cache教程2</a>
+      
+      
+        <a class="basic-alignment right" href="/2008/02/03/%E7%BF%BB%E7%89%88%E5%AE%8C%E5%85%A8%E4%BD%BF%E7%94%A8linux%E5%B7%A5%E4%BD%9C" title="Next Post: 完全用Linux工作">完全用Linux工作 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'thekaiway';
+      
+        
+        var disqus_script = 'count.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

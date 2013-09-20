@@ -1,0 +1,280 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>体验Rails 2.1.rc1 - The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="无须升级整个系统的Rails，只需要在项目中的Rakefile中加入下面的代码，然后运行rake rails:freeze:edge： namespace :rails do namespace :freeze do desc 'Lock to latest Edge Rails, for a &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io/2008/05/18/%E6%97%A0%E7%97%9B%E4%BD%93%E9%AA%8Crails21rc1">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">体验Rails 2.1.rc1</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-05-18T00:00:00+08:00" pubdate data-updated="true">May 18<span>th</span>, 2008</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>无须升级整个系统的Rails，只需要在项目中的Rakefile中加入下面的代码，然后运行rake rails:freeze:edge：</p>
+
+<pre><code>namespace :rails do
+  namespace :freeze do
+    desc 'Lock to latest Edge Rails, for a specific release use RELEASE=1.2.0'
+    task :edge do
+      require 'open-uri'
+      version = ENV["RELEASE"] || "edge"
+      target = "rails_#{version}.zip"
+      url = "http://dev.rubyonrails.org/archives/#{target}"
+
+      chdir 'vendor' do
+        puts "Downloading Rails from #{url}"
+        File.open('rails.zip', 'wb') do |dst|
+          open url do |src|
+            while chunk = src.read(4096)
+            dst &amp;lt;&amp;lt; chunk
+          end
+        end
+      end
+
+      puts 'Unpacking Rails'
+      rm_rf 'rails'
+      `unzip rails.zip`
+      %w(rails.zip rails/Rakefile rails/cleanlogs.sh rails/pushgems.rb rails/release.rb).each do |goner|
+        rm_f goner
+      end
+    end
+
+    puts 'Updating current scripts, javascripts, and configuration settings'
+    Rake::Task['rails:update'].invoke
+    end
+  end
+end
+</code></pre>
+
+<p>这段代码其实是Rails2.1里的rails:freeze:edeg的Rake任务代码，因为Rails的代码库已经迁移至github，好像svn不提供新的版本，现在获取Rails最新版本的方法一是到github那里clone下来，要么就到<a href="http://dev.rubyonrails.org/archives/%E4%B8%8B%E8%BD%BD%E4%B8%80%E4%B8%AA%E6%89%93%E5%8C%85%E5%A5%BD%E7%9A%84zip%E6%96%87%E4%BB%B6%E3%80%82">http://dev.rubyonrails.org/archives/%E4%B8%8B%E8%BD%BD%E4%B8%80%E4%B8%AA%E6%89%93%E5%8C%85%E5%A5%BD%E7%9A%84zip%E6%96%87%E4%BB%B6%E3%80%82</a></p>
+
+<p>其实最傻瓜的方法就是直接下载<a href="http://dev.rubyonrails.org/archives/rails_edge.zip%E7%84%B6%E5%90%8E%E8%A7%A3%E5%8E%8B%E5%88%B0vendor/%E9%82%A3%E9%87%8C%EF%BC%8C%E5%85%B6%E5%AE%9E%E4%B8%8A%E9%9D%A2%E8%B4%B4%E7%9A%84rake%E8%84%9A%E6%9C%AC%E4%B9%9F%E6%98%AF%E5%81%9A%E4%BA%86%E8%BF%99%E4%B8%AA%E4%BA%8B%E6%83%85:-">http://dev.rubyonrails.org/archives/rails_edge.zip%E7%84%B6%E5%90%8E%E8%A7%A3%E5%8E%8B%E5%88%B0vendor/%E9%82%A3%E9%87%8C%EF%BC%8C%E5%85%B6%E5%AE%9E%E4%B8%8A%E9%9D%A2%E8%B4%B4%E7%9A%84rake%E8%84%9A%E6%9C%AC%E4%B9%9F%E6%98%AF%E5%81%9A%E4%BA%86%E8%BF%99%E4%B8%AA%E4%BA%8B%E6%83%85:-</a>)</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Kai Chen</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-05-18T00:00:00+08:00" pubdate data-updated="true">May 18<span>th</span>, 2008</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://kaichen.github.io/2008/05/18/%E6%97%A0%E7%97%9B%E4%BD%93%E9%AA%8Crails21rc1" data-via="" data-counturl="http://kaichen.github.io/2008/05/18/%E6%97%A0%E7%97%9B%E4%BD%93%E9%AA%8Crails21rc1" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2008/05/18/shoulda-tutor4" title="Previous Post: [译文] Shoulda教程4 - Test Controller">&laquo; [译文] Shoulda教程4 - Test Controller</a>
+      
+      
+        <a class="basic-alignment right" href="/2008/05/28/tcpppl%E4%B8%AD%E7%9A%84%E4%B8%80%E6%AE%B5%E8%AF%9D" title="Next Post: TCPPL的一段话">TCPPL的一段话 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'thekaiway';
+      
+        
+        var disqus_script = 'count.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

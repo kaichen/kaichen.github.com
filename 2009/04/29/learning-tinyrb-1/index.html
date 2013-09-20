@@ -1,0 +1,457 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Learning tinyrb 1 - The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="Tinyrb，一个Ruby的实现，
+作者Marc-André Cournoyer计划实现参照Lua和Potion
+实现来做出一个轻量级快速的Ruby实现，
+这是一个对作者关于Tinyrb想法的采访。目前还不能直接运行mspec，或者是我不知道怎么运行mspec。 其中用了一些外挂： GC, &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io/2009/04/29/learning-tinyrb-1">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Learning Tinyrb 1</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-04-29T00:00:00+08:00" pubdate data-updated="true">Apr 29<span>th</span>, 2009</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p><a href="http://code.macournoyer.com/tinyrb/">Tinyrb</a>，一个Ruby的实现，
+<a href="http://macournoyer.com">作者Marc-André Cournoyer</a>计划实现参照Lua和Potion
+实现来做出一个轻量级快速的Ruby实现，<a href="http://on-ruby.blogspot.com/2009/02/tinyrb-interview.html">
+这是一个对作者关于Tinyrb想法的采访</a>。目前还不能直接运行mspec，或者是我不知道怎么运行mspec。</p>
+
+<p>其中用了一些外挂：</p>
+
+<ul>
+<li>GC, Boehm-Demers-Weiser conservative garbage collector</li>
+<li>语法解析(Lexical Parse), peg/leg</li>
+<li>命令行选项解析(Command-Line Option Parse), Free Getopt</li>
+<li>正则表达式解析(Regular Parse), PCRE (Perl-compatible regular expression library)</li>
+</ul>
+
+
+<p>Tinyrb到目前为止是个非常清晰简洁的实现，整个实现，VM+Ruby Library就200K多一点。编译运行非常简单，在Github上clone下来后make就行了。跑下Fib测试：</p>
+
+<pre><code>~/ws/tinyrb &gt; time ruby bench/bm_app_fib.rb
+real    0m10.866s
+user    0m9.393s
+sys 0m1.170s
+~/ws/tinyrb &gt; time ruby-1.9 bench/bm_app_fib.rb
+real    0m1.827s
+user    0m1.423s
+sys 0m0.013s
+~/ws/tinyrb &gt; time jruby bench/bm_app_fib.rb
+real    0m2.718s
+user    0m2.447s
+sys 0m0.097s
+~/ws/tinyrb &gt; time tinyrb bench/bm_app_fib.rb
+real    0m1.884s
+user    0m1.680s
+sys 0m0.007s
+</code></pre>
+
+<p>运行环境：Archlinux，kernal26-2.26.29，Core T8100，2G Mem。或许Tinyrb目前实现还不完全，启动速度比其它的Ruby实现就快了不少。</p>
+
+<p>现在来剖析一下源码，我们从Tinyrb解析器启动入手，整个解析器的启动是在vm/tr.c文件中定义的：</p>
+
+<pre><code>/* file: vm/tr.c */
+int main (int argc, char *argv[]) {
+  int opt;
+  TrVM *vm = TrVM_new();
+  while((opt = getopt(argc, argv, "e:vdh")) != -1) {
+    switch(opt) {
+      /* 参数解析 */
+      ...
+    }
+  }
+  /* 参数处理 */
+  if (argc &gt; 0) {
+    TR_FAILSAFE(TrVM_load(vm, argv[argc-1]));
+    return 0;
+  }
+  TrVM_destroy(vm);
+  return usage();
+}
+</code></pre>
+
+<p>可以看到整个VM的启动由TrVM_new()开始</p>
+
+<pre><code>/* file: vm/vm.c */
+/* GC初始化 */
+GC_INIT();
+/* [A]VM分配空间并初始化 */
+TrVM *vm = TR_ALLOC(TrVM);
+vm-&gt;symbols = kh_init(str);
+vm-&gt;globals = kh_init(OBJ);
+vm-&gt;consts = kh_init(OBJ);
+vm-&gt;debug = 0;
+/* [B]初始化几个核心类Method，Symbol，Class，Object，Module */
+TrMethod_init(vm);
+TrSymbol_init(vm);
+TrModule_init(vm);
+TrClass_init(vm);
+TrObject_preinit(vm);
+TrClass *symbolc = (TrClass*)TR_CORE_CLASS(Symbol);
+TrClass *modulec = (TrClass*)TR_CORE_CLASS(Module);
+TrClass *classc = (TrClass*)TR_CORE_CLASS(Class);
+TrClass *methodc = (TrClass*)TR_CORE_CLASS(Method);
+TrClass *objectc = (TrClass*)TR_CORE_CLASS(Object);
+/* [C]设置核心类的继承体系 */
+symbolc-&gt;super = modulec-&gt;super = methodc-&gt;super = (OBJ)objectc;
+classc-&gt;super = (OBJ)modulec;
+/* [D]设置核心类的MetaClass */
+symbolc-&gt;class = TrMetaClass_new(vm, objectc-&gt;class);
+modulec-&gt;class = TrMetaClass_new(vm, objectc-&gt;class);
+classc-&gt;class = TrMetaClass_new(vm, objectc-&gt;class);
+methodc-&gt;class = TrMetaClass_new(vm, objectc-&gt;class);
+objectc-&gt;class = TrMetaClass_new(vm, objectc-&gt;class);
+/* [E]确保所有在Object之前创建的的Symbol的类得到初始化 */
+TR_KH_EACH(vm-&gt;symbols, i, sym, {
+  TR_COBJECT(sym)-&gt;class = (OBJ)symbolc;
+});
+/* [F]装入各种核心类 */
+...
+/* [G] */
+vm-&gt;self = TrObject_alloc(vm, 0);
+vm-&gt;cf = -1;
+/* [H]缓存几个常用的值 */
+vm-&gt;sADD = tr_intern("+");
+vm-&gt;sSUB = tr_intern("-");
+vm-&gt;sLT = tr_intern("&lt;");
+vm-&gt;sNEG = tr_intern("@-");
+vm-&gt;sNOT = tr_intern("!");
+/* 装载Ruby Library（在lib/目录下的文件） */
+TR_FAILSAFE(TrVM_load(vm, "lib/boot.rb"));
+</code></pre>
+
+<p>在GC完成初始化之后，代码中[A]部分完成了维护整个Tinyrb运行环境的虚拟机对象的空间分配和初始化，VM是个宏：</p>
+
+<pre><code>#define VM TrVM *vm
+</code></pre>
+
+<p>TrVM这个VM的结构包括了什么：</p>
+
+<pre><code>/* file: vm/tr.h */
+typedef struct TrVM {
+  khash_t(str) *symbols; /* 全局的符号表 */
+  khash_t(OBJ) *globals; /* 全局对象 */
+  khash_t(OBJ) *consts;  /* 全局常量 */
+  OBJ classes[TR_T_MAX]; /* 虚拟机维护的核心类 */
+  TrFrame *top_frame; /* 最顶层的栈幀（运行时栈的栈顶） */
+  TrFrame *frame; /* 当前的栈幀 */
+  int cf;   /* 栈幀的数量 count of frames */
+  OBJ self; /* 根对象 */
+  /* 调试和错误符号，还有一堆异常 */
+  ...
+  /* 几个缓存的对象 */
+  OBJ sADD;
+  OBJ sSUB;
+  OBJ sLT;
+  OBJ sNEG;
+  OBJ sNOT;
+};
+</code></pre>
+
+<p>在前一块代码中设置的symbols，globals，consts就是保存运行时（Runtime）环境的各种信息，这几个变量都是Hash。接着下面的是Tinyrb的几个核心类列表，这是一个枚举值。然后是运行环境必不可少的栈帧，作用域调用就是靠这个维护的。栈幀由对象栈幀，栈顶，栈幀数这几个变量维护。还有一个虚拟机环境的根对象，这个对象就是在整个运行环境最外层作用域的对象，Ruby能做到不像Java那样写个什么都要包覆在一个对象中就是靠这个对象实现的，这个对象混入了Kernel模块，后面会看到每个栈帧（TrFrame）中都会有一个这样对象存在。最后是调试标记和异常信息，暂时略过。最后的几个常用的对象，可以看到在TrVM_new()中的[H]处进行初始化。</p>
+
+<p>在VM的初始化中，中间的大段代码就是复杂完成Tinyrb的对象体系的构建，由Method开始初始化：</p>
+
+<pre><code>/* file:vm/class.c */
+void TrMethod_init(VM) {
+  OBJ c = TR_INIT_CORE_CLASS(Method, Object);
+  tr_def(c, "name", TrMethod_name, 0);
+  tr_def(c, "arity", TrMethod_arity, 0);
+  tr_def(c, "dump", TrMethod_dump, 0);
+}
+</code></pre>
+
+<p>TR_INIT_CORE_CLASS这个宏会引发一连串复杂的调用：</p>
+
+<pre><code>/* file:vm/tr.h */
+#define TR_INIT_CORE_OBJECT(T) ({ \
+  Tr##T *o = TR_ALLOC(Tr##T); \
+  o-&gt;type  = TR_T_##T; \
+  o-&gt;class = vm-&gt;classes[TR_T_##T]; \
+  o-&gt;ivars = kh_init(OBJ); \
+  o; \
+})
+#define TR_CORE_CLASS(T)     vm-&gt;classes[TR_T_##T]
+#define TR_INIT_CORE_CLASS(T,S) \
+  TR_CORE_CLASS(T) = TrObject_const_set(vm, vm-&gt;self, tr_intern(#T), \
+                                   TrClass_new(vm, tr_intern(#T), TR_CORE_CLASS(S)))
+/* vm/class.c */
+OBJ TrClass_new(VM, OBJ name, OBJ super) {
+  TrClass *c = TR_INIT_CORE_OBJECT(Class);
+  TR_INIT_MODULE(c);
+  /* if VM is booting, those might not be set */
+  if (super &amp;&amp; TR_CCLASS(super)-&gt;class) c-&gt;class = TrMetaClass_new(vm, TR_CCLASS(super)-&gt;class);
+  c-&gt;super = super;
+  return (OBJ)c;
+}
+#define TR_INIT_MODULE(M) \
+  (M)-&gt;name = name; \
+  (M)-&gt;methods = kh_init(OBJ); \
+  (M)-&gt;meta = 0
+</code></pre>
+
+<p>TR_INIT_CORE_CLASS(Method, Object);展开如下</p>
+
+<pre><code>TrClass *obj = TR_ALLOC(TrClass);
+obj-&gt;type  = TR_T_Class;
+obj-&gt;class = vm-&gt;classes[TR_T_Class];/* 实际上这句将其赋值为0，因为VM内部还没有创建Class类型 */
+obj-&gt;ivars = kh_init(OBJ);
+obj-&gt;name = tr_intern(Method);
+obj-&gt;methods = kh_init(OBJ);
+obj-&gt;meta = 0;
+obj-&gt;super = vm-&gt;classes[TR_T_Object]; /* 实际上这句将其赋值为0，因为VM内部还没有创建Object类型 */
+OBJ const_class = TrObject_const_set(vm, vm-&gt;self, tr_intern(Method), (OBJ)obj);
+vm-&gt;classes[TR_T_Method]=const_class;
+</code></pre>
+
+<p>这样很清楚看到Method这个类初始化的过程，首先分配一个类（TrClass）的内存空间，接着设置所有的属性，之后把这个Method类设置到VM的常量列表，最后将这个Method类的对象地址保存到虚拟机的类型列表（Classes List）。注意这里其实Method类的class和super都是为0的。</p>
+
+<p>顺便提一下，Tinyrb内部的对象类型（Object type）就是这个枚举值。</p>
+
+<pre><code>/* file: vm/tr.h */
+typedef enum {
+  /*  0 */ TR_T_Object, TR_T_Module, TR_T_Class, TR_T_Method, TR_T_Binding,
+  /*  5 */ TR_T_Symbol, TR_T_String, TR_T_Fixnum, TR_T_Range, TR_T_Regexp,
+  /* 10 */ TR_T_NilClass, TR_T_TrueClass, TR_T_FalseClass,
+  /* 12 */ TR_T_Array, TR_T_Hash,
+  /* 14 */ TR_T_Node,
+  TR_T_MAX /* keep last */
+} TR_T;
+</code></pre>
+
+<p>当Method的属性设置完成之后接着就开始为其添加方法name()，arity(), dump()。添加方法是通过之前已经设置好的Method类，实例化三个Method Object，并把这三个对象添加到Method类的方法列表中，下面是tr_def(c, &ldquo;name&rdquo;, TrMethod_name, 0) 的展开：</p>
+
+<pre><code>TrMethod *method = TR_INIT_CORE_OBJECT(Method); /* 初始化一个Method对象并返回 */
+method-&gt;func = TrMethod_name;
+method-&gt;data = TR_NIL;
+method-&gt;arity = 0;
+TrClass *m =  (TrClass*)E(vm-&gt;classes[TR_T_Method])
+TR_KH_SET(m-&gt;methods, name, method);
+method-&gt;name = name;
+</code></pre>
+
+<p>接着其它几个类型也类似的过程进行初始化:Symbol，Module，Class和Object。</p>
+
+<p>到此为止VM的Const List已经有了这几个类Method，Symbol，Module，Class，Object，并且它们的第一个实例也已经保存到Classes List中。接着这些类的继承体系和剩下的核心类怎样初始化呢？请听下回分解。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Kai Chen</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-04-29T00:00:00+08:00" pubdate data-updated="true">Apr 29<span>th</span>, 2009</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/ruby/'>Ruby</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://kaichen.github.io/2009/04/29/learning-tinyrb-1" data-via="" data-counturl="http://kaichen.github.io/2009/04/29/learning-tinyrb-1" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2009/01/30/runtime-error-words-file-not-found" title="Previous Post: runtime error words file not found of DataMapper">&laquo; runtime error words file not found of DataMapper</a>
+      
+      
+        <a class="basic-alignment right" href="/2011/03/31/new-start" title="Next Post: 新起点">新起点 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

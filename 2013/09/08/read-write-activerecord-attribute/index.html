@@ -1,0 +1,497 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Read and Write Activerecord Attribute - The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="上一节讲完了ActiveRecord的对象怎么从是数据库里取出来，但距离数据最终的读写其中还有不少的处理过程。比如模型的属性在读取时需要做出一些相应的转换，同理在修改了模型属性之后回写数据库的时候也需要做转换。 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io/2013/09/08/read-write-activerecord-attribute">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Read and Write Activerecord Attribute</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-09-08T10:52:00+08:00" pubdate data-updated="true">Sep 8<span>th</span>, 2013</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>上一节讲完了ActiveRecord的对象怎么从是数据库里取出来，但距离数据最终的读写其中还有不少的处理过程。比如模型的属性在读取时需要做出一些相应的转换，同理在修改了模型属性之后回写数据库的时候也需要做转换。另外ActiveRecord使用了Ruby的动态特性为所有的属性读写都生成了与属性名相对应的方法，让开发者能更加便捷地访问所需要的属性值。</p>
+
+<h2>原始数据</h2>
+
+<p>首先来看看数据库取出的数据怎样存放到对象中，以下是相应的代码，<code>instantiate</code>方法的解释请参考<a href="/2013/07/26/assemble-ar-object">Assemble ActiveRecord Object</a></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'>  <span class="c1"># file: active_record/persistence</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">instantiate</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">column_types</span> <span class="o">=</span> <span class="p">{})</span>
+</span><span class='line'>    <span class="n">column_types</span> <span class="o">=</span> <span class="nb">self</span><span class="o">.</span><span class="n">decorate_columns</span><span class="p">(</span><span class="n">column_types</span><span class="o">.</span><span class="n">dup</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">klass</span><span class="o">.</span><span class="n">allocate</span><span class="o">.</span><span class="n">init_with</span><span class="p">(</span><span class="s1">&#39;attributes&#39;</span> <span class="o">=&gt;</span> <span class="n">record</span><span class="p">,</span> <span class="s1">&#39;column_types&#39;</span> <span class="o">=&gt;</span> <span class="n">column_types</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1"># file: active_record/core_</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">init_with</span><span class="p">(</span><span class="n">coder</span><span class="p">)</span>
+</span><span class='line'>    <span class="vi">@attributes</span>   <span class="o">=</span> <span class="nb">self</span><span class="o">.</span><span class="n">class</span><span class="o">.</span><span class="n">initialize_attributes</span><span class="p">(</span><span class="n">coder</span><span class="o">[</span><span class="s1">&#39;attributes&#39;</span><span class="o">]</span><span class="p">)</span>
+</span><span class='line'>    <span class="c1"># 其他初始化过程 bla bla bla</span>
+</span><span class='line'>    <span class="nb">self</span>
+</span><span class='line'>  <span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>可以看到，数据库里的每条记录从数据库查出来之后，会直接塞进每个对象的<code>@attributes</code>实例变量中，这里包括了所有的字段的名字和值。这个原始的记录数据是个以属性名为键，原始内容为值的哈希表。</p>
+
+<p>ActiveRecord提供了接口可以直接访问原始数据，这种方式就是直接对<code>@attributes</code>进行读取。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="no">Post</span><span class="o">.</span><span class="n">first</span><span class="o">.</span><span class="n">attributes_before_type_cast</span> <span class="c1"># 读取所有原始数据</span>
+</span><span class='line'><span class="no">Post</span><span class="o">.</span><span class="n">first</span><span class="o">.</span><span class="n">read_attribute_before_type_cast</span><span class="p">(</span><span class="ss">:id</span><span class="p">)</span> <span class="c1"># 读取ID字段的原始数据</span>
+</span><span class='line'><span class="no">Post</span><span class="o">.</span><span class="n">first</span><span class="o">.</span><span class="n">id_before_type_cast</span> <span class="c1"># 同上，ActiveModel::AttributeMethods生成的DSL</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>读取属性</h2>
+
+<p>通常我们不会直接访问原始数据，而是访问已经转化好的数据。ActiveRecord提供了几种形式来访问处理过属性</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="nb">name</span><span class="p">:</span> <span class="s2">&quot;First Post&quot;</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">post</span><span class="o">.</span><span class="n">name</span>
+</span><span class='line'><span class="n">post</span><span class="o">[</span><span class="ss">:name</span><span class="o">]</span>
+</span><span class='line'><span class="n">post</span><span class="o">.</span><span class="n">attributes</span><span class="o">[</span><span class="ss">:name</span><span class="o">]</span>
+</span><span class='line'><span class="n">post</span><span class="o">.</span><span class="n">read_attribute</span><span class="p">(</span><span class="ss">:name</span><span class="p">)</span> <span class="c1">#=&gt; &quot;First Post&quot;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>以上几种的模型属性访问其实都通过同一个入口进行访问，这个入口就是<code>read_attribute</code>。以上几个属性读取的实现有兴趣可以自行翻查源码，我们来重点讲解<code>read_attribute</code>。</p>
+
+<p><code>read_attribute</code>的基本逻辑如以下代码所示，这里是精简过的代码</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># file: active_record/attribute_methods/read.rb</span>
+</span><span class='line'><span class="k">def</span> <span class="nf">read_attribute</span><span class="p">(</span><span class="n">attr_name</span><span class="p">)</span>
+</span><span class='line'>  <span class="nb">name</span> <span class="o">=</span> <span class="n">attr_name</span><span class="o">.</span><span class="n">to_s</span>
+</span><span class='line'>  <span class="n">column</span> <span class="o">=</span> <span class="vi">@column_types</span><span class="o">[</span><span class="nb">name</span><span class="o">]</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">value</span> <span class="o">=</span> <span class="vi">@attributes</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="nb">name</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">return</span> <span class="nb">block_given?</span> <span class="p">?</span> <span class="k">yield</span><span class="p">(</span><span class="nb">name</span><span class="p">)</span> <span class="p">:</span> <span class="kp">nil</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">column</span><span class="o">.</span><span class="n">type_cast</span> <span class="n">value</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ol>
+<li>查找对应对应的数据库字段(AR::ConnectionAdapters::Column)实例，即获得该属性在数据库里对应的类型</li>
+<li>从原始数据<code>@attributes</code>里查找出对应的值</li>
+<li>使用对应的字段类型来转换该属性的原始值</li>
+</ol>
+
+
+<h2>类型转换</h2>
+
+<p>数据库表与AR对象的映射会在对应的章节里讲解，本篇只讲解和字段读写相关的部分，以下是类型转换的实现</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">type_cast</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">return</span> <span class="kp">nil</span> <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">nil?</span>
+</span><span class='line'>  <span class="k">return</span> <span class="n">coder</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">if</span> <span class="n">encoded?</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">klass</span> <span class="o">=</span> <span class="nb">self</span><span class="o">.</span><span class="n">class</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">case</span> <span class="n">type</span>
+</span><span class='line'>  <span class="k">when</span> <span class="ss">:string</span><span class="p">,</span> <span class="ss">:text</span>        <span class="k">then</span> <span class="n">value</span>
+</span><span class='line'>  <span class="k">when</span> <span class="ss">:integer</span>              <span class="k">then</span> <span class="n">klass</span><span class="o">.</span><span class="n">value_to_integer</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">when</span> <span class="ss">:float</span>                <span class="k">then</span> <span class="n">value</span><span class="o">.</span><span class="n">to_f</span>
+</span><span class='line'>  <span class="k">when</span> <span class="ss">:decimal</span>              <span class="k">then</span> <span class="n">klass</span><span class="o">.</span><span class="n">value_to_decimal</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">when</span> <span class="ss">:datetime</span><span class="p">,</span> <span class="ss">:timestamp</span> <span class="k">then</span> <span class="n">klass</span><span class="o">.</span><span class="n">string_to_time</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">when</span> <span class="ss">:time</span>                 <span class="k">then</span> <span class="n">klass</span><span class="o">.</span><span class="n">string_to_dummy_time</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">when</span> <span class="ss">:date</span>                 <span class="k">then</span> <span class="n">klass</span><span class="o">.</span><span class="n">value_to_date</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">when</span> <span class="ss">:binary</span>               <span class="k">then</span> <span class="n">klass</span><span class="o">.</span><span class="n">binary_to_string</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">when</span> <span class="ss">:boolean</span>              <span class="k">then</span> <span class="n">klass</span><span class="o">.</span><span class="n">value_to_boolean</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">else</span> <span class="n">value</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>我们看到除了字符串和文本之外的类型都需要根据其逻辑类型，进行转换的方法主要是解析内容并实例化到对应的类型。</p>
+
+<p>写入属性的情况与读取属性的逻辑基本相同，并且Column里有一个与<code>type_cast_for_write</code>对应的<code>type_cast_for_write</code>方法，用来处理写入的类型转换。</p>
+
+<p>在扩展性方面，Postgres的链接代码重写了类型转换方法以支持它丰富的数据类型。</p>
+
+<h2>自定义序列化字段</h2>
+
+<p>ActiveRecord支持将Ruby对象直接序列化到数据库中，并且可以制定序列化的方式，默认使用的是YAML。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># file: active_record/attribute_methods/serialization.rb</span>
+</span><span class='line'><span class="k">def</span> <span class="nf">serialize</span><span class="p">(</span><span class="n">attr_name</span><span class="p">,</span> <span class="n">class_name</span> <span class="o">=</span> <span class="no">Object</span><span class="p">)</span>
+</span><span class='line'>  <span class="kp">include</span> <span class="no">Behavior</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">coder</span> <span class="o">=</span> <span class="k">if</span> <span class="o">[</span><span class="ss">:load</span><span class="p">,</span> <span class="ss">:dump</span><span class="o">].</span><span class="n">all?</span> <span class="p">{</span> <span class="o">|</span><span class="n">x</span><span class="o">|</span> <span class="n">class_name</span><span class="o">.</span><span class="n">respond_to?</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="p">}</span>
+</span><span class='line'>            <span class="n">class_name</span>
+</span><span class='line'>          <span class="k">else</span>
+</span><span class='line'>            <span class="ss">Coders</span><span class="p">:</span><span class="ss">:YAMLColumn</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">class_name</span><span class="p">)</span>
+</span><span class='line'>          <span class="k">end</span>
+</span><span class='line'>  <span class="nb">self</span><span class="o">.</span><span class="n">serialized_attributes</span> <span class="o">=</span> <span class="n">serialized_attributes</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">attr_name</span><span class="o">.</span><span class="n">to_s</span> <span class="o">=&gt;</span> <span class="n">coder</span><span class="p">)</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>在实现上通过Coder这种形式来在属性的读写时，调用Coder的<code>load</code>与<code>dump</code>方法进行预先处理。</p>
+
+<p>这里指定的Coder并不需要特定的类型，它只需要实现接受一个参数的<code>load</code>和<code>dump</code>方法就可以作为一个Coder。</p>
+
+<h2>属性方法的动态生成</h2>
+
+<p>ActiveRecord模型利用Ruby的元编程能力，在运行时生成与数据库字段名相对应的读写方法。具体的方式就是使用<code>method_missing</code>和<code>respond_to?</code>，在找不到对应的方法时，ActiveRecord会在以上的两个方法里调用<code>define_attribute_methods</code>去生成<strong>所有的属性</strong>读写方法。</p>
+
+<p>这个<code>define_attribute_methods</code>方法有两个定义，其中一个定义在ActiveRecord::AttributeMethods，另一个定义在ActiveModel::AttributeMethods模组中，其中实质性的定义是在ActiveModel中，ActiveRecord继承并在这之上加了一些线程安全和方法是否已经生成的标记。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># file: active_model/attribute_methods</span>
+</span><span class='line'><span class="k">def</span> <span class="nf">define_attribute_methods</span><span class="p">(</span><span class="o">*</span><span class="n">attr_names</span><span class="p">)</span>
+</span><span class='line'>  <span class="n">attr_names</span><span class="o">.</span><span class="n">flatten</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">attr_name</span><span class="o">|</span> <span class="n">define_attribute_method</span><span class="p">(</span><span class="n">attr_name</span><span class="p">)</span> <span class="p">}</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>ActiveRecord里无需参数的定义主要作用只是代理，将所有的字段名字传入到ActiveModel里的<code>define_attribute_methods</code>。然后遍历所有的属性名，将每个属性都传入<code>define_attribute_method</code>里。<code>define_attribute_method</code>方法比较复杂，基本的思路是遍历所有的AttributeMethodMatcher，并从Matcher拼装出需要调用的方法名。</p>
+
+<p>这里稍微解释一下AttributeMethodMetcher，所有模型的父类ActiveRecord::Base定义了一堆的Metcher，它用来为所有属性添加方法。除了上面的读写方法和原数据访问方法外，ActiveRecord模型还定义了如下一堆属性相关的方法</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="o">.</span><span class="n">new</span> <span class="ss">title</span><span class="p">:</span> <span class="s2">&quot;Nice Post&quot;</span>
+</span><span class='line'><span class="n">post</span><span class="o">.</span><span class="n">title</span>
+</span><span class='line'><span class="n">post</span><span class="o">.</span><span class="n">title?</span>
+</span><span class='line'><span class="n">post</span><span class="o">.</span><span class="n">title_before_type_cast</span>
+</span><span class='line'><span class="n">post</span><span class="o">.</span><span class="n">title_changed?</span>
+</span><span class='line'><span class="n">post</span><span class="o">.</span><span class="n">title_change</span>
+</span><span class='line'><span class="n">post</span><span class="o">.</span><span class="n">title_will_change!</span>
+</span><span class='line'><span class="n">post</span><span class="o">.</span><span class="n">title_was</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>这类方法的定义就是通过Metcher，举个栗子，<code>{attribute}_before_type_cast</code>是这么定义的</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">attribute_method_suffix</span> <span class="s2">&quot;_before_type_cast&quot;</span>
+</span><span class='line'><span class="c1">#=&gt; #&lt;ActiveModel::AttributeMethods::ClassMethods::AttributeMethodMatcher:0x007fb36c41ddf0</span>
+</span><span class='line'><span class="c1">#     @method_missing_target=&quot;attribute_before_type_cast&quot;,</span>
+</span><span class='line'><span class="c1">#     @method_name=&quot;%s_before_type_cast&quot;,</span>
+</span><span class='line'><span class="c1">#     @prefix=&quot;&quot;,</span>
+</span><span class='line'><span class="c1">#     @regex=/^(?:)(.*)(?:_before_type_cast)$/,</span>
+</span><span class='line'><span class="c1">#     @suffix=&quot;_before_type_cast&quot;&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>通过这样的定义，前文提到的<code>define_attribute_method</code>的时候会调用到上面这个Matcher，然后通过<code>method_missing_target</code>调用<code>attribute_before_type_cast</code>去定义模型的<code>title_before_type_cast</code>。</p>
+
+<p>同时在方法未定义的检查里也是通过遍历所有Matcher，找出是否为预定义的属性方法。</p>
+
+<p>整个方法生成的故事就如是发展，在遇到未定义的方法的时候，ActiveRecord发现该方法是属性相关的方法，那么遍历所有的属性，再嵌套遍历所有的Matcher去生成所有的属性相关方法。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Kai Chen</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-09-08T10:52:00+08:00" pubdate data-updated="true">Sep 8<span>th</span>, 2013</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://kaichen.github.io/2013/09/08/read-write-activerecord-attribute" data-via="" data-counturl="http://kaichen.github.io/2013/09/08/read-write-activerecord-attribute" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2013/08/17/actionview-safe-buffer" title="Previous Post: ActionView Safe Buffer">&laquo; ActionView Safe Buffer</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'thekaiway';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://kaichen.github.io/2013/09/08/read-write-activerecord-attribute.html';
+        var disqus_url = 'http://kaichen.github.io/2013/09/08/read-write-activerecord-attribute';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

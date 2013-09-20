@@ -1,0 +1,410 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>ZenTest分析 - The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="ZenTest是Ruby的一个确保测试覆盖率和促进TDD实行（Ensures test coverage and accelerates TDD）的代码生成框架，并带有其它的实用工具（autotest等等）。官方主页：http://www.zenspider.com/ZSS/Products/ &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io/2008/04/20/zentest10%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">ZenTest分析</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-04-20T00:00:00+08:00" pubdate data-updated="true">Apr 20<span>th</span>, 2008</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>ZenTest是Ruby的一个确保测试覆盖率和促进TDD实行（Ensures test coverage and accelerates TDD）的代码生成框架，并带有其它的实用工具（autotest等等）。官方主页：<a href="http://www.zenspider.com/ZSS/Products/ZenTest/">http://www.zenspider.com/ZSS/Products/ZenTest/</a></p>
+
+<p>这次我选了ZenTest的1.0版来研究，代码文件大小只有3.7K，144行。</p>
+
+<!--more-->
+
+
+<p>下面是代码：</p>
+
+<pre><code>#!/usr/local/bin/ruby -w -I.
+VERSION = '1.0.0'
+
+puts "# Created with ZenTest v. #{VERSION}"
+$AUTOTESTER = true
+# 重写at_exit方法，让该方法不做任何事情
+module Kernel
+  alias :old_at_exit :at_exit
+   def at_exit()
+      # nothing to do...
+   end
+end
+
+require 'test/unit'
+require 'test/unit/ui/console/testrunner'
+
+# 产生文件的副本
+files = ARGV.clone
+
+# 保存测试类的hash（ klass -&amp;gt; klassmethods）
+test_klasses = {}
+# 保存待测试类的hash（ klass -&amp;gt; klassmethods）
+klasses = {}
+# 保存待测试类的方法的hash（ klass -&amp;gt; klassmethods）
+all_methods = {} # fallback
+
+# 迭代处理参数指定的每个文件
+ARGV.each do |file|
+
+   # 导入文件，失败则抛出异常，并输出错误信息
+   begin
+      require "#{file}"
+   rescue LoadError =&amp;gt; err
+      puts "Couldn't load #{file}: #{err}"
+      next
+   end
+
+   # 迭代处理文件的每一行
+   IO.foreach(file) do |line|
+     # 如果该行中包含类定义（class Xxx）则处理
+     if line =~ /^\s*class\s+(\S+)/ then
+        # 保存类名
+        klassname = $1
+        # 将类名转换为Symbol后再得到该类的类型值
+        klass = Module.const_get(klassname.intern)
+        # 如果该类为单元测试类
+        target = klassname =~ /^Test/ ? test_klasses : klasses
+
+        # record public instance methods JUST in this class
+        # 保存类的公用实例方法到一个methond -&amp;gt; boolean的Hash中
+        # 并将该Hash保存到以该类为键值的target hash中
+        public_methods = klass.public_instance_methods
+        klassmethods = {}
+        public_methods.each do |meth|
+          klassmethods[meth] = true
+       end
+       target[klassname] = klassmethods
+
+       # record ALL instance methods including superclasses (minus Object)
+       # 将该类中由Object类继承的实例方法除去后保存
+       the_methods = klass.instance_methods(true) - Object.instance_methods(true)
+       # 生成同上个代码块类似的hash
+       klassmethods = {}
+       the_methods.each do |meth|
+          klassmethods[meth] = true
+       end
+       all_methods[klassname] = klassmethods
+     end
+   end
+end
+
+# 上面的迭代代码块运行完成后将记录下文件中所有类和其公共的实例方法
+
+print "# "
+p all_methods
+
+missing_methods = {} # key = klassname, val = array of methods
+# 在待测试类上进行迭代（以待测试类的名字）
+klasses.each_key do |klassname|
+   # 生成测试类类名
+   testklassname = "Test#{klassname}"
+
+   if test_klasses[testklassname] then
+      methods = klasses[klassname]
+      testmethods = test_klasses[testklassname]
+
+      # check that each method has a test method
+      # 检查每个方法是否有一个测试方法
+      klasses[klassname].each_key do | methodname |
+        testmethodname = "test_#{methodname}".gsub(/\[\]=/, "index_equals").gsub(/\[\]/, "index_accessor")
+        unless testmethods[testmethodname] then
+          puts "# ERROR method #{testklassname}\##{testmethodname} does not exist (1)" if $VERBOSE
+          missing_methods[testklassname] ||= []
+          missing_methods[testklassname].push(testmethodname)
+        end
+     end
+     # check that each test method has a method
+     testmethods.each_key do | testmethodname |
+       if testmethodname =~ /^test_(.*)/ then
+          methodname = $1.gsub(/index_equals/, "[]=").gsub(/index_accessor/, "[]")
+          # try the current name
+          orig_name = methodname.dup
+          found = false
+          until methodname == "" or methods[methodname] or all_methods[klassname][methodname] do
+            # try the name minus an option (ie mut_opt1 -&amp;gt; mut)
+            if methodname.sub!(/_[^_]+$/, '') then
+              if methods[methodname] or all_methods[klassname][methodname] then
+                found = true
+              end
+            else
+              break # no more substitutions will take place
+            end
+          end
+
+          unless found or methods[methodname] or methodname == "initialize" then
+            puts "# ERROR method #{klassname}\##{orig_name} does not exist (2)" if $VERBOSE
+            missing_methods[klassname] ||= []
+            missing_methods[klassname].push(orig_name)
+          end
+        else
+          unless testmethodname =~ /^util_/ then
+            puts "# WARNING Skipping #{testklassname}\##{testmethodname}"
+          end
+        end
+      end
+   else
+     puts "# ERROR test class #{testklassname} does not exist" if $VERBOSE
+
+     missing_methods[testklassname] ||= []
+     klasses[klassname].keys.each do |meth|
+       missing_methods[testklassname].push("test_#{meth}")
+     end
+   end
+end
+# 真正地创建测试类，为没有测试的类添加方法。
+missing_methods.keys.sort.each do |klass|
+   # 判断是否为测试类
+   testklass = klass =~ /^Test/
+
+   puts "class #{klass}" + (testklass ? " &amp;lt; Test::Unit::TestCase" : '')
+
+   methods = missing_methods[klass] | []
+   m = []
+   methods.sort.each do |method|
+     # 为测试类生成代码
+     if testklass then
+        s = "  def #{method}\n    assert(false, 'Need to write #{method} tests')\n  end"
+     else
+        s = "  def #{method}\n    # TO" + "DO: write some code\n  end"
+     end
+     m.push(s)
+   end
+
+   puts m.join("\n\n")
+   puts "end"
+   puts ""
+end
+</code></pre>
+
+<p>整个程序的主要分为三个部分，第一个是导入文件并收集文件中的类的信息，第二部分是收集前一部分收集到的类的方法的信息进行处理，最后是生成测试类的代码。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Kai Chen</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-04-20T00:00:00+08:00" pubdate data-updated="true">Apr 20<span>th</span>, 2008</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://kaichen.github.io/2008/04/20/zentest10%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90" data-via="" data-counturl="http://kaichen.github.io/2008/04/20/zentest10%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2008/04/14/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E5%8F%B0%E6%9C%AC%E6%9C%AChp6520s" title="Previous Post: First Laptop">&laquo; First Laptop</a>
+      
+      
+        <a class="basic-alignment right" href="/2008/04/27/%E8%A7%81%E8%AF%86%E4%BA%86%E5%AE%B6%E5%BA%AD%E5%B0%8F%E4%BD%9C%E5%9D%8A%E5%BC%8F%E7%94%9F%E4%BA%A7" title="Next Post: 家庭式小作坊">家庭式小作坊 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'thekaiway';
+      
+        
+        var disqus_script = 'count.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

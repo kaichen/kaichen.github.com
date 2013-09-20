@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Web Development | The Kai Way]]></title>
+  <link href="http://kaichen.github.io/blog/categories/web-development/atom.xml" rel="self"/>
+  <link href="http://kaichen.github.io/"/>
+  <updated>2013-09-20T23:29:29+08:00</updated>
+  <id>http://kaichen.github.io/</id>
+  <author>
+    <name><![CDATA[Kai Chen]]></name>
+    <email><![CDATA[kaichenxyz@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Sass入门]]></title>
+    <link href="http://kaichen.github.io/2013/07/23/getting-start-with-sass"/>
+    <updated>2013-07-23T19:01:00+08:00</updated>
+    <id>http://kaichen.github.io/2013/07/23/getting-start-with-sass</id>
+    <content type="html"><![CDATA[<p>Sass是一个CSS方言, 通过编译器实现将Sass/Scss编译为CSS。</p>
+
+<p><a href="http://sass-lang.com/">http://sass-lang.com/</a></p>
+
+<p>Sass具有两种语法, 一种是靠缩进去实现层级关系的Sass, 和另一种和CSS一样通过大括号实现层级的Scss。</p>
+
+<h2>特性</h2>
+
+<h3>嵌套式语法</h3>
+
+<p>啥也不说了, 看代码</p>
+
+<p>{% codeblock lang:scss %}
+header {
+  line-height: 3em;
+  h1 {
+    font-weight: bold;
+  }
+}
+{% endcodeblock %}</p>
+
+<p>这种形式的代码，大大减少了CSS编写层级定义时重复性。</p>
+
+<h3>变量</h3>
+
+<p>Sass可以通过变量去提高样式的可维护性。比如我们一套样式里, 我们常常会使用同样的间距, 但这往往要写到每个具体的元素上, 而当需要做出修改的时候就特别痛苦, 需要在每个用到的地方都去修改, 还不能简单粗暴地使用文本替换, 因为你不知道哪些是我们需要修改的。这种情况使用变量就特别适合, 示例如下</p>
+
+<p>{% codeblock lang:scss %}
+$margin: 16px;</p>
+
+<p>.main-content {
+  padding: $margin;
+  margin: $margin;
+}</p>
+
+<p>.sidebar {
+  padding: $margin;
+  margin: $margin;
+}
+{% endcodeblock %}</p>
+
+<h3>函数</h3>
+
+<p>Sass内置了一些很实用的<a href="http://sass-lang.com/docs/yardoc/Sass/Script/Functions.html">函数</a>, 它们为样式编写提供了计算能力, 比如我最喜欢的<a href="http://sass-lang.com/docs/yardoc/Sass/Script/Functions.html#lighten-instance_method">lighten</a>, 它能把给出的颜色转换为更亮的颜色。</p>
+
+<p>函数的编写, 不仅可以使用Ruby, 也可以使用Sass本身, 比如下面是我最近写的一个函数</p>
+
+<p>{% codeblock lang:scss %}
+@function opposite-position($direction) {
+  @if $direction == &ldquo;left&rdquo; {
+    @return &ldquo;right&rdquo;
+  } @else if $direction == &ldquo;right&rdquo; {
+    @return &ldquo;left&rdquo;
+  } @else if $direction == &ldquo;bottom&rdquo; {
+    @return &ldquo;top&rdquo;
+  } @else {
+    @return &ldquo;bottom&rdquo;
+  }
+}
+{% endcodeblock %}</p>
+
+<h3>Mixins</h3>
+
+<p>Mixins的思路就是通过把一组样式绑定到一个名字上，然后某个层级样式可以复用这组样式。</p>
+
+<p>这个功能是Sass最强大的功能, 这提供及其强大的代码抽象能力, 让我们可以更好地组织起庞大的样式代码。各种Sass框架就通过Mixins来开放出它们的功能。</p>
+
+<h3>Import</h3>
+
+<p>Sass通过Import的形式来管理样式间的依赖, 这就像是Node.js的require。通过这个我们就能把样式打包为一个文件, 并且清晰地定义好加载顺序。</p>
+
+<h2>教程</h2>
+
+<p>官方Reference</p>
+
+<p><a href="http://sass-lang.com/docs/yardoc/file.SASS_REFERENCE.html">http://sass-lang.com/docs/yardoc/file.SASS_REFERENCE.html</a></p>
+
+<p>Sass缩进语法</p>
+
+<p><a href="http://sass-lang.com/docs/yardoc/file.INDENTED_SYNTAX.html">http://sass-lang.com/docs/yardoc/file.INDENTED_SYNTAX.html</a></p>
+
+<p>The Sass Way, 有分为不同阶段的文章</p>
+
+<p><a href="http://thesassway.com/">http://thesassway.com/</a></p>
+
+<p>组织Sass代码的方式</p>
+
+<p><a href="http://thesassway.com/beginner/how-to-structure-a-sass-project">http://thesassway.com/beginner/how-to-structure-a-sass-project</a></p>
+
+<p>应用</p>
+
+<p>得益于Sass强大的抽象能力和扩展力, 许多的框架基于它开发出来</p>
+
+<p>Compass是一个基于Sass开发的CSS Framework, 集成了许多实用的Mixins</p>
+
+<p><a href="http://compass-style.org/">http://compass-style.org/</a></p>
+
+<p>Twitter Bootstrap Sass, 使用Sass重写Bootstarp的项目</p>
+
+<p><a href="https://github.com/thomas-mcdonald/bootstrap-sass">https://github.com/thomas-mcdonald/bootstrap-sass</a></p>
+
+<p>方便处理Media Query的项目</p>
+
+<p><a href="https://github.com/paranoida/sass-mediaqueries">https://github.com/paranoida/sass-mediaqueries</a></p>
+
+<p>几个专门处理按钮样式的项目</p>
+
+<ul>
+<li><a href="https://github.com/ubuwaits/css3-buttons">https://github.com/ubuwaits/css3-buttons</a></li>
+<li><a href="https://github.com/alexwolfe/Buttons">https://github.com/alexwolfe/Buttons</a></li>
+</ul>
+
+
+<p>还有许多Sass的项目, 这里再列出几个, 更多请自行上Github搜索</p>
+
+<ul>
+<li><a href="https://github.com/csswizardry/inuit.css">https://github.com/csswizardry/inuit.css</a></li>
+<li><a href="https://github.com/GumbyFramework/Gumby">https://github.com/GumbyFramework/Gumby</a></li>
+</ul>
+
+
+<p>竞争对手有Less.js和Stylus, 对比介绍</p>
+
+<ul>
+<li><a href="https://gist.github.com/chriseppstein/674726">https://gist.github.com/chriseppstein/674726</a></li>
+<li><a href="http://net.tutsplus.com/tutorials/html-css-techniques/sass-vs-less-vs-stylus-a-preprocessor-shootout/">http://net.tutsplus.com/tutorials/html-css-techniques/sass-vs-less-vs-stylus-a-preprocessor-shootout/</a></li>
+<li><a href="http://coding.smashingmagazine.com/2011/09/09/an-introduction-to-less-and-comparison-to-sass/">http://coding.smashingmagazine.com/2011/09/09/an-introduction-to-less-and-comparison-to-sass/</a></li>
+</ul>
+
+]]></content>
+  </entry>
+  
+</feed>

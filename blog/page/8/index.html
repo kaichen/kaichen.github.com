@@ -1,0 +1,887 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="原文连接：http://blog.codefront.net/2008/05/11/living-on-the-edge-of-rails-20-scriptdbconsole-and-flashnow-now-test-able/ script/dbconsole &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io/blog/page/8">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div class="blog-index">
+  
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/05/12/rails-2-1-script-dbconsole">[译文] Rails 2.1 Dbconsole</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-05-12T00:00:00+08:00" pubdate data-updated="true">May 12<span>th</span>, 2008</time>
+        
+         | <a href="/2008/05/12/rails-2-1-script-dbconsole#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>原文连接：<a href="http://blog.codefront.net/2008/05/11/living-on-the-edge-of-rails-20-scriptdbconsole-and-flashnow-now-test-able/">http://blog.codefront.net/2008/05/11/living-on-the-edge-of-rails-20-scriptdbconsole-and-flashnow-now-test-able/</a></p>
+
+<p>script/dbconsole 脚本允许用户使用Rails的控制台客户端连接到数据库。</p>
+
+<p>如果需要连接到MySQL的生产数据库作一些操作，直接运行 RAILS_ENV=production script/dbconsole 就能登录到数据库服务器上并使用MySQL的命令行客户端。当然，这个脚本也同样在 PostgreSQL 和 SQLite 数据库运行。</p>
+
+<p>要在当前Rails应用程序中使用这个新脚本，就要先升级到edge Rails，再运行 rake rails:update:script 。好好享受这个脚本的便利吧。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/05/12/rails-2-1-migrations-change_table">[译文] New Feature on Rails 2.1: Change_table</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-05-12T00:00:00+08:00" pubdate data-updated="true">May 12<span>th</span>, 2008</time>
+        
+         | <a href="/2008/05/12/rails-2-1-migrations-change_table#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>原文：<a href="http://blog.codefront.net/2008/05/04/living-on-the-edge-of-rails-19-change_table-for-migrations-and-more/">http://blog.codefront.net/2008/05/04/living-on-the-edge-of-rails-19-change_table-for-migrations-and-more/</a></p>
+
+<p>现在可以通过 change_table 代码块来完成对数据库表的修改。</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">change_table</span> <span class="ss">:videos</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+</span><span class='line'>  <span class="n">t</span><span class="o">.</span><span class="n">add_timestamps</span>
+</span><span class='line'>  <span class="n">t</span><span class="o">.</span><span class="n">add_belongs_to</span> <span class="ss">:goat</span>
+</span><span class='line'>  <span class="n">t</span><span class="o">.</span><span class="n">add_string</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">:email</span><span class="p">,</span> <span class="ss">:limit</span> <span class="o">=&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="mi">20</span>
+</span><span class='line'>  <span class="n">t</span><span class="o">.</span><span class="n">remove_column</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">:email</span> <span class="c1"># takes multiple arguments</span>
+</span><span class='line'>  <span class="n">t</span><span class="o">.</span><span class="n">rename</span> <span class="ss">:new_name</span>
+</span><span class='line'>  <span class="n">t</span><span class="o">.</span><span class="n">string</span> <span class="ss">:new_string_column</span> <span class="c1"># executes against the renamed table name</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>补充些要注意的事情：</p>
+
+<ul>
+<li>add_XXX 方法会添加一个新列，比如 add_string 会添加一个新的 string 类型的字段。</li>
+<li>Of course, add_timestamps 会添加神奇的 created_at 和 updated_at 的 datetime 类型的字段。</li>
+<li>remove_column 现在可以接受多个参数。</li>
+<li>rename 方法会重命名数据库表。</li>
+</ul>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/05/12/rails-2-1-activerecord-basecreate-changes">[译文] Rails 2.1 ActiveRecord的Create方法支持Block</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-05-12T00:00:00+08:00" pubdate data-updated="true">May 12<span>th</span>, 2008</time>
+        
+         | <a href="/2008/05/12/rails-2-1-activerecord-basecreate-changes#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>ActiveRecord::Base.create 现在可以像 ActiveRecord::Base.new 一样带上一个代码块参数了。</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="vi">@person</span> <span class="o">=</span> <span class="no">Person</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">params</span><span class="o">[</span><span class="ss">:person</span><span class="o">]</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="nb">p</span><span class="o">|</span>
+</span><span class='line'><span class="err"> </span> <span class="nb">p</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Konata Izumi&#39;</span>
+</span><span class='line'><span class="err"> </span> <span class="nb">p</span><span class="o">.</span><span class="n">age</span> <span class="o">=</span> <span class="mi">17</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/05/11/shoulda-tutor3">[译文] Shoulda教程3 - Model Helpers</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-05-11T00:00:00+08:00" pubdate data-updated="true">May 11<span>th</span>, 2008</time>
+        
+         | <a href="/2008/05/11/shoulda-tutor3#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h1>ActiveRecord助手方法</h1>
+
+<p>Shoulda具有一套ActiveRecord测试宏，这让开发效率大大提高，TDD变得轻而易举。关于这个方面的所有的文档都在Shoulda的Rdoc中。下面就来个小小的例子：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">UserTest</span>
+</span><span class='line'>  <span class="n">should_has_many</span>  <span class="ss">:dogs</span>
+</span><span class='line'>  <span class="n">should_belong_to</span> <span class="ss">:lover</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>上面的代码创建了如下的测试：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">test</span>: Person should allow phone_number to be <span class="nb">set </span>to <span class="s2">&quot;(123) 456-7890&quot;</span>.
+</span><span class='line'><span class="nb">test</span>: Person should belong to lover.
+</span><span class='line'><span class="nb">test</span>: Person should have many dogs.
+</span><span class='line'><span class="nb">test</span>: Person should have many messes through dogs.
+</span><span class='line'><span class="nb">test</span>: Person should have one profile.
+</span><span class='line'><span class="nb">test</span>: Person should not allow admin to be changed by update.
+</span><span class='line'><span class="nb">test</span>: Person should not allow phone_number to be <span class="nb">set </span>to <span class="s2">&quot;1234&quot;</span>.
+</span><span class='line'><span class="nb">test</span>: Person should not allow phone_number to be <span class="nb">set </span>to <span class="s2">&quot;abcd&quot;</span>.
+</span><span class='line'><span class="nb">test</span>: Person should require name to be set.
+</span><span class='line'><span class="nb">test</span>: Person should require phone_number to be set.
+</span><span class='line'><span class="nb">test</span>: Person should require unique value <span class="k">for </span>name.
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>前提</h2>
+
+<p>一件需要知道的事情是一些ActiveRecord测试宏找到第一个初始的记录(通过 Class.find(:first))。你可以让这个工作通过一个具有一条记录的fixture文件，或者通过在setup中创建一条记录，类似下面这样：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">UserTest</span> <span class="o">&lt;</span> <span class="ss">Test</span><span class="p">:</span><span class="ss">:Unit</span><span class="o">::</span><span class="no">TestCase</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">setup</span>
+</span><span class='line'>    <span class="vi">@user</span> <span class="o">=</span> <span class="no">User</span><span class="o">.</span><span class="n">create!</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">should_require_unique_attributes</span> <span class="ss">:name</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>或者通过一个context，如下：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">UserTest</span> <span class="o">&lt;</span> <span class="ss">Test</span><span class="p">:</span><span class="ss">:Unit</span><span class="o">::</span><span class="no">TestCase</span>
+</span><span class='line'>  <span class="n">context</span> <span class="s2">&quot;given an existing record&quot;</span> <span class="k">do</span>
+</span><span class='line'>    <span class="n">setup</span> <span class="k">do</span>
+</span><span class='line'>      <span class="vi">@user</span> <span class="o">=</span> <span class="no">User</span><span class="o">.</span><span class="n">create!</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">should_require_unique_attributes</span> <span class="ss">:name</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>但是Shoulda不止是提供了对模型的测试，还提供了很多强大的助手方法可以使用于控制器。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/05/10/shoulda-tutor2">[译文] Shoulda教程2 - Context & Nesting</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-05-10T00:00:00+08:00" pubdate data-updated="true">May 10<span>th</span>, 2008</time>
+        
+         | <a href="/2008/05/10/shoulda-tutor2#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>原文：<a href="http://thoughtbot.com/projects/shoulda/tutorial/context">http://thoughtbot.com/projects/shoulda/tutorial/context</a></p>
+
+<h1>上下文</h1>
+
+<p>在学习了Should语句之后，Shoulda的更多基本构建代码的知识就是上下文(Context)。上下文创建一个运行should语句的类似场景的fixture。Context代码块可以包含 setup/teardown 代码块，should代码块，或者其他context代码块。下面来试试在测试中使用简单的context：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">QueueTest</span> <span class="o">&lt;</span> <span class="ss">Test</span><span class="p">:</span><span class="ss">:Unit</span><span class="o">::</span><span class="no">TestCase</span>
+</span><span class='line'>  <span class="n">context</span> <span class="s2">&quot;一个队列实例&quot;</span> <span class="k">do</span>
+</span><span class='line'>    <span class="n">setup</span> <span class="k">do</span>
+</span><span class='line'>      <span class="vi">@queue</span> <span class="o">=</span> <span class="no">Queue</span><span class="o">.</span><span class="n">new</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">should</span> <span class="s2">&quot;响应 :push 调用&quot;</span> <span class="k">do</span>
+</span><span class='line'>      <span class="n">assert_respond_to</span> <span class="vi">@queue</span><span class="p">,</span> <span class="ss">:push</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>这里创建了一个名为&ldquo;测试：一个队列实例可以响应:push调用&rdquo;的测试方法，这很漂亮和易读。</p>
+
+<h2>嵌套</h2>
+
+<p>上面详尽的测试，简单测试队列的实例响应:push调用，但也提出了更多的上下文和测试。现在想看看让队列返回任何放进其中的东西。来添加一个嵌套的上下文进到其中：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">QueueTest</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span> <span class="ss">Test</span><span class="p">:</span><span class="ss">:Unit</span><span class="o">::</span><span class="no">TestCase</span>
+</span><span class='line'>  <span class="n">context</span> <span class="s2">&quot;一个队列实例&quot;</span> <span class="k">do</span>
+</span><span class='line'>    <span class="n">setup</span> <span class="k">do</span>
+</span><span class='line'>      <span class="vi">@queue</span> <span class="o">=</span> <span class="no">Queue</span><span class="o">.</span><span class="n">new</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">should</span> <span class="s2">&quot;响应 :push 调用&quot;</span> <span class="k">do</span>
+</span><span class='line'>      <span class="n">assert_respond_to</span> <span class="vi">@queue</span><span class="p">,</span> <span class="ss">:push</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">context</span> <span class="s2">&quot;具有一个元素&quot;</span> <span class="k">do</span>
+</span><span class='line'>      <span class="n">setup</span> <span class="p">{</span> <span class="vi">@queue</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="ss">:something</span><span class="p">)</span> <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="n">should</span> <span class="s2">&quot;在:pop调用后返回元素&quot;</span> <span class="k">do</span>
+</span><span class='line'>        <span class="n">assert_equal</span> <span class="ss">:something</span><span class="p">,</span> <span class="vi">@queue</span><span class="o">.</span><span class="n">pop</span>
+</span><span class='line'>      <span class="k">end</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>上面生成了测试方法&ldquo;测试：一个队列实例应该响应:push调用&rdquo;和&ldquo;测试：一个队列实例具有一个元素应该在:pop调用后返回元素&rdquo;。</p>
+
+<p>注意一下，上下文的setup代码块是为每个should代码块运行一次的。首先@queue实例被创建出来，然后:something被放进去，接着执行assert_equal。下面用一个同样语意的测试方法虚拟地演示一下，记住下面的代码只是为了帮助理解，并不会实际的发生：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">define_method</span> <span class="s2">&quot;测试：一个队列实例有一个元素应该在:pop调用后返回元素。&quot;</span> <span class="k">do</span>
+</span><span class='line'>  <span class="vi">@queue</span> <span class="o">=</span> <span class="no">Queue</span><span class="o">.</span><span class="n">new</span>
+</span><span class='line'>  <span class="vi">@queue</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="ss">:something</span><span class="p">)</span>
+</span><span class='line'>  <span class="n">assert_equal</span> <span class="ss">:something</span><span class="p">,</span> <span class="vi">@queue</span><span class="o">.</span><span class="n">pop</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>现在，如果使用一般的测试风格，就会在一个测试方法中，把一个元素放进队列中并在一个测试方法中把元素取出来，然后进行断言。但是将这个测试分离出来放到一个测试push的上下文时，就可以添加更多的共享同样setup的测试。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">QueueTest</span> <span class="o">&lt;</span> <span class="ss">Test</span><span class="p">:</span><span class="ss">:Unit</span><span class="o">::</span><span class="no">TestCase</span>
+</span><span class='line'>  <span class="n">context</span> <span class="s2">&quot;一个队列实例&quot;</span> <span class="k">do</span>
+</span><span class='line'>    <span class="n">setup</span> <span class="k">do</span>
+</span><span class='line'>      <span class="vi">@queue</span> <span class="o">=</span> <span class="no">Queue</span><span class="o">.</span><span class="n">new</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">should</span> <span class="s2">&quot;响应 :push 调用&quot;</span> <span class="k">do</span>
+</span><span class='line'>      <span class="n">assert_respond_to</span> <span class="vi">@queue</span><span class="p">,</span> <span class="ss">:push</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">context</span> <span class="s2">&quot;具有一个元素&quot;</span> <span class="k">do</span>
+</span><span class='line'>      <span class="n">setup</span> <span class="p">{</span> <span class="vi">@queue</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="ss">:something</span><span class="p">)</span> <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="n">should</span> <span class="s2">&quot;在:pop调用后返回元素&quot;</span> <span class="k">do</span>
+</span><span class='line'>        <span class="n">assert_equal</span> <span class="ss">:something</span><span class="p">,</span> <span class="vi">@queue</span><span class="o">.</span><span class="n">pop</span>
+</span><span class='line'>      <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="n">should</span> <span class="s2">&quot;在:size调用后返回1&quot;</span> <span class="k">do</span>
+</span><span class='line'>        <span class="n">assert_equal</span> <span class="mi">1</span><span class="p">,</span> <span class="vi">@queue</span><span class="o">.</span><span class="n">size</span>
+</span><span class='line'>      <span class="k">end</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>在让测试保持可读性和防止重复代码方面，嵌套的上下文是一个强大的工具。测试文件变得更大时，更多的这种重构就会起作用。</p>
+
+<h2>在setup中断言</h2>
+
+<p>另一个美妙的setup代码块的特性是，可以运行一部分测试方法，也就是可以完美地把断言放在其中。在setup代码块中调用断言来代替在should代码块中断言，并不是一个非常好的做法，但是可以起到一个明确的检查作用。来个例子：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">PersonTest</span> <span class="o">&lt;</span> <span class="ss">Test</span><span class="p">:</span><span class="ss">:Unit</span><span class="o">::</span><span class="no">TestCase</span>
+</span><span class='line'>  <span class="n">context</span> <span class="s2">&quot;A Person&quot;</span> <span class="k">do</span>
+</span><span class='line'>    <span class="n">setup</span> <span class="p">{</span> <span class="n">assert</span> <span class="vi">@person</span> <span class="o">=</span> <span class="no">Person</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="ss">:first</span><span class="p">)</span> <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">should</span> <span class="s2">&quot;rock out&quot;</span> <span class="k">do</span>
+</span><span class='line'>      <span class="n">assert</span> <span class="vi">@person</span><span class="o">.</span><span class="n">rocks_out!</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>在find调用失败时，在setup中看到失败的断言比出现烦人的异常要好看多了。</p>
+
+<p>should代码块和上下文是为测试宏(test macros)不错的起点。Shoulda还有一个ActiveRecord助手方法集合，让测试简明扼要。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/05/10/shoulda-tutor1">[译文]Shoulda教程1 - Should语法</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-05-10T00:00:00+08:00" pubdate data-updated="true">May 10<span>th</span>, 2008</time>
+        
+         | <a href="/2008/05/10/shoulda-tutor1#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>原文：<a href="http://thoughtbot.com/projects/shoulda/tutorial/should">http://thoughtbot.com/projects/shoulda/tutorial/should</a></p>
+
+<h1>Should 语句</h1>
+
+<p>Should语句是一种简洁，优雅，高可读性的方式创建测试。Should语句能轻松地创建测试方法，所以完全向后兼容一般的Test::Unit 用法</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">QuoteTest</span> <span class="o">&lt;</span> <span class="ss">Test</span><span class="p">:</span><span class="ss">:Unit</span><span class="o">::</span><span class="no">TestCase</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">setup</span>
+</span><span class='line'>    <span class="c1"># 和一般的Test::Unit一样</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">test_should_be_true</span>
+</span><span class='line'>    <span class="n">assert</span> <span class="kp">true</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">should</span> <span class="s2">&quot;为真&quot;</span> <span class="k">do</span>
+</span><span class='line'>    <span class="n">assert</span> <span class="kp">true</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>以上的代码片断创建了两个测试方法:&ldquo;测试: 应该为真&rdquo;和test_should_be_true。在这个级别，两个方法只有名字不同。一旦你学习有关Contexts的知识，就可以找到一些非常有用的技巧。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/05/10/apriori%E7%AE%97%E6%B3%95%E7%9A%84ruby%E5%AE%9E%E7%8E%B0">Apriori算法的Ruby实现</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-05-10T00:00:00+08:00" pubdate data-updated="true">May 10<span>th</span>, 2008</time>
+        
+         | <a href="/2008/05/10/apriori%E7%AE%97%E6%B3%95%E7%9A%84ruby%E5%AE%9E%E7%8E%B0#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Apriori的算法实现，上课用到了。老师从网上找了一个300多行代码的Ruby实现，太复杂了，改了一下，太麻烦，自己重写过。</p>
+
+<p>下面是实现代码</p>
+
+<pre><code>#!/usr/bin/ruby -w
+# Apriori 算法实现
+
+class Apriori
+  attr_accessor :date_set, :min_sup, :lv1_item_set
+
+  # 从指定文件中得到整个事务集
+  def get_data_set(input_file)
+    raise "Error: File #{input_file} does not exist" unless File.exists?(input_file)
+    content = ''
+    open(input_file) {|f| content = f.read}
+    content.inject([]) {|set, l| set &amp;lt;= item.size
+      @lv1_item_set.each do |i1| # 第一级项集
+        if (item | i1).size &amp;gt; item.size &amp;amp;&amp;amp; intersection?(date, (item | i1))
+          candidacy_set.push((item | i1).sort).uniq!  # 候选集生成
+        end
+      end
+    end
+    candidacy_set.sort
+  end
+
+  # 从候选集产生频繁集
+  def create_frequent_item_set(candidacy_set)
+    frequent_item_set = Hash.new(0)
+    candidacy_set.each do |e|
+      @date_set.each { |date| frequent_item_set[e] += 1 if intersection?(date, e)}
+    end
+    return frequent_item_set.delete_if {|k, v| v = @min_sup }
+    # 输出第一级项集
+    open(output_file, "w") do |f|
+      @lv1_item_set.each { |e| f.puts e + " : " + @hash[e].to_s }
+    end
+    # 迭代生成候选集
+    result = []
+    until(result.empty?) do
+      # ......
+    end
+  end
+end
+</code></pre>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/05/03/shoulda%EF%BC%9A%E8%AE%A9testunit%E4%B9%9Fbdd">初试Should</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-05-03T00:00:00+08:00" pubdate data-updated="true">May 3<span>rd</span>, 2008</time>
+        
+         | <a href="/2008/05/03/shoulda%EF%BC%9A%E8%AE%A9testunit%E4%B9%9Fbdd#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Shoulda是一个Rails插件，一个让Test::Unit也BDD的框架。这是官方的广告语：</p>
+
+<blockquote><p>Shoulda – Making tests easy on the fingers and eyes</p></blockquote>
+
+<p>我是在MountainWest RubyConf 2008的视频看到Tammer Saleh 讲了Shoulda才知道这个框架的：
+<a href="http://mwrc2008.confreaks.com/12saleh.html"><a href="http://mwrc2008.confreaks.com/12saleh.html">http://mwrc2008.confreaks.com/12saleh.html</a></a></p>
+
+<p>下面是官方资料的一点翻译：</p>
+
+<p>Shoulda Rails插件能让你轻松地写出优雅，易懂，易维护的测试。Shoulda 包含了添加到了Test::Unit框架的宏，断言和助手方法。不需重新编写测试，完全适合已有的测试。</p>
+
+<p>助手方法 – context方法和should方法使用了类似Rspec的测试块语法。还有，内置的contexts和一种可读性极强的语法。</p>
+
+<p>宏 – 通过强大的宏生成上百行Controller和ActiveRecord测试。能让你快速开始，确保应用程序遵循最佳实践。</p>
+
+<p>断言 – 许多一般的Rails测试惯用法提取了一个好用的断言集合。</p>
+
+<p>也有一个精简的Shoulda的Gem包适合非Rails应用。</p>
+
+<p>以后应该会继续翻译下去的。</p>
+
+<p><a href="http://www.thoughtbot.com/projects/shoulda">Shoulda 官方主页</a>
+<a href="http://dev.thoughtbot.com/shoulda">Shoulda 的RDocs</a></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  <div class="pagination">
+    
+      <a class="prev" href="/blog/page/9/">&larr; Older</a>
+    
+    <a href="/blog/archives">Blog Archives</a>
+    
+    <a class="next" href="/blog/page/7/">Newer &rarr;</a>
+    
+  </div>
+</div>
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'thekaiway';
+      
+        
+        var disqus_script = 'count.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

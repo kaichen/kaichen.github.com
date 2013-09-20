@@ -1,1 +1,1453 @@
-My Octopress Page is coming soon &hellip;
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="上一节讲完了ActiveRecord的对象怎么从是数据库里取出来，但距离数据最终的读写其中还有不少的处理过程。比如模型的属性在读取时需要做出一些相应的转换，同理在修改了模型属性之后回写数据库的时候也需要做转换。 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div class="blog-index">
+  
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-09-08T10:52:00+08:00" pubdate data-updated="true">Sep 8<span>th</span>, 2013</time>
+        
+         | <a href="/2013/09/08/read-write-activerecord-attribute#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>上一节讲完了ActiveRecord的对象怎么从是数据库里取出来，但距离数据最终的读写其中还有不少的处理过程。比如模型的属性在读取时需要做出一些相应的转换，同理在修改了模型属性之后回写数据库的时候也需要做转换。另外ActiveRecord使用了Ruby的动态特性为所有的属性读写都生成了与属性名相对应的方法，让开发者能更加便捷地访问所需要的属性值。</p>
+
+<h2>原始数据</h2>
+
+<p>首先来看看数据库取出的数据怎样存放到对象中，以下是相应的代码，<code>instantiate</code>方法的解释请参考<a href="/2013/07/26/assemble-ar-object">Assemble ActiveRecord Object</a></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'>  <span class="c1"># file: active_record/persistence</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">instantiate</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">column_types</span> <span class="o">=</span> <span class="p">{})</span>
+</span><span class='line'>    <span class="n">column_types</span> <span class="o">=</span> <span class="nb">self</span><span class="o">.</span><span class="n">decorate_columns</span><span class="p">(</span><span class="n">column_types</span><span class="o">.</span><span class="n">dup</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">klass</span><span class="o">.</span><span class="n">allocate</span><span class="o">.</span><span class="n">init_with</span><span class="p">(</span><span class="s1">&#39;attributes&#39;</span> <span class="o">=&gt;</span> <span class="n">record</span><span class="p">,</span> <span class="s1">&#39;column_types&#39;</span> <span class="o">=&gt;</span> <span class="n">column_types</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1"># file: active_record/core_</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">init_with</span><span class="p">(</span><span class="n">coder</span><span class="p">)</span>
+</span><span class='line'>    <span class="vi">@attributes</span>   <span class="o">=</span> <span class="nb">self</span><span class="o">.</span><span class="n">class</span><span class="o">.</span><span class="n">initialize_attributes</span><span class="p">(</span><span class="n">coder</span><span class="o">[</span><span class="s1">&#39;attributes&#39;</span><span class="o">]</span><span class="p">)</span>
+</span><span class='line'>    <span class="c1"># 其他初始化过程 bla bla bla</span>
+</span><span class='line'>    <span class="nb">self</span>
+</span><span class='line'>  <span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>可以看到，数据库里的每条记录从数据库查出来之后，会直接塞进每个对象的<code>@attributes</code>实例变量中，这里包括了所有的字段的名字和值。这个原始的记录数据是个以属性名为键，原始内容为值的哈希表。</p>
+
+<p>ActiveRecord提供了接口可以直接访问原始数据，这种方式就是直接对<code>@attributes</code>进行读取。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="no">Post</span><span class="o">.</span><span class="n">first</span><span class="o">.</span><span class="n">attributes_before_type_cast</span> <span class="c1"># 读取所有原始数据</span>
+</span><span class='line'><span class="no">Post</span><span class="o">.</span><span class="n">first</span><span class="o">.</span><span class="n">read_attribute_before_type_cast</span><span class="p">(</span><span class="ss">:id</span><span class="p">)</span> <span class="c1"># 读取ID字段的原始数据</span>
+</span><span class='line'><span class="no">Post</span><span class="o">.</span><span class="n">first</span><span class="o">.</span><span class="n">id_before_type_cast</span> <span class="c1"># 同上，ActiveModel::AttributeMethods生成的DSL</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>读取属性</h2>
+
+<p>通常我们不会直接访问原始数据，而是访问已经转化好的数据。ActiveRecord提供了几种形式来访问处理过属性</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="nb">name</span><span class="p">:</span> <span class="s2">&quot;First Post&quot;</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">post</span><span class="o">.</span><span class="n">name</span>
+</span><span class='line'><span class="n">post</span><span class="o">[</span><span class="ss">:name</span><span class="o">]</span>
+</span><span class='line'><span class="n">post</span><span class="o">.</span><span class="n">attributes</span><span class="o">[</span><span class="ss">:name</span><span class="o">]</span>
+</span><span class='line'><span class="n">post</span><span class="o">.</span><span class="n">read_attribute</span><span class="p">(</span><span class="ss">:name</span><span class="p">)</span> <span class="c1">#=&gt; &quot;First Post&quot;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>以上几种的模型属性访问其实都通过同一个入口进行访问，这个入口就是<code>read_attribute</code>。以上几个属性读取的实现有兴趣可以自行翻查源码，我们来重点讲解<code>read_attribute</code>。</p>
+
+<p><code>read_attribute</code>的基本逻辑如以下代码所示，这里是精简过的代码</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># file: active_record/attribute_methods/read.rb</span>
+</span><span class='line'><span class="k">def</span> <span class="nf">read_attribute</span><span class="p">(</span><span class="n">attr_name</span><span class="p">)</span>
+</span><span class='line'>  <span class="nb">name</span> <span class="o">=</span> <span class="n">attr_name</span><span class="o">.</span><span class="n">to_s</span>
+</span><span class='line'>  <span class="n">column</span> <span class="o">=</span> <span class="vi">@column_types</span><span class="o">[</span><span class="nb">name</span><span class="o">]</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">value</span> <span class="o">=</span> <span class="vi">@attributes</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="nb">name</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">return</span> <span class="nb">block_given?</span> <span class="p">?</span> <span class="k">yield</span><span class="p">(</span><span class="nb">name</span><span class="p">)</span> <span class="p">:</span> <span class="kp">nil</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">column</span><span class="o">.</span><span class="n">type_cast</span> <span class="n">value</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ol>
+<li>查找对应对应的数据库字段(AR::ConnectionAdapters::Column)实例，即获得该属性在数据库里对应的类型</li>
+<li>从原始数据<code>@attributes</code>里查找出对应的值</li>
+<li>使用对应的字段类型来转换该属性的原始值</li>
+</ol>
+
+
+<h2>类型转换</h2>
+
+<p>数据库表与AR对象的映射会在对应的章节里讲解，本篇只讲解和字段读写相关的部分，以下是类型转换的实现</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">type_cast</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">return</span> <span class="kp">nil</span> <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">nil?</span>
+</span><span class='line'>  <span class="k">return</span> <span class="n">coder</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">if</span> <span class="n">encoded?</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">klass</span> <span class="o">=</span> <span class="nb">self</span><span class="o">.</span><span class="n">class</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">case</span> <span class="n">type</span>
+</span><span class='line'>  <span class="k">when</span> <span class="ss">:string</span><span class="p">,</span> <span class="ss">:text</span>        <span class="k">then</span> <span class="n">value</span>
+</span><span class='line'>  <span class="k">when</span> <span class="ss">:integer</span>              <span class="k">then</span> <span class="n">klass</span><span class="o">.</span><span class="n">value_to_integer</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">when</span> <span class="ss">:float</span>                <span class="k">then</span> <span class="n">value</span><span class="o">.</span><span class="n">to_f</span>
+</span><span class='line'>  <span class="k">when</span> <span class="ss">:decimal</span>              <span class="k">then</span> <span class="n">klass</span><span class="o">.</span><span class="n">value_to_decimal</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">when</span> <span class="ss">:datetime</span><span class="p">,</span> <span class="ss">:timestamp</span> <span class="k">then</span> <span class="n">klass</span><span class="o">.</span><span class="n">string_to_time</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">when</span> <span class="ss">:time</span>                 <span class="k">then</span> <span class="n">klass</span><span class="o">.</span><span class="n">string_to_dummy_time</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">when</span> <span class="ss">:date</span>                 <span class="k">then</span> <span class="n">klass</span><span class="o">.</span><span class="n">value_to_date</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">when</span> <span class="ss">:binary</span>               <span class="k">then</span> <span class="n">klass</span><span class="o">.</span><span class="n">binary_to_string</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">when</span> <span class="ss">:boolean</span>              <span class="k">then</span> <span class="n">klass</span><span class="o">.</span><span class="n">value_to_boolean</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">else</span> <span class="n">value</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>我们看到除了字符串和文本之外的类型都需要根据其逻辑类型，进行转换的方法主要是解析内容并实例化到对应的类型。</p>
+
+<p>写入属性的情况与读取属性的逻辑基本相同，并且Column里有一个与<code>type_cast_for_write</code>对应的<code>type_cast_for_write</code>方法，用来处理写入的类型转换。</p>
+
+<p>在扩展性方面，Postgres的链接代码重写了类型转换方法以支持它丰富的数据类型。</p>
+
+<h2>自定义序列化字段</h2>
+
+<p>ActiveRecord支持将Ruby对象直接序列化到数据库中，并且可以制定序列化的方式，默认使用的是YAML。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># file: active_record/attribute_methods/serialization.rb</span>
+</span><span class='line'><span class="k">def</span> <span class="nf">serialize</span><span class="p">(</span><span class="n">attr_name</span><span class="p">,</span> <span class="n">class_name</span> <span class="o">=</span> <span class="no">Object</span><span class="p">)</span>
+</span><span class='line'>  <span class="kp">include</span> <span class="no">Behavior</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">coder</span> <span class="o">=</span> <span class="k">if</span> <span class="o">[</span><span class="ss">:load</span><span class="p">,</span> <span class="ss">:dump</span><span class="o">].</span><span class="n">all?</span> <span class="p">{</span> <span class="o">|</span><span class="n">x</span><span class="o">|</span> <span class="n">class_name</span><span class="o">.</span><span class="n">respond_to?</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="p">}</span>
+</span><span class='line'>            <span class="n">class_name</span>
+</span><span class='line'>          <span class="k">else</span>
+</span><span class='line'>            <span class="ss">Coders</span><span class="p">:</span><span class="ss">:YAMLColumn</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">class_name</span><span class="p">)</span>
+</span><span class='line'>          <span class="k">end</span>
+</span><span class='line'>  <span class="nb">self</span><span class="o">.</span><span class="n">serialized_attributes</span> <span class="o">=</span> <span class="n">serialized_attributes</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">attr_name</span><span class="o">.</span><span class="n">to_s</span> <span class="o">=&gt;</span> <span class="n">coder</span><span class="p">)</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>在实现上通过Coder这种形式来在属性的读写时，调用Coder的<code>load</code>与<code>dump</code>方法进行预先处理。</p>
+
+<p>这里指定的Coder并不需要特定的类型，它只需要实现接受一个参数的<code>load</code>和<code>dump</code>方法就可以作为一个Coder。</p>
+
+<h2>属性方法的动态生成</h2>
+
+<p>ActiveRecord模型利用Ruby的元编程能力，在运行时生成与数据库字段名相对应的读写方法。具体的方式就是使用<code>method_missing</code>和<code>respond_to?</code>，在找不到对应的方法时，ActiveRecord会在以上的两个方法里调用<code>define_attribute_methods</code>去生成<strong>所有的属性</strong>读写方法。</p>
+
+<p>这个<code>define_attribute_methods</code>方法有两个定义，其中一个定义在ActiveRecord::AttributeMethods，另一个定义在ActiveModel::AttributeMethods模组中，其中实质性的定义是在ActiveModel中，ActiveRecord继承并在这之上加了一些线程安全和方法是否已经生成的标记。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># file: active_model/attribute_methods</span>
+</span><span class='line'><span class="k">def</span> <span class="nf">define_attribute_methods</span><span class="p">(</span><span class="o">*</span><span class="n">attr_names</span><span class="p">)</span>
+</span><span class='line'>  <span class="n">attr_names</span><span class="o">.</span><span class="n">flatten</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">attr_name</span><span class="o">|</span> <span class="n">define_attribute_method</span><span class="p">(</span><span class="n">attr_name</span><span class="p">)</span> <span class="p">}</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>ActiveRecord里无需参数的定义主要作用只是代理，将所有的字段名字传入到ActiveModel里的<code>define_attribute_methods</code>。然后遍历所有的属性名，将每个属性都传入<code>define_attribute_method</code>里。<code>define_attribute_method</code>方法比较复杂，基本的思路是遍历所有的AttributeMethodMatcher，并从Matcher拼装出需要调用的方法名。</p>
+
+<p>这里稍微解释一下AttributeMethodMetcher，所有模型的父类ActiveRecord::Base定义了一堆的Metcher，它用来为所有属性添加方法。除了上面的读写方法和原数据访问方法外，ActiveRecord模型还定义了如下一堆属性相关的方法</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="o">.</span><span class="n">new</span> <span class="ss">title</span><span class="p">:</span> <span class="s2">&quot;Nice Post&quot;</span>
+</span><span class='line'><span class="n">post</span><span class="o">.</span><span class="n">title</span>
+</span><span class='line'><span class="n">post</span><span class="o">.</span><span class="n">title?</span>
+</span><span class='line'><span class="n">post</span><span class="o">.</span><span class="n">title_before_type_cast</span>
+</span><span class='line'><span class="n">post</span><span class="o">.</span><span class="n">title_changed?</span>
+</span><span class='line'><span class="n">post</span><span class="o">.</span><span class="n">title_change</span>
+</span><span class='line'><span class="n">post</span><span class="o">.</span><span class="n">title_will_change!</span>
+</span><span class='line'><span class="n">post</span><span class="o">.</span><span class="n">title_was</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>这类方法的定义就是通过Metcher，举个栗子，<code>{attribute}_before_type_cast</code>是这么定义的</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">attribute_method_suffix</span> <span class="s2">&quot;_before_type_cast&quot;</span>
+</span><span class='line'><span class="c1">#=&gt; #&lt;ActiveModel::AttributeMethods::ClassMethods::AttributeMethodMatcher:0x007fb36c41ddf0</span>
+</span><span class='line'><span class="c1">#     @method_missing_target=&quot;attribute_before_type_cast&quot;,</span>
+</span><span class='line'><span class="c1">#     @method_name=&quot;%s_before_type_cast&quot;,</span>
+</span><span class='line'><span class="c1">#     @prefix=&quot;&quot;,</span>
+</span><span class='line'><span class="c1">#     @regex=/^(?:)(.*)(?:_before_type_cast)$/,</span>
+</span><span class='line'><span class="c1">#     @suffix=&quot;_before_type_cast&quot;&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>通过这样的定义，前文提到的<code>define_attribute_method</code>的时候会调用到上面这个Matcher，然后通过<code>method_missing_target</code>调用<code>attribute_before_type_cast</code>去定义模型的<code>title_before_type_cast</code>。</p>
+
+<p>同时在方法未定义的检查里也是通过遍历所有Matcher，找出是否为预定义的属性方法。</p>
+
+<p>整个方法生成的故事就如是发展，在遇到未定义的方法的时候，ActiveRecord发现该方法是属性相关的方法，那么遍历所有的属性，再嵌套遍历所有的Matcher去生成所有的属性相关方法。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-08-17T17:04:00+08:00" pubdate data-updated="true">Aug 17<span>th</span>, 2013</time>
+        
+         | <a href="/2013/08/17/actionview-safe-buffer#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><blockquote><p>本文是<a href="/inspect-rails">Inspect Rails</a>的一部分, <a href="/inspect-rails">Inspect Rails</a>是由我正在编写的讲解Rails内部实现与设计的一本书, 欢迎阅读</p></blockquote>
+
+<p>为了提高安全性，ActionView的模版在Rails 3中实现了名为SafeBuffer用来减少被<a href="http://en.wikipedia.org/wiki/Cross-site_scripting">XSS攻击</a>的风险。</p>
+
+<h2>XSS攻击</h2>
+
+<p>XSS，全称为Cross-site Scripting，中文叫跨站脚本攻击。这是通过对目标网页注入脚本（最常见是JavaScript，也可以是VBScript等），然后通过这段脚本来盗取用户cookies或做跨站提交等。</p>
+
+<p>要防止这种攻击，Rails开发者必须非常小心地处理用户输入的内容，本篇讲到SafeBuffer就是帮助开发者减小被攻击的风险。</p>
+
+<h2>HTML Safe</h2>
+
+<p>在ActionView的Template中，默认的内容是HTML Unsafe的，HTML Unsafe的内容被拼接时会先用<code>ERB::Utils.html_escape</code>方法先处理一遍。只有两种才会被认为是HTML Safe的</p>
+
+<ul>
+<li>Numeric</li>
+<li>AS::SafeBuffer的实例对象</li>
+</ul>
+
+
+<p>这里可能会让人出乎意料的是，SafeBuffer的实现放在ActiveSupport的String Extention里，具体定义文件在<code>active_support/core_ext/string/output_safety.rb
+</code>。</p>
+
+<p>SafeBuffer被定义为String的子类，与普通的String不同是SafeBuffer的<code>html_safe</code>属性为True。</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">module</span> <span class="nn">ActiveSupport</span> <span class="c1">#:nodoc:</span>
+</span><span class='line'>  <span class="k">class</span> <span class="nc">SafeBuffer</span> <span class="o">&lt;</span> <span class="nb">String</span>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="o">*</span><span class="p">)</span>
+</span><span class='line'>      <span class="vi">@html_safe</span> <span class="o">=</span> <span class="kp">true</span>
+</span><span class='line'>      <span class="k">super</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>    <span class="c1"># other methods</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>另外，对于其他的对象，通过打开类的方式将Object的html_safe设置为False，而Numeric被设置为True。具体定义如下</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Object</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">html_safe?</span>
+</span><span class='line'>    <span class="kp">false</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">Numeric</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">html_safe?</span>
+</span><span class='line'>    <span class="kp">true</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>我们知道String的内容是可变的，同样SafeBuffer的内容也是可变的。出于安全性考虑SafeBuffer会将产生新对象或修改内容本身的方法，比如<code>capitalize</code>，<code>gsub</code>等等，都替换为结果是HTML Unsafe的字符串</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="nb">class_eval</span> <span class="o">&lt;&lt;-</span><span class="no">EOT</span><span class="p">,</span> <span class="bp">__FILE__</span><span class="p">,</span> <span class="bp">__LINE__</span> <span class="o">+</span> <span class="mi">1</span>
+</span><span class='line'><span class="sh">  def #{unsafe_method}(*args, &amp;block)</span>
+</span><span class='line'><span class="sh">    to_str.#{unsafe_method}(*args, &amp;block)</span>
+</span><span class='line'><span class="sh">  end</span>
+</span><span class='line'>
+</span><span class='line'><span class="sh">  def #{unsafe_method}!(*args)</span>
+</span><span class='line'><span class="sh">    @html_safe = false</span>
+</span><span class='line'><span class="sh">    super</span>
+</span><span class='line'><span class="sh">  end</span>
+</span><span class='line'><span class="no">EOT</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>比如替换后的capistalize方法是</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">capitalize</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+</span><span class='line'>  <span class="n">to_str</span><span class="o">.</span><span class="n">capitalize</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">capitalize!</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+</span><span class='line'>  <span class="vi">@html_safe</span> <span class="o">=</span> <span class="kp">false</span>
+</span><span class='line'>  <span class="k">super</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>稍微解释一下方法替换的意义，在非<a href="http://dablog.rubypal.com/2007/8/15/bang-methods-or-danger-will-rubyist">bang方法</a>中，先调用<code>to_str</code>就将原字符串转化为普通的String，由于除了SafeBuffer外的对象都是unsafe的，通过这么转化本来HTML Safe的内容又变回了HTML Unsafe的状态。</p>
+
+<p>当需要将内容标记为html safe状态的时候，可以调用<code>html_safe</code>方法，这个方法的原理就是构造一个新的SafeBuffer对象，代码如下</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">String</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">html_safe</span>
+</span><span class='line'>    <span class="ss">ActiveSupport</span><span class="p">:</span><span class="ss">:SafeBuffer</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="nb">self</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>接口</h2>
+
+<p>基本上所有模版语言都放出了，一些回调接口让开发者可以替换掉原有的Buffer实现。ActionView里定义的Template Handler就完成了模版语言Buffer实现的替换，比如这里的<a href="https://github.com/rails/rails/blob/4-0-stable/actionpack/lib/action_view/template/handlers/erb.rb">对Erb的替换</a>。</p>
+
+<p>一些第三方的模板语言，比如<a href="https://github.com/haml/haml">Haml</a>直接集成了SafeBuffer，<a href="https://github.com/slim-template/slim">Slim</a>通过其依赖的<a href="https://github.com/judofyr/temple">Temple</a>也集成了SafeBuffer。</p>
+
+<h2>参考</h2>
+
+<ul>
+<li><a href="http://yehudakatz.com/2010/02/01/safebuffers-and-rails-3-0/">http://yehudakatz.com/2010/02/01/safebuffers-and-rails-3-0/</a></li>
+<li><a href="http://www.railsdispatch.com/posts/security">http://www.railsdispatch.com/posts/security</a></li>
+</ul>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2013/08/16/rails-ujs">Rails Ujs</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-08-16T23:06:00+08:00" pubdate data-updated="true">Aug 16<span>th</span>, 2013</time>
+        
+         | <a href="/2013/08/16/rails-ujs#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>UJS是Rails 3引入的JavaScript框架与Rails的抽象层。我们知道Rails一些Helper是依赖于JavaScript框架的，比如Ajax Form，Ajax Link等，并且在Rails 3之前默认集成的JavaScript框架是<a href="http://prototypejs.org/">Prototype</a>，再这之后才换成了社区呼声很高的<a href="http://jquery.org/">jQuery</a>。</p>
+
+<p>如前面所说UJS是个抽象层，它需要在每个框架上实现对应的接口，比如官方实现了<a href="https://github.com/rails/jquery-ujs">jquery-ujs</a>和<a href="https://github.com/rails/prototype-ujs">prototype-ujs</a>。本篇主要以<a href="https://github.com/rails/jquery-ujs">jquery-ujs</a>为例来讲解UJS。jquery-ujs代码很短，只有500行不到，想先浏览一下整个代码可访问<a href="https://github.com/rails/jquery-ujs/blob/master/src/rails.js">Github的jquery-ujs repo</a>。</p>
+
+<h2>data-confirm</h2>
+
+<p>先从最简单confirm例子入手。比如，在某些链接上让用户在点击链接后再次确认一次，我们一般会这么写</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">link_to</span> <span class="s2">&quot;Visit Other Site&quot;</span><span class="p">,</span> <span class="s2">&quot;http://www.rubyonrails.org/&quot;</span><span class="p">,</span> <span class="ss">data</span><span class="p">:</span> <span class="p">{</span> <span class="ss">confirm</span><span class="p">:</span> <span class="s2">&quot;Are you sure?&quot;</span> <span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>这里和普通的链接不同的地方只是在于多加了一个<code>data-confirm</code>属性，然后UJS帮你实现了弹出确认框。这其中的实现方法很简单，写过jQuery的同学都会，就是监听所有链接的<code>click</code>事件，当这个被点击链接上有<code>data-confirm</code>属性时，取出<code>data-confirm</code>中的文本，弹出确认框，并根据用户的操作选择是否中断这个点击事件的处理。</p>
+
+<h2>data-method</h2>
+
+<p>然后我们来看看，另外一种比较常见的链接用法，让链接点击时使用非GET方法请求对应的URL，代码如下</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">link_to</span><span class="p">(</span><span class="s2">&quot;Sign Out&quot;</span><span class="p">,</span> <span class="n">sign_out_path</span><span class="p">,</span> <span class="nb">method</span><span class="p">:</span> <span class="ss">:delete</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>这里传入的<code>method</code>参数，生成HTML时会被转换为<code>data-method="delete"</code>。与前面一个例子一样，UJS在这个链接的click事件上监听，当这个链接有<code>data-method</code>属性时，创建一个隐藏的<code>form</code>标签，并附带上名为<code>_method</code>参数，值为<code>data-method</code>属性值的<code>input</code>标签，最后将这个构造的表单提交。</p>
+
+<p>通过这样的小技巧，Rails开发者就能通过<code>&lt;a&gt;</code>标签以任何想要的HTTP Method请求对应的链接。</p>
+
+<h2>Ajax Form</h2>
+
+<p>在Rails 3之后的<code>form_tag</code>和<code>form_for</code>上传入<code>remote: true</code>就能实现表单的Ajax提交，同样这个事情，UJS也是通过监听所有的Form标签的<code>submit</code>事件，然后检测标签上的<code>data-remote</code>属性来实现的。</p>
+
+<p>对于开发者，在传入了<code>remote: true</code>之后要怎样去插入对应的Ajax处理器呢？UJS在对应Ajax提交阶段上触发了Rails自定义的<code>ajax:xxx</code>事件。</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="nx">beforeSend</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">xhr</span><span class="p">,</span> <span class="nx">settings</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="k">if</span> <span class="p">(</span><span class="nx">settings</span><span class="p">.</span><span class="nx">dataType</span> <span class="o">===</span> <span class="kc">undefined</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nx">xhr</span><span class="p">.</span><span class="nx">setRequestHeader</span><span class="p">(</span><span class="s1">&#39;accept&#39;</span><span class="p">,</span> <span class="s1">&#39;*/*;q=0.5, &#39;</span> <span class="o">+</span> <span class="nx">settings</span><span class="p">.</span><span class="nx">accepts</span><span class="p">.</span><span class="nx">script</span><span class="p">);</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>  <span class="k">return</span> <span class="nx">rails</span><span class="p">.</span><span class="nx">fire</span><span class="p">(</span><span class="nx">element</span><span class="p">,</span> <span class="s1">&#39;ajax:beforeSend&#39;</span><span class="p">,</span> <span class="p">[</span><span class="nx">xhr</span><span class="p">,</span> <span class="nx">settings</span><span class="p">]);</span>
+</span><span class='line'><span class="p">},</span>
+</span><span class='line'><span class="nx">success</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">,</span> <span class="nx">status</span><span class="p">,</span> <span class="nx">xhr</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nx">element</span><span class="p">.</span><span class="nx">trigger</span><span class="p">(</span><span class="s1">&#39;ajax:success&#39;</span><span class="p">,</span> <span class="p">[</span><span class="nx">data</span><span class="p">,</span> <span class="nx">status</span><span class="p">,</span> <span class="nx">xhr</span><span class="p">]);</span>
+</span><span class='line'><span class="p">},</span>
+</span><span class='line'><span class="nx">complete</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">xhr</span><span class="p">,</span> <span class="nx">status</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nx">element</span><span class="p">.</span><span class="nx">trigger</span><span class="p">(</span><span class="s1">&#39;ajax:complete&#39;</span><span class="p">,</span> <span class="p">[</span><span class="nx">xhr</span><span class="p">,</span> <span class="nx">status</span><span class="p">]);</span>
+</span><span class='line'><span class="p">},</span>
+</span><span class='line'><span class="nx">error</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">xhr</span><span class="p">,</span> <span class="nx">status</span><span class="p">,</span> <span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nx">element</span><span class="p">.</span><span class="nx">trigger</span><span class="p">(</span><span class="s1">&#39;ajax:error&#39;</span><span class="p">,</span> <span class="p">[</span><span class="nx">xhr</span><span class="p">,</span> <span class="nx">status</span><span class="p">,</span> <span class="nx">error</span><span class="p">]);</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>所以基于UJS我们可以这样直接在<code>form</code>元素上绑定上对应的Ajax提交处理代码</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="nx">$</span><span class="p">(</span><span class="s2">&quot;#myform&quot;</span><span class="p">).</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;ajax:success&quot;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nx">alert</span><span class="p">(</span><span class="s2">&quot;Post successfully:)&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="p">}).</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;ajax:error&quot;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nx">alert</span><span class="p">(</span><span class="s2">&quot;Post fail:(&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="p">})</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>UJS在Ajax表单提交了之后，还会将该表单中的<code>button</code>和<code>input[type='submit']</code>都加上<code>disable</code>属性，防止用户多次点击引发多次提交。</p>
+
+<p>此外，UJS实现的Ajax Form上还有两个特殊的事件</p>
+
+<ul>
+<li><code>ajax:aborted:required</code> 当表单提交的时候，有未填的<code>input</code>标签时会触发这个事件，你可以选择去处理</li>
+<li><code>ajax:aborted:file</code> 我们知道通过正常的方式是无法通过AJAX来提交文件的，当表单里包含了文件字段的时候，这个事件会被触发，在这里可以去实现自己的文件提交逻辑。比如<a href="https://github.com/JangoSteve/remotipart">remotipart</a>通过这个事件实现了Ajax Form的文件提交。</li>
+</ul>
+
+
+<h2>选择器</h2>
+
+<p>UJS的所有功能都通过预设的选择器，绑定事件处理逻辑到对应元素上，以下是选择器的定义</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="nx">$</span><span class="p">.</span><span class="nx">rails</span> <span class="o">=</span> <span class="p">{</span>
+</span><span class='line'>    <span class="c1">// Link elements bound by jquery-ujs</span>
+</span><span class='line'>    <span class="nx">linkClickSelector</span><span class="o">:</span> <span class="s1">&#39;a[data-confirm], a[data-method], a[data-remote], a[data-disable-with]&#39;</span><span class="p">,</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// Button elements boud jquery-ujs</span>
+</span><span class='line'>    <span class="nx">buttonClickSelector</span><span class="o">:</span> <span class="s1">&#39;button[data-remote]&#39;</span><span class="p">,</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// Select elements bound by jquery-ujs</span>
+</span><span class='line'>    <span class="nx">inputChangeSelector</span><span class="o">:</span> <span class="s1">&#39;select[data-remote], input[data-remote], textarea[data-remote]&#39;</span><span class="p">,</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// Form elements bound by jquery-ujs</span>
+</span><span class='line'>    <span class="nx">formSubmitSelector</span><span class="o">:</span> <span class="s1">&#39;form&#39;</span><span class="p">,</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// Form input elements bound by jquery-ujs</span>
+</span><span class='line'>    <span class="nx">formInputClickSelector</span><span class="o">:</span> <span class="s1">&#39;form input[type=submit], form input[type=image], form button[type=submit], form button:not([type])&#39;</span><span class="p">,</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// Form input elements disabled during form submission</span>
+</span><span class='line'>    <span class="nx">disableSelector</span><span class="o">:</span> <span class="s1">&#39;input[data-disable-with], button[data-disable-with], textarea[data-disable-with]&#39;</span><span class="p">,</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// Form input elements re-enabled after form submission</span>
+</span><span class='line'>    <span class="nx">enableSelector</span><span class="o">:</span> <span class="s1">&#39;input[data-disable-with]:disabled, button[data-disable-with]:disabled, textarea[data-disable-with]:disabled&#39;</span><span class="p">,</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// Form required input elements</span>
+</span><span class='line'>    <span class="nx">requiredInputSelector</span><span class="o">:</span> <span class="s1">&#39;input[name][required]:not([disabled]),textarea[name][required]:not([disabled])&#39;</span><span class="p">,</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// Form file input elements</span>
+</span><span class='line'>    <span class="nx">fileInputSelector</span><span class="o">:</span> <span class="s1">&#39;input[type=file]&#39;</span><span class="p">,</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// Link onClick disable selector with possible reenable after remote submission</span>
+</span><span class='line'>    <span class="nx">linkDisableSelector</span><span class="o">:</span> <span class="s1">&#39;a[data-disable-with]&#39;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>这提供可配置对应选择器的机会，比方说使用某个jQuery插件，它通过<code>data-remote</code>去标记别的事情。那么在不修改这个插件的情况下想让UJS继续工作，我们可以重新配置UJS的选择器</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="nx">$</span><span class="p">.</span><span class="nx">rails</span><span class="p">.</span><span class="nx">formSubmitSelector</span> <span class="o">=</span> <span class="s1">&#39;form([data-ajax-form])&#39;</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>CSRF Token</h2>
+
+<p>UJS还会在每次表单提交上自动附带上CSRF Token。Rails 3之后强制所有的非幂等HTTP请求需要带上CSRF token作安全校验，用来防止XSS攻击。这就要求开发者在每次写Ajax请求的时候，都需要手动把这部分的token带上，UJS也通过jQuery的<a href="http://api.jquery.com/jQuery.ajaxPrefilter/">ajaxPrefilter</a>接口，让每次的Ajax请求都自动附带上CSRF token。</p>
+
+<p>另外，每次UJS初始化时，会为页面上所有表单都加上带有CSRF Token的隐藏<code>input</code>标签，让表单在提交时都能自动带上CSRF Token。</p>
+
+<h2>从UJS学到了什么</h2>
+
+<ul>
+<li>jquery-ujs的所有事件绑定都是绑定在document，等到事件触发后再分发到对应的事件处理逻辑里，不需要在初始化时查找对应的元素并绑定事件</li>
+<li>充分利用HTML5的<code>data</code>属性来解耦事件处理逻辑，将各种参数序列化到<code>data</code>属性</li>
+<li>利用jQuery的自定义事件更好地定制自己的事件处理流程</li>
+</ul>
+
+
+<h2>参考</h2>
+
+<ul>
+<li><a href="http://www.alfajango.com/blog/rails-3-remote-links-and-forms/">http://www.alfajango.com/blog/rails-3-remote-links-and-forms/</a></li>
+<li><a href="http://www.alfajango.com/blog/rails-3-remote-links-and-forms-data-type-with-jquery/">http://www.alfajango.com/blog/rails-3-remote-links-and-forms-data-type-with-jquery/</a></li>
+<li><a href="http://railscasts.com/episodes/205-unobtrusive-javascript">http://railscasts.com/episodes/205-unobtrusive-javascript</a></li>
+<li><a href="http://net.tutsplus.com/tutorials/javascript-ajax/using-unobtrusive-javascript-and-ajax-with-rails-3/">http://net.tutsplus.com/tutorials/javascript-ajax/using-unobtrusive-javascript-and-ajax-with-rails-3/</a></li>
+</ul>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2013/08/10/actionview-architect">ActionView基本架构</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-08-10T09:43:00+08:00" pubdate data-updated="true">Aug 10<span>th</span>, 2013</time>
+        
+         | <a href="/2013/08/10/actionview-architect#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><blockquote><p>本文是<a href="/inspect-rails">Inspect Rails</a>的一部分, <a href="/inspect-rails">Inspect Rails</a>是由我正在编写的讲解Rails内部实现与设计的一本书, 欢迎阅读</p></blockquote>
+
+<p><code>ActionView</code>是MVC中最后一公里, 将内容拼装完成, 等待服务器将其最终结果传输到用户端。</p>
+
+<p><strong>注</strong> 下文中<code>ActionView</code>在作为命名空间时全部简写为<code>AV</code>。</p>
+
+<p>在开发者的角度看来, <code>ActionView</code>的处理过程似乎没有太多值得一提的事情, 大部分情况下需要关心的只是某个Helper要传哪些参数进去。但实际其中ActionView完成的事情并不简单, 这里主要有4个步骤</p>
+
+<ol>
+<li>需要将路由生成方法和各种Helper方法绑定到渲染的上下文中, 并绑定在当前Controller中的实例变量</li>
+<li>需要有对象负责知道怎么去找到对应的模版。Rails能做到的查找规则极为灵活, 可以查找某个对应Format（如json）, 对应Locale（如zh-CN）, 从文件系统或数据库里找到这个对应的模版。</li>
+<li>找到了这个模版后, 需要知道怎样去编译这个模版。Ruby世界有很多的模板语言, 比如Erb, Builder, Haml和Slim等等, Rails需要找到对应的编译方式去编译它们。</li>
+<li>将编译好的模版, 加上之前的渲染上下文, 拼装得到最后的结果。</li>
+</ol>
+
+
+<p>在Controller里调用到ActionView接口只有以下三个</p>
+
+<ul>
+<li>AV::Base 维护整个渲染过程的上下文(View Context)</li>
+<li>AV::LookupContext 维护模版查找的上下文</li>
+<li>AV::Renderer 渲染接口</li>
+</ul>
+
+
+<p>渲染的调用逻辑基本集中在<code>AbstractController::Rendering</code>这个模组, 下图为其中大概的逻辑关系</p>
+
+<p><img src="/images/action_view_arch.png" alt="av" /></p>
+
+<p>图中的View Context就是上文提到的<code>AV::Base</code>, View Assigns指的是在Controller中设置的各种实例变量。最后Controller通过调用<code>AV::Renderer#render</code>去渲染出最终的结果。</p>
+
+<p>关于ActionView内部具体的各个机制会在后续章节中一一讲解。</p>
+
+<h2>参考</h2>
+
+<p>Rails Core Team里的<a href="https://twitter.com/josevalim">José Valim</a>可能是对ActionPack中大部分实现最为熟悉的人之一, 以下列出的书以及Presentation就讲到了这部分内容。</p>
+
+<ul>
+<li><a href="http://pragprog.com/book/jvrails2/crafting-rails-4-applications">Crafting Rails 4 Applications</a></li>
+<li><a href="http://www.youtube.com/watch?v=TslkdT3PfKc">Rails Conf 2013 You&rsquo;ve got a Sinatra on your Rails by José Valim</a></li>
+</ul>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-07-30T17:42:00+08:00" pubdate data-updated="true">Jul 30<span>th</span>, 2013</time>
+        
+         | <a href="/2013/07/30/config-your-git-push-strategy#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>我发现大部分人都没有配置过Git Push的策略, 但Git目前给出的默认策略并不是一个友好的机制。</p>
+
+<p>先来看一下所有的Git Push的策略</p>
+
+<ul>
+<li>nothing 什么都不干（估计只是测试用的）</li>
+<li>matching 本地所有的分支都Push上去, 只是默认的机制</li>
+<li>upstream/tracking 当本地分支有upstream（也就是有对应的远程分支）时Push到对应的远程分支</li>
+<li>simple 和upstream一样, 但不允许将本地分支提交到远程不一样名字的分支</li>
+<li>current 把当前的分支Push到远程的同名分支</li>
+</ul>
+
+
+<p>Git 1.x的默认策略是<code>matching</code>, 在Git 2.0之后<code>simple</code>会成为新的默认策略。另外<code>tracking</code>是<code>upstream</code>的别名, 但已经被标记为deprecated。</p>
+
+<p><code>matching</code>不友好之处在于我们的大部分情况都是同步本地的当前分支到远程，你会看到一长串的本地Branch（如果你本地有二三十个的话那就被刷屏了）。如果除了当前分支外的其他分支有新的内容的话，你会看到好多push fail的提示。</p>
+
+<p><code>simple</code>这个选项是非常安全的选项, 至少能阻止新手误操作覆盖远程分支, 所以Git会在2.0时将其作为默认策略。</p>
+
+<p>大部分情况我们想要做的只是Push当前的分支, 那么最适合的就是upstream。我们可以通过<code>git config</code>去配置采用<code>upstream</code>策略。具体的设置命令如下</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>git config --global push.default upstream
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>*注* 本文发布时最新的Git是1.8.3.x</p>
+
+<p>参考</p>
+
+<ul>
+<li><a href="http://git-scm.com/docs/git-config">http://git-scm.com/docs/git-config</a></li>
+<li><a href="https://www.kernel.org/pub/software/scm/git/docs/git-push.html">https://www.kernel.org/pub/software/scm/git/docs/git-push.html</a></li>
+<li><a href="http://stackoverflow.com/questions/948354/git-push-current-branch">http://stackoverflow.com/questions/948354/git-push-current-branch</a></li>
+</ul>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2013/07/28/write-more">写作 积累 快乐</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-07-28T16:31:00+08:00" pubdate data-updated="true">Jul 28<span>th</span>, 2013</time>
+        
+         | <a href="/2013/07/28/write-more#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>现在写独立博客的人越来越少, 大家都跑到新媒体上去发表自己的观点。我现在倾向于在独立博客上写, 能保持自己的节奏。现在还一直在创作着的独立博客写作者们, 比如<a href="http://blog.xdite.net/">XDite</a>, <a href="http://www.ruanyifeng.com/blog/">阮一峰的网络日志</a>和<a href="http://coolshell.cn/">酷壳</a>, 我都是非常佩服, 同时也非常羡慕他们有这么多的读者。</p>
+
+<p>最近看到的一个博客<a href="http://www.cnblogs.com/me-sa/">坚强2002</a>, 作者在<a href="http://www.douban.com/group/topic/23688164/">豆瓣上发帖</a>说要坚持写出一千篇以上的Erlang学习笔记, 这也是非常值得敬佩的一个博客作者。</p>
+
+<h2>目的</h2>
+
+<p>最主要的目的, 正如我在<a href="/inspect-rails">Inspect Rails</a>中写的, 是积累和沉淀, 在工作了这么些年后总想到能留下什么。</p>
+
+<p>另外一个激发我去写出更多内容的是由于我的同事们, 由于我现在的情况, 会带着几个经验较浅的同事, 他们会遇到好多问题都是没接触过的, 而他们特别的好学, 都会刨根揭底地问我一些蛮细节的问题, 所以我希望能把我知道的知识传播出去，告诉更多人。</p>
+
+<p>写作本身也是个锻炼, 锻炼如何理清思路, 如何清晰地表达。</p>
+
+<p>写作是创作, 创作本身就是件快乐的事。上星期, 有读过我写的<a href="/inspect-rails">Inspect Rails</a>的朋友, 接着在Gtalk上和我讨论其中的问题。我非常开心, 有人认真看过了我写出来的内容。</p>
+
+<h2>历史</h2>
+
+<p>我写独立博客的历史可以追溯到2008年, 那时还是买的<a href="http://dreamhost.com/">Dream Host</a>的服务器, 采用的和邮箱一样, chenk85.com 这个域名。但那时大部分其实还是流水账和一些翻译的内容。当时觉得翻译文章又能学到一些东西, 又能学习英语, 就做了比较多的这方面的事情。</p>
+
+<p>后来工作之后, 没有太多时间花在写博客上, 直到六月份计划写<a href="/inspect-rails">Inspect Rails</a>, 才慢慢地特意腾出时间来写博客。</p>
+
+<p>当然我在公司的博客上也写了几篇文章</p>
+
+<ul>
+<li><a href="http://easyread.ly/blogs/cros-iframe-autoresize-via-postmessage">使用HTML5 postMessage处理跨域iFrame的高度自适应</a></li>
+<li><a href="http://easyread.ly/blogs/qian-yi-redis-shu-ju-ku">迁移Redis数据库</a></li>
+<li><a href="http://easyread.ly/blogs/chef">使用Chef自动化服务器配置</a></li>
+</ul>
+
+
+<h2>选题</h2>
+
+<p>在工作了这么多年, 我的EverNote上也积累了上千份的笔记, 有好多的题目已经积累了材料可以写出来, 比如下面的这些</p>
+
+<ul>
+<li>电子书相关, 如豆瓣Web的实现, EPub及其他电子格式的处理</li>
+<li>Git/Vim/Tmux等日常工具的心得</li>
+<li>常用Ruby社区工具和Rubygem的用法, 设计与实现, 如Capistrano/Bundler</li>
+<li>Redis Schema Design Patterns</li>
+<li>冷门但有趣的Rubygem的介绍</li>
+<li>Rack middleware教程</li>
+<li>单页JavaScript应用开发</li>
+<li>Dev-ops相关的介绍和教程</li>
+<li>Firefox和Chrome插件开发</li>
+<li>Rails社区大牛们的介绍以及八卦</li>
+<li>&hellip;</li>
+</ul>
+
+
+<p>对于自己工作中用到但还不够熟悉的, 比如Android/iOS开发方面, 或者是我自己爱好但是没有太多实际经验的技术, 我不会贸然去写。我觉得写出内容来是有责任的, 如果你随便写写出来误导了别人, 是个非常大的罪过。</p>
+
+<h2>速度</h2>
+
+<p>目前我的博客写作速度很慢, 每篇文章至少要写3个小时以上。写<a href="/inspect-rails">Inspect Rails</a>系列的时候, 每篇都要花上一整天的时间。即使本来就已经把脉络里清楚出来了, 重点也写下来了, 就是最终成文的时候, 为了表达上的顺畅和清晰, 需要不断地做修改, 这个过程占据最多的时间。</p>
+
+<p>一些技术分析之类的文章, 把别人写出来的上千行代码总结成精简的原理不是件容易的事。我不喜欢大段贴代码, 在讲述某个事情时大段贴代码, 我觉得是写作者本身并不能用文字去浅显地说明这个中的道理, 甚至写作者本身就没弄明白。基于个中的难度, 写作就是件耗时的事情。</p>
+
+<h2>学习写作</h2>
+
+<p>我觉得写作是个技能, 也有科学的学习方法。我订了一个阅读列表, 帮助我学习如何写作</p>
+
+<ul>
+<li><a href="http://book.douban.com/subject/1433835/">The Elements of Style</a></li>
+<li><a href="http://book.douban.com/subject/1020644/">金字塔原理</a></li>
+<li><a href="http://book.douban.com/subject/10544265/">Technical Blogging</a></li>
+<li><a href="http://book.douban.com/subject/3169024/">ProBlogger</a></li>
+</ul>
+
+
+<p>这里是这个<a href="http://book.douban.com/doulist/2642048/">豆列</a>。</p>
+
+<h2>计划和目标</h2>
+
+<p>对于如何去宣传自己写的内容, 我更希望的是有人看到我写出来的内容后, 自动地去扩散, 去告诉他们的朋友说这里的内容很好, 过来这里看一下。</p>
+
+<p>我给自己订的写作目标是每周至少一篇, 这样一年就可以写出52篇。由于是定量的计划, 如果这周有什么事情, 下周一定会补上。</p>
+
+<h2>感谢</h2>
+
+<p>最后感谢<a href="http://weibo.com/venuscham">我老婆</a>, 她每周末都会牺牲一些让我陪她的时间给我写作。以及要感谢所有阅读我博客的读者们, 你们是我继续写作的巨大推动力。如果有什么问题, 请回复或私下联系我, <a href="https://twitter.com/_kaichen">Twitter</a>或者Gtalk(chenk85 AT gmail.com)都可以。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2013/07/26/assemble-ar-object">ActiveRecord 对象的拼装</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-07-26T20:12:00+08:00" pubdate data-updated="true">Jul 26<span>th</span>, 2013</time>
+        
+         | <a href="/2013/07/26/assemble-ar-object#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><blockquote><p>本文是<a href="/inspect-rails">Inspect Rails</a>的一部分，<a href="/inspect-rails">Inspect Rails</a>是由我正在编写的讲解Rails内部实现与设计的一本书，欢迎阅读</p></blockquote>
+
+<p>Rails开发者们写得最多的逻辑，一般在Model这一级, 很多时候就是在操作ActiveRecord对象。这些对象是怎样构造拼装出来的,  它们持有哪些状态，并且怎样持有状态的呢？这就是本文要讨论的内容。</p>
+
+<p><strong>注意</strong> ActiveRecord对象, 在下文都简称为AR对象。</p>
+
+<p>AR对象有两种状态, 要么是已经持久化, 要么还未持久化。它们只通过以下两个入口构造出来</p>
+
+<ul>
+<li>initialize</li>
+<li>init_with</li>
+</ul>
+
+
+<p>查询的方式得到的结果AR对象, 都是已持久化状态的, 都通过<code>init_with</code>方法构造出来。它的入口基本来自于数据查询的源头<code>find_by_sql</code>方法</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">find_by_sql</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">binds</span> <span class="o">=</span> <span class="o">[]</span><span class="p">)</span>
+</span><span class='line'>  <span class="c1"># 发送查询到数据库 bla bla bla</span>
+</span><span class='line'>  <span class="n">result_set</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">record</span><span class="o">|</span> <span class="n">instantiate</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">column_types</span><span class="p">)</span> <span class="p">}</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>这里的<code>instantiate</code>的实现是这么调用的, <code>class.allocate.init_with</code>, 即分配好内存后调用<code>init_with</code>方法构造出对象。</p>
+
+<p>通过<code>new</code>或者是关联对象上的<code>build</code>方法构造出来AR对象, 即未持久化的, 都通过<code>initialize</code>方法构造出来。</p>
+
+<p>这两个不同途径的最大不同就是得到的持久化状态不同。判断是否持久化通过<code>persisted?</code>方法来得到</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">persisted?</span>
+</span><span class='line'>  <span class="o">!</span><span class="p">(</span><span class="n">new_record?</span> <span class="o">||</span> <span class="n">destroyed?</span><span class="p">)</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>在AR对象里持久化状态, 由一个名为<code>new_record</code>和一个名为<code>destroyed</code>的布尔型实例变量标记决定。在构造未持久化状态的对象时就是将<code>new_record</code>设置为true, 反之则是false。而无论哪种方式构造出来的对象, 它的<code>destroyed</code>标记都为false, 因为你不可能查询出一个不存在的AR对象, 也不可能创建还未持久化就被删除的AR对象。这个事实反映了<a href="http://www.martinfowler.com/eaaCatalog/activeRecord.html">ActiveRecord</a>这个模式的本质，即对象与数据库记录一一对应。</p>
+
+<p>关于持久化状态的变更, 我们先来说说<code>destroyed</code>。<code>destroyed</code>这个标记, 它的状态变化只通过两个API能改变, <code>delete</code>和<code>destroy</code>（这里省略了<code>destory!</code>, 因为<code>destory!</code>也是调用的<code>destroy</code>的)。在AR对象里, 被标记为<code>destroyed</code>的对象不会马上消失, 只有离开了作用域后才会被回收。</p>
+
+<p>接下来是<code>new_record</code>标记, 它的变更只通过<code>create_record</code>这个API。道理也很浅显, 只有这个对象被写入到数据库后才真正地摆脱new这种状态。而所有的比如<code>save</code>/<code>create</code>这些最外层的API调用的都是<code>create_record</code>。</p>
+
+<p>当然除了持久化之外, AR对象还带上了许多其他的状态, 比如监控属性改变内容的状态, 上下文的事务状态, 是否只读状态等。AR对象出于效率考虑加上缓存, 比如关联对象的缓存, 属性的缓存等。这些状态, 无论怎么途径构建出来, 都会统一通过<code>init_internals</code>去做初始化。</p>
+
+<p>AR对象, 为了实现两次查询出同一条数据库记录可以判等, 它还覆写了<code>==</code>以及<code>&lt;=&gt;</code>等方法, 全部将其改为对比模型类和数据的主键。也就是只要是同一个模型, 且数据库记录的主键是一致的, 则认为它们是等同的。</p>
+
+<p>最后列出文中提到的几个API的所在模块</p>
+
+<ul>
+<li>ActiveRecord::Querying
+
+<ul>
+<li><code>initialize</code></li>
+<li><code>init_with</code></li>
+<li><code>init_internals</code></li>
+<li><code>==</code> 和 <code>eql?</code></li>
+<li><code>&lt;=&gt;</code></li>
+</ul>
+</li>
+<li>ActiveRecord::Persistence
+
+<ul>
+<li><code>persisted?</code></li>
+<li><code>instantiate</code></li>
+<li><code>delete</code></li>
+<li><code>destroy</code></li>
+<li><code>create_record</code></li>
+</ul>
+</li>
+<li>ActiveRecord::Querying
+
+<ul>
+<li><code>find_by_sql</code></li>
+</ul>
+</li>
+</ul>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2013/07/23/getting-start-with-sass">Sass入门</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-07-23T19:01:00+08:00" pubdate data-updated="true">Jul 23<span>rd</span>, 2013</time>
+        
+         | <a href="/2013/07/23/getting-start-with-sass#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Sass是一个CSS方言, 通过编译器实现将Sass/Scss编译为CSS。</p>
+
+<p><a href="http://sass-lang.com/">http://sass-lang.com/</a></p>
+
+<p>Sass具有两种语法, 一种是靠缩进去实现层级关系的Sass, 和另一种和CSS一样通过大括号实现层级的Scss。</p>
+
+<h2>特性</h2>
+
+<h3>嵌套式语法</h3>
+
+<p>啥也不说了, 看代码</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='scss'><span class='line'><span class="nt">header</span> <span class="p">{</span>
+</span><span class='line'>  <span class="na">line-height</span><span class="o">:</span> <span class="mi">3</span><span class="kt">em</span><span class="p">;</span>
+</span><span class='line'>  <span class="nt">h1</span> <span class="p">{</span>
+</span><span class='line'>    <span class="na">font-weight</span><span class="o">:</span> <span class="no">bold</span><span class="p">;</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>这种形式的代码，大大减少了CSS编写层级定义时重复性。</p>
+
+<h3>变量</h3>
+
+<p>Sass可以通过变量去提高样式的可维护性。比如我们一套样式里, 我们常常会使用同样的间距, 但这往往要写到每个具体的元素上, 而当需要做出修改的时候就特别痛苦, 需要在每个用到的地方都去修改, 还不能简单粗暴地使用文本替换, 因为你不知道哪些是我们需要修改的。这种情况使用变量就特别适合, 示例如下</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='scss'><span class='line'><span class="nv">$margin</span><span class="o">:</span> <span class="mi">16</span><span class="kt">px</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nc">.main-content</span> <span class="p">{</span>
+</span><span class='line'>  <span class="na">padding</span><span class="o">:</span> <span class="nv">$margin</span><span class="p">;</span>
+</span><span class='line'>  <span class="na">margin</span><span class="o">:</span> <span class="nv">$margin</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nc">.sidebar</span> <span class="p">{</span>
+</span><span class='line'>  <span class="na">padding</span><span class="o">:</span> <span class="nv">$margin</span><span class="p">;</span>
+</span><span class='line'>  <span class="na">margin</span><span class="o">:</span> <span class="nv">$margin</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>函数</h3>
+
+<p>Sass内置了一些很实用的<a href="http://sass-lang.com/docs/yardoc/Sass/Script/Functions.html">函数</a>, 它们为样式编写提供了计算能力, 比如我最喜欢的<a href="http://sass-lang.com/docs/yardoc/Sass/Script/Functions.html#lighten-instance_method">lighten</a>, 它能把给出的颜色转换为更亮的颜色。</p>
+
+<p>函数的编写, 不仅可以使用Ruby, 也可以使用Sass本身, 比如下面是我最近写的一个函数</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='scss'><span class='line'><span class="k">@function</span> <span class="nt">opposite-position</span><span class="o">(</span><span class="err">$</span><span class="nt">direction</span><span class="o">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="k">@if</span> <span class="nv">$direction</span> <span class="o">==</span> <span class="s2">&quot;left&quot;</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">@return</span> <span class="s2">&quot;right&quot;</span>
+</span><span class='line'>  <span class="p">}</span> <span class="k">@else</span> <span class="nt">if</span> <span class="err">$</span><span class="nt">direction</span> <span class="o">==</span> <span class="s2">&quot;right&quot;</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">@return</span> <span class="s2">&quot;left&quot;</span>
+</span><span class='line'>  <span class="p">}</span> <span class="k">@else</span> <span class="nt">if</span> <span class="err">$</span><span class="nt">direction</span> <span class="o">==</span> <span class="s2">&quot;bottom&quot;</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">@return</span> <span class="s2">&quot;top&quot;</span>
+</span><span class='line'>  <span class="p">}</span> <span class="k">@else</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">@return</span> <span class="s2">&quot;bottom&quot;</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Mixins</h3>
+
+<p>Mixins的思路就是通过把一组样式绑定到一个名字上，然后某个层级样式可以复用这组样式。</p>
+
+<p>这个功能是Sass最强大的功能, 这提供及其强大的代码抽象能力, 让我们可以更好地组织起庞大的样式代码。各种Sass框架就通过Mixins来开放出它们的功能。</p>
+
+<h3>Import</h3>
+
+<p>Sass通过Import的形式来管理样式间的依赖, 这就像是Node.js的require。通过这个我们就能把样式打包为一个文件, 并且清晰地定义好加载顺序。</p>
+
+<h2>教程</h2>
+
+<p>官方Reference</p>
+
+<p><a href="http://sass-lang.com/docs/yardoc/file.SASS_REFERENCE.html">http://sass-lang.com/docs/yardoc/file.SASS_REFERENCE.html</a></p>
+
+<p>Sass缩进语法</p>
+
+<p><a href="http://sass-lang.com/docs/yardoc/file.INDENTED_SYNTAX.html">http://sass-lang.com/docs/yardoc/file.INDENTED_SYNTAX.html</a></p>
+
+<p>The Sass Way, 有分为不同阶段的文章</p>
+
+<p><a href="http://thesassway.com/">http://thesassway.com/</a></p>
+
+<p>组织Sass代码的方式</p>
+
+<p><a href="http://thesassway.com/beginner/how-to-structure-a-sass-project">http://thesassway.com/beginner/how-to-structure-a-sass-project</a></p>
+
+<p>应用</p>
+
+<p>得益于Sass强大的抽象能力和扩展力, 许多的框架基于它开发出来</p>
+
+<p>Compass是一个基于Sass开发的CSS Framework, 集成了许多实用的Mixins</p>
+
+<p><a href="http://compass-style.org/">http://compass-style.org/</a></p>
+
+<p>Twitter Bootstrap Sass, 使用Sass重写Bootstarp的项目</p>
+
+<p><a href="https://github.com/thomas-mcdonald/bootstrap-sass">https://github.com/thomas-mcdonald/bootstrap-sass</a></p>
+
+<p>方便处理Media Query的项目</p>
+
+<p><a href="https://github.com/paranoida/sass-mediaqueries">https://github.com/paranoida/sass-mediaqueries</a></p>
+
+<p>几个专门处理按钮样式的项目</p>
+
+<ul>
+<li><a href="https://github.com/ubuwaits/css3-buttons">https://github.com/ubuwaits/css3-buttons</a></li>
+<li><a href="https://github.com/alexwolfe/Buttons">https://github.com/alexwolfe/Buttons</a></li>
+</ul>
+
+
+<p>还有许多Sass的项目, 这里再列出几个, 更多请自行上Github搜索</p>
+
+<ul>
+<li><a href="https://github.com/csswizardry/inuit.css">https://github.com/csswizardry/inuit.css</a></li>
+<li><a href="https://github.com/GumbyFramework/Gumby">https://github.com/GumbyFramework/Gumby</a></li>
+</ul>
+
+
+<p>竞争对手有Less.js和Stylus, 对比介绍</p>
+
+<ul>
+<li><a href="https://gist.github.com/chriseppstein/674726">https://gist.github.com/chriseppstein/674726</a></li>
+<li><a href="http://net.tutsplus.com/tutorials/html-css-techniques/sass-vs-less-vs-stylus-a-preprocessor-shootout/">http://net.tutsplus.com/tutorials/html-css-techniques/sass-vs-less-vs-stylus-a-preprocessor-shootout/</a></li>
+<li><a href="http://coding.smashingmagazine.com/2011/09/09/an-introduction-to-less-and-comparison-to-sass/">http://coding.smashingmagazine.com/2011/09/09/an-introduction-to-less-and-comparison-to-sass/</a></li>
+</ul>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  <div class="pagination">
+    
+      <a class="prev" href="/blog/page/2/">&larr; Older</a>
+    
+    <a href="/blog/archives">Blog Archives</a>
+    
+  </div>
+</div>
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'thekaiway';
+      
+        
+        var disqus_script = 'count.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

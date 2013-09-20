@@ -1,0 +1,560 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Play a HTTP toy server with EventMachine - The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="EventMachine是Ruby社区的Reactor模式的实现。 所谓Reactor模式，通过运行一个事件循环，将输入分发给对应的处理器，处理过程全权交给处理器，从而实现同时处理多个输入，是实现高并发的利器。几乎每个语言都有对应的实现，比如Pythong的Twisted，最近很火的Node. &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io/2012/01/08/play-a-http-toy-server-with-eventmachine">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Play a HTTP Toy Server With EventMachine</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-01-08T00:00:00+08:00" pubdate data-updated="true">Jan 8<span>th</span>, 2012</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p><img src="http://www.faconneurs.enligne-fr.com/__/logos_clients/event_machine.JPG" alt="EventMachine" /></p>
+
+<p><a href="https://github.com/eventmachine/eventmachine/wiki">EventMachine</a>是Ruby社区的<a href="http://en.wikipedia.org/wiki/Reactor_pattern">Reactor模式</a>的实现。</p>
+
+<p>所谓<code>Reactor</code>模式，通过运行一个事件循环，将输入分发给对应的处理器，处理过程全权交给处理器，从而实现同时处理多个输入，是实现高并发的利器。几乎每个语言都有对应的实现，比如Pythong的<a href="http://twistedmatrix.com/trac/">Twisted</a>，最近很火的<a href="nodejs.org/">Node.js</a>。</p>
+
+<p>这次我们通过实现一个简单的HTTP File server来探索EventMachine。</p>
+
+<p>通过Rubygems可以安装它：</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'><span class="nv">$ </span>gem install eventmachine
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Beginning Sample</h3>
+
+<p>我们先从一个简单的例子入手，以下代码实现了这样的一个服务器，打印发过来数据，并返回<code>Yike</code>。</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="nb">require</span> <span class="s1">&#39;eventmachine&#39;</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">module</span> <span class="nn">TcpSample</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">receive_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</span><span class='line'>    <span class="nb">puts</span> <span class="s2">&quot;[</span><span class="si">#{</span><span class="no">Time</span><span class="o">.</span><span class="n">now</span><span class="si">}</span><span class="s2">] receive </span><span class="si">#{</span><span class="n">data</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'>    <span class="n">send_data</span> <span class="s2">&quot;Yike</span><span class="se">\n</span><span class="s2">&quot;</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="no">EM</span><span class="o">.</span><span class="n">run</span> <span class="k">do</span>
+</span><span class='line'>  <span class="sx">%w{INT TERM}</span><span class="o">.</span><span class="n">each</span><span class="p">{</span> <span class="o">|</span><span class="n">s</span><span class="o">|</span> <span class="no">Signal</span><span class="o">.</span><span class="n">trap</span> <span class="n">s</span><span class="p">,</span> <span class="o">&amp;</span><span class="nb">proc</span><span class="p">{</span><span class="no">EM</span><span class="o">.</span><span class="n">stop_event_loop</span><span class="p">}</span> <span class="p">}</span>
+</span><span class='line'>  <span class="n">port</span> <span class="o">=</span> <span class="no">ENV</span><span class="o">[</span><span class="s2">&quot;PORT&quot;</span><span class="o">]</span> <span class="o">||</span> <span class="mi">8001</span>
+</span><span class='line'>  <span class="n">host</span> <span class="o">=</span> <span class="no">ENV</span><span class="o">[</span><span class="s2">&quot;HOST&quot;</span><span class="o">]</span> <span class="o">||</span> <span class="s2">&quot;127.0.0.1&quot;</span>
+</span><span class='line'>  <span class="no">EM</span><span class="o">.</span><span class="n">start_server</span> <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="no">TcpSample</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Server start on </span><span class="si">#{</span><span class="n">host</span><span class="si">}</span><span class="s2">:</span><span class="si">#{</span><span class="n">port</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>来解释几个EventMachine的API：</p>
+
+<ul>
+<li><a href="http://eventmachine.rubyforge.org/EventMachine.html#M000461">EM.run</a> 这个方法初始化并启动一个事件循环。</li>
+<li><a href="http://eventmachine.rubyforge.org/EventMachine.html#M000469">EM.stop_event_loop</a> 这个方法顾名思义就是停止事件循环。在这段代码中我们注册了两个Signal，INT和TERM，用来在命令行用Ctrl-C停止程序。</li>
+<li><a href="http://eventmachine.rubyforge.org/EventMachine.html#M000470">EM.start_server</a> 启动一个TCP服务器并监听传入参数的host和port，最后一个传入的参数是具体的行为逻辑实现，可以是Module或者是Class。</li>
+</ul>
+
+
+<p>代码中TcpSample module就是具体的Connection逻辑实现，只要实现几个由EventMachine Connection约定的方法，比如收发数据的<code>receive_data</code>和<code>send_data</code>。EventMachine会在运行过程事件被触发时回调Connection里的方法。具体关于EventMachine::Connection的文档请点击<a href="http://eventmachine.rubyforge.org/EventMachine/Connection.html">这里</a>。</p>
+
+<p>我们可以用telnet来测试它：</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>telnet 127.0.0.1 8001
+</span><span class='line'>Trying 127.0.0.1...
+</span><span class='line'>Connected to localhost.
+</span><span class='line'>Escape character is <span class="s1">&#39;^]&#39;</span>.
+</span><span class='line'>hey
+</span><span class='line'>Yike
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>第一个简单的例子就这样演示完成了，继续下一步。</p>
+
+<h3>Toy File Server</h3>
+
+<p>接着步入正题，实现HTTP File Server。一句话来解释HTTP服务器做的事情，就是解析来自客户的Request，然后依照请求生成Response。这里的演示代码如题目所示，只是个Toy，按照请求返回静态文件。</p>
+
+<p>首先需要接受并解析Request。EventMachine已经附带了<a href="http://eventmachine.rubyforge.org/EventMachine/Protocols.html">好几种Protocol的解析</a>，其中包括实现了HTTP的<a href="http://eventmachine.rubyforge.org/EventMachine/Protocols/HeaderAndContentProtocol.html">HeaderAndContentProtocol</a>。注意这里的各种Protocol实现都是继承第一个例子中讲到EventMachine::Connection，并为各自的协议包装了一个<code>receive_xxx</code>的回调方法，HeaderAndContentProtocol的回调方法名为<code>receive_request</code>。我们的HTTP Toy要做的就是继承<code>HeaderAndContentProtocol</code>，在<code>receive_request</code>方法中实现File Server的逻辑。</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">HTTPToy</span> <span class="o">&lt;</span> <span class="ss">EM</span><span class="p">:</span><span class="ss">:P</span><span class="o">::</span><span class="no">HeaderAndContentProtocol</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">receive_request</span> <span class="n">headers</span><span class="p">,</span> <span class="n">content</span>
+</span><span class='line'>    <span class="c1">#TODO ...</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>先来完成HTTP Headers的解析：</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="no">REGEX</span> <span class="o">=</span> <span class="sr">/\A(?&lt;request_method&gt;\w+) (?&lt;full_path&gt;\S+) HTTP\/(?&lt;version&gt;[\d.]+)\Z/</span>
+</span><span class='line'><span class="k">def</span> <span class="nf">parse_request</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">{}</span><span class="o">.</span><span class="n">tap</span> <span class="k">do</span> <span class="o">|</span><span class="n">req</span><span class="o">|</span>
+</span><span class='line'>    <span class="n">matched</span> <span class="o">=</span> <span class="no">REGEX</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">headers</span><span class="o">.</span><span class="n">shift</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">req</span><span class="o">[</span><span class="s2">&quot;request_method&quot;</span><span class="o">]</span> <span class="o">=</span> <span class="n">matched</span><span class="o">[</span><span class="ss">:request_method</span><span class="o">]</span>
+</span><span class='line'>    <span class="n">req</span><span class="o">[</span><span class="s2">&quot;full_path&quot;</span><span class="o">]</span> <span class="o">=</span> <span class="n">matched</span><span class="o">[</span><span class="ss">:full_path</span><span class="o">]</span>
+</span><span class='line'>    <span class="n">req</span><span class="o">[</span><span class="s2">&quot;http_version&quot;</span><span class="o">]</span> <span class="o">=</span> <span class="n">matched</span><span class="o">[</span><span class="ss">:version</span><span class="o">]</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>接着实现Callback方法<code>receive_request</code>，主要的逻辑是查找文件和拼装Response并返回：</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">receive_request</span> <span class="n">headers</span><span class="p">,</span> <span class="n">content</span>
+</span><span class='line'>  <span class="vi">@request</span> <span class="o">=</span> <span class="n">parse_headers</span><span class="p">(</span><span class="n">headers</span><span class="p">)</span>
+</span><span class='line'>  <span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="vi">@request</span><span class="o">[</span><span class="s2">&quot;full_path&quot;</span><span class="o">]</span>
+</span><span class='line'>  <span class="k">if</span> <span class="vi">@request</span><span class="o">[</span><span class="s2">&quot;full_path&quot;</span><span class="o">]</span> <span class="o">==</span> <span class="s2">&quot;/&quot;</span>
+</span><span class='line'>    <span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;./index.html&quot;</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>  <span class="k">if</span> <span class="no">File</span><span class="o">.</span><span class="n">exists?</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="no">File</span><span class="o">.</span><span class="n">file?</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">serve_file</span> <span class="n">filename</span>
+</span><span class='line'>  <span class="k">else</span>
+</span><span class='line'>    <span class="n">respond_not_found</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">ensure</span>
+</span><span class='line'>  <span class="n">close_connection_after_writing</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">serve_file</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+</span><span class='line'>  <span class="n">extname</span> <span class="o">=</span> <span class="no">File</span><span class="o">.</span><span class="n">extname</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+</span><span class='line'>  <span class="n">send_headers</span> <span class="s2">&quot;Content-Type&quot;</span> <span class="o">=&gt;</span> <span class="p">{</span>
+</span><span class='line'>                 <span class="s2">&quot;html&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;text/html&quot;</span><span class="p">,</span>
+</span><span class='line'>                 <span class="s2">&quot;js&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;application/x-javascript&quot;</span><span class="p">,</span>
+</span><span class='line'>                 <span class="s2">&quot;css&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;text/css&quot;</span>
+</span><span class='line'>               <span class="p">}(</span><span class="n">extname</span><span class="p">)</span>
+</span><span class='line'>  <span class="n">send_data</span> <span class="no">File</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">send_headers</span><span class="p">(</span><span class="n">more</span> <span class="o">=</span> <span class="p">{})</span>
+</span><span class='line'>  <span class="n">request</span><span class="o">[</span><span class="s2">&quot;status&quot;</span><span class="o">]</span> <span class="o">=</span> <span class="n">more</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s1">&#39;status&#39;</span><span class="p">)</span> <span class="o">||</span> <span class="s2">&quot;200 OK&quot;</span>
+</span><span class='line'>  <span class="n">headers</span> <span class="o">=</span> <span class="s2">&quot;HTTP/1.1 </span><span class="si">#{</span><span class="n">request</span><span class="o">[</span><span class="s1">&#39;status&#39;</span><span class="o">]</span><span class="si">}</span><span class="se">\r\n</span><span class="s2">&quot;</span>
+</span><span class='line'>  <span class="n">more</span> <span class="o">=</span> <span class="p">{</span>
+</span><span class='line'>    <span class="c1"># the magic string &quot;+8000&quot; means my life is at HARD MODE</span>
+</span><span class='line'>    <span class="s2">&quot;Date&quot;</span> <span class="o">=&gt;</span> <span class="no">Time</span><span class="o">.</span><span class="n">now</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%a, %d %b %Y %H:%m:%S +8000&quot;</span><span class="p">),</span>
+</span><span class='line'>    <span class="s2">&quot;Server&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;my-http-toy&quot;</span>
+</span><span class='line'>  <span class="p">}</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">more</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">if</span> <span class="n">more</span><span class="o">.</span><span class="n">any?</span>
+</span><span class='line'>    <span class="n">more</span><span class="o">.</span><span class="n">each</span><span class="p">{</span> <span class="o">|</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="o">|</span> <span class="n">headers</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">k</span><span class="si">}</span><span class="s2">: </span><span class="si">#{</span><span class="n">v</span><span class="si">}</span><span class="se">\r\n</span><span class="s2">&quot;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>  <span class="n">send_data</span> <span class="n">headers</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\r\n</span><span class="s2">&quot;</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>以上代码的<code>close_connection_after_writing</code>方法也是EventMachine的API之一，文档在<a href="http://eventmachine.rubyforge.org/EventMachine/Connection.html#M000286">这里</a>。这个方法会等待<code>send_data</code>的完成再把与客户端之间的连接关闭。上述大段代码的作用就是读文件并用<code>send_data</code>返回。</p>
+
+<p>把它跑起来并通过浏览器可以测试一下它：</p>
+
+<p><img src="http://dl.dropbox.com/u/1080383/screenshot-my-http-toy.png" alt="screenshot" /></p>
+
+<p>查看完整的实现代码请点击<a href="http://gist.github.com/1580890">这里</a>。</p>
+
+<h3>Benchmark</h3>
+
+<p>最后来对比异步IO和同步的IO效率相差有多大，和本文实现的简单http file server对比的是Rack。用Rack来做对比是因为它几乎是最小最快的HTTP File server实现。代码如下：</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># file: config.ru</span>
+</span><span class='line'><span class="n">run</span> <span class="ss">Rack</span><span class="p">:</span><span class="ss">:File</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="no">Dir</span><span class="o">.</span><span class="n">pwd</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>压力测试用的是<a href="http://www.hpl.hp.com/research/linux/httperf/">HTTPerf</a>，作为测试Fixture的是一个名为index.html的小文件（47B）。</p>
+
+<p>Rack的File middleware在并发超过350的情况就歇菜了：</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="err">$</span> <span class="n">rackup</span> <span class="o">.</span><span class="n">/config</span><span class="o">.</span><span class="n">ru</span> <span class="o">-</span><span class="nb">p</span> <span class="mi">8002</span>
+</span><span class='line'><span class="err">$</span> <span class="n">httperf</span> <span class="o">--</span><span class="n">rate</span><span class="o">=</span><span class="mi">350</span> <span class="o">--</span><span class="n">timeout</span><span class="o">=</span><span class="mi">5</span> <span class="o">--</span><span class="n">num</span><span class="o">-</span><span class="n">conns</span><span class="o">=</span><span class="mi">350</span> <span class="o">--</span><span class="n">port</span><span class="o">=</span><span class="mi">8002</span> <span class="o">--</span><span class="n">uri</span><span class="o">=</span><span class="sr">/index.html</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">Total: connections 350 requests 350 replies 347 test-duration 1.978 s</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">Connection rate: 177.0 conn/s</span> <span class="p">(</span><span class="mi">5</span><span class="o">.</span><span class="mi">7</span> <span class="n">ms</span><span class="o">/</span><span class="n">conn</span><span class="p">,</span> <span class="o">&lt;=</span><span class="mi">26</span> <span class="n">concurrent</span> <span class="n">connections</span><span class="p">)</span>
+</span><span class='line'><span class="no">Connection</span> <span class="n">time</span> <span class="o">[</span><span class="n">ms</span><span class="o">]</span><span class="p">:</span> <span class="n">min</span> <span class="mi">2</span><span class="o">.</span><span class="mi">1</span> <span class="n">avg</span> <span class="mi">68</span><span class="o">.</span><span class="mi">5</span> <span class="n">max</span> <span class="mi">1272</span><span class="o">.</span><span class="mi">6</span> <span class="n">median</span> <span class="mi">13</span><span class="o">.</span><span class="mi">5</span> <span class="n">stddev</span> <span class="mi">245</span><span class="o">.</span><span class="mi">5</span>
+</span><span class='line'><span class="no">Connection</span> <span class="n">time</span> <span class="o">[</span><span class="n">ms</span><span class="o">]</span><span class="p">:</span> <span class="n">connect</span> <span class="mi">63</span><span class="o">.</span><span class="mi">6</span>
+</span><span class='line'><span class="no">Connection</span> <span class="n">length</span> <span class="o">[</span><span class="n">replies</span><span class="o">/</span><span class="n">conn</span><span class="o">]</span><span class="p">:</span> <span class="mi">1</span><span class="o">.</span><span class="mo">000</span>
+</span><span class='line'>
+</span><span class='line'><span class="no">Request</span> <span class="ss">rate</span><span class="p">:</span> <span class="mi">177</span><span class="o">.</span><span class="mi">0</span> <span class="n">req</span><span class="o">/</span><span class="n">s</span> <span class="p">(</span><span class="mi">5</span><span class="o">.</span><span class="mi">7</span> <span class="n">ms</span><span class="o">/</span><span class="n">req</span><span class="p">)</span>
+</span><span class='line'><span class="no">Request</span> <span class="n">size</span> <span class="o">[</span><span class="n">B</span><span class="o">]</span><span class="p">:</span> <span class="mi">72</span><span class="o">.</span><span class="mi">0</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>350个并发的请求用了接近2秒的时间，速度是177个连接每秒。接着再来测试我们的HTTPToy：</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>ruby ./httptoy.rb 8001
+</span><span class='line'><span class="nv">$ </span>httperf --rate<span class="o">=</span>600 --timeout<span class="o">=</span>5 --num-conns<span class="o">=</span>600 --port<span class="o">=</span>8001 --uri<span class="o">=</span>/index.html
+</span><span class='line'>
+</span><span class='line'>Total: connections 600 requests 600 replies 600 <span class="nb">test</span>-duration 1.000 s
+</span><span class='line'>
+</span><span class='line'>Connection rate: 600.1 conn/s <span class="o">(</span>1.7 ms/conn, &lt;<span class="o">=</span>17 concurrent connections<span class="o">)</span>
+</span><span class='line'>Connection <span class="nb">time</span> <span class="o">[</span>ms<span class="o">]</span>: min 0.4 avg 2.8 max 25.9 median 0.5 stddev 3.9
+</span><span class='line'>Connection <span class="nb">time</span> <span class="o">[</span>ms<span class="o">]</span>: connect 0.2
+</span><span class='line'>Connection length <span class="o">[</span>replies/conn<span class="o">]</span>: 1.000
+</span><span class='line'>
+</span><span class='line'>Request rate: 600.1 req/s <span class="o">(</span>1.7 ms/req<span class="o">)</span>
+</span><span class='line'>Request size <span class="o">[</span>B<span class="o">]</span>: 72.0
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><strong>完胜</strong>，和前面的差距不是一星半点，一秒内响应600个连接。如果继续提高并发数，到了700以上我们的HTTPToy也会出现不稳定的情况（崩溃或连接失败）。</p>
+
+<h3>Conclusion</h3>
+
+<p>EventMachine应用的场景和Node.js基本一样，IO密集的高并发场景，比如</p>
+
+<ul>
+<li>Web Socket服务端，<a href="https://github.com/igrigorik/em-websocket">https://github.com/igrigorik/em-websocket</a></li>
+<li>并发的HTTP Client，<a href="https://github.com/igrigorik/em-http-request">https://github.com/igrigorik/em-http-request</a></li>
+<li>Proxy，<a href="https://github.com/igrigorik/em-proxy">https://github.com/igrigorik/em-proxy</a></li>
+</ul>
+
+
+<p>在生产环境中大量使用EventMachine公司就是<a href="www.postrank.com/">PostRank</a>，这个公司基于EventMachine开发了大量的框架和库，有兴趣可以点击<a href="https://github.com/igrigorik">igrigorik</a>和<a href="https://github.com/postrank-labs">postrank-labs</a>的Github帐号。</p>
+
+<p>最后谈下EventMachine缺点，和其它的Reactor模式实现一样，对付CPU密集的应用不行，而且使用的库全部都必须是异步，不然会把Main Event Loop阻塞（其后果是处理速度大大降低）。而像Node.js程序里出现了大量Callback的情况，在EventMachine上会好一点。</p>
+
+<p>本文中的运行环境是Mac OSX Lion，Ruby 1.9.3-p0。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Kai Chen</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-01-08T00:00:00+08:00" pubdate data-updated="true">Jan 8<span>th</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/eventmachine/'>EventMachine</a>, <a class='category' href='/blog/categories/ruby/'>Ruby</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://kaichen.github.io/2012/01/08/play-a-http-toy-server-with-eventmachine" data-via="" data-counturl="http://kaichen.github.io/2012/01/08/play-a-http-toy-server-with-eventmachine" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2011/11/20/%E5%A6%82%E4%BD%95%E9%98%85%E8%AF%BB" title="Previous Post: 如何阅读">&laquo; 如何阅读</a>
+      
+      
+        <a class="basic-alignment right" href="/2012/03/11/use-weekly-to-fetch-tech-updates" title="Next Post: Use Weekly to fetch tech updates">Use Weekly to fetch tech updates &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'thekaiway';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://kaichen.github.io/2012/01/08/play-a-http-toy-server-with-eventmachine.html';
+        var disqus_url = 'http://kaichen.github.io/2012/01/08/play-a-http-toy-server-with-eventmachine';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

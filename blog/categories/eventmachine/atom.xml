@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: EventMachine | The Kai Way]]></title>
+  <link href="http://kaichen.github.io/blog/categories/eventmachine/atom.xml" rel="self"/>
+  <link href="http://kaichen.github.io/"/>
+  <updated>2013-09-20T23:29:29+08:00</updated>
+  <id>http://kaichen.github.io/</id>
+  <author>
+    <name><![CDATA[Kai Chen]]></name>
+    <email><![CDATA[kaichenxyz@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Play a HTTP toy server with EventMachine]]></title>
+    <link href="http://kaichen.github.io/2012/01/08/play-a-http-toy-server-with-eventmachine"/>
+    <updated>2012-01-08T00:00:00+08:00</updated>
+    <id>http://kaichen.github.io/2012/01/08/play-a-http-toy-server-with-eventmachine</id>
+    <content type="html"><![CDATA[<p><img src="http://www.faconneurs.enligne-fr.com/__/logos_clients/event_machine.JPG" alt="EventMachine" /></p>
+
+<p><a href="https://github.com/eventmachine/eventmachine/wiki">EventMachine</a>是Ruby社区的<a href="http://en.wikipedia.org/wiki/Reactor_pattern">Reactor模式</a>的实现。</p>
+
+<p>所谓<code>Reactor</code>模式，通过运行一个事件循环，将输入分发给对应的处理器，处理过程全权交给处理器，从而实现同时处理多个输入，是实现高并发的利器。几乎每个语言都有对应的实现，比如Pythong的<a href="http://twistedmatrix.com/trac/">Twisted</a>，最近很火的<a href="nodejs.org/">Node.js</a>。</p>
+
+<p>这次我们通过实现一个简单的HTTP File server来探索EventMachine。</p>
+
+<p>通过Rubygems可以安装它：</p>
+
+<p>{% codeblock lang:sh %}
+$ gem install eventmachine
+{% endcodeblock %}</p>
+
+<h3>Beginning Sample</h3>
+
+<p>我们先从一个简单的例子入手，以下代码实现了这样的一个服务器，打印发过来数据，并返回<code>Yike</code>。</p>
+
+<p>{% codeblock lang:ruby %}
+require &lsquo;eventmachine&rsquo;</p>
+
+<p>module TcpSample
+  def receive_data(data)
+    puts &ldquo;[#{Time.now}] receive #{data}&rdquo;
+    send_data &ldquo;Yike\n&rdquo;
+  end
+end</p>
+
+<p>EM.run do
+  %w{INT TERM}.each{ |s| Signal.trap s, &amp;proc{EM.stop_event_loop} }
+  port = ENV[&ldquo;PORT&rdquo;] || 8001
+  host = ENV[&ldquo;HOST&rdquo;] || &ldquo;127.0.0.1&rdquo;
+  EM.start_server host, port, TcpSample
+  puts &ldquo;Server start on #{host}:#{port}&rdquo;
+end
+{% endcodeblock %}</p>
+
+<p>来解释几个EventMachine的API：</p>
+
+<ul>
+<li><a href="http://eventmachine.rubyforge.org/EventMachine.html#M000461">EM.run</a> 这个方法初始化并启动一个事件循环。</li>
+<li><a href="http://eventmachine.rubyforge.org/EventMachine.html#M000469">EM.stop_event_loop</a> 这个方法顾名思义就是停止事件循环。在这段代码中我们注册了两个Signal，INT和TERM，用来在命令行用Ctrl-C停止程序。</li>
+<li><a href="http://eventmachine.rubyforge.org/EventMachine.html#M000470">EM.start_server</a> 启动一个TCP服务器并监听传入参数的host和port，最后一个传入的参数是具体的行为逻辑实现，可以是Module或者是Class。</li>
+</ul>
+
+
+<p>代码中TcpSample module就是具体的Connection逻辑实现，只要实现几个由EventMachine Connection约定的方法，比如收发数据的<code>receive_data</code>和<code>send_data</code>。EventMachine会在运行过程事件被触发时回调Connection里的方法。具体关于EventMachine::Connection的文档请点击<a href="http://eventmachine.rubyforge.org/EventMachine/Connection.html">这里</a>。</p>
+
+<p>我们可以用telnet来测试它：</p>
+
+<p>{% codeblock lang:bash %}
+$ telnet 127.0.0.1 8001
+Trying 127.0.0.1&hellip;
+Connected to localhost.
+Escape character is &lsquo;^]&rsquo;.
+hey
+Yike
+{% endcodeblock %}</p>
+
+<p>第一个简单的例子就这样演示完成了，继续下一步。</p>
+
+<h3>Toy File Server</h3>
+
+<p>接着步入正题，实现HTTP File Server。一句话来解释HTTP服务器做的事情，就是解析来自客户的Request，然后依照请求生成Response。这里的演示代码如题目所示，只是个Toy，按照请求返回静态文件。</p>
+
+<p>首先需要接受并解析Request。EventMachine已经附带了<a href="http://eventmachine.rubyforge.org/EventMachine/Protocols.html">好几种Protocol的解析</a>，其中包括实现了HTTP的<a href="http://eventmachine.rubyforge.org/EventMachine/Protocols/HeaderAndContentProtocol.html">HeaderAndContentProtocol</a>。注意这里的各种Protocol实现都是继承第一个例子中讲到EventMachine::Connection，并为各自的协议包装了一个<code>receive_xxx</code>的回调方法，HeaderAndContentProtocol的回调方法名为<code>receive_request</code>。我们的HTTP Toy要做的就是继承<code>HeaderAndContentProtocol</code>，在<code>receive_request</code>方法中实现File Server的逻辑。</p>
+
+<p>{% codeblock lang:ruby %}
+class HTTPToy &lt; EM::P::HeaderAndContentProtocol
+  def receive_request headers, content
+    #TODO &hellip;
+  end
+end
+{% endcodeblock %}</p>
+
+<p>先来完成HTTP Headers的解析：</p>
+
+<p>{% codeblock lang:ruby %}
+REGEX = /\A(?<request_method>\w+) (?<full_path>\S+) HTTP\/(?<version>[\d.]+)\Z/
+def parse_request(data)
+  {}.tap do |req|
+    matched = REGEX.match(headers.shift)
+    req[&ldquo;request_method&rdquo;] = matched[:request_method]
+    req[&ldquo;full_path&rdquo;] = matched[:full_path]
+    req[&ldquo;http_version&rdquo;] = matched[:version]
+  end
+end
+{% endcodeblock %}</p>
+
+<p>接着实现Callback方法<code>receive_request</code>，主要的逻辑是查找文件和拼装Response并返回：</p>
+
+<p>{% codeblock lang:ruby %}
+def receive_request headers, content
+  @request = parse_headers(headers)
+  filename = &ldquo;.&rdquo; + @request[&ldquo;full_path&rdquo;]
+  if @request[&ldquo;full_path&rdquo;] == &ldquo;/&rdquo;
+    filename = &ldquo;./index.html&rdquo;
+  end
+  if File.exists?(filename) &amp;&amp; File.file?(filename)
+    serve_file filename
+  else
+    respond_not_found
+  end
+ensure
+  close_connection_after_writing
+end</p>
+
+<p>def serve_file(filename)
+  extname = File.extname(filename)
+  send_headers &ldquo;Content-Type&rdquo; => {
+                 &ldquo;html&rdquo; => &ldquo;text/html&rdquo;,
+                 &ldquo;js&rdquo; => &ldquo;application/x-javascript&rdquo;,
+                 &ldquo;css&rdquo; => &ldquo;text/css&rdquo;
+               }(extname)
+  send_data File.read(filename)
+end</p>
+
+<p>def send_headers(more = {})
+  request[&ldquo;status&rdquo;] = more.delete(&lsquo;status&rsquo;) || &ldquo;200 OK&rdquo;
+  headers = &ldquo;HTTP/1.1 #{request[&lsquo;status&rsquo;]}\r\n&rdquo;
+  more = {
+    # the magic string &ldquo;+8000&rdquo; means my life is at HARD MODE
+    &ldquo;Date&rdquo; => Time.now.strftime(&ldquo;%a, %d %b %Y %H:%m:%S +8000&rdquo;),
+    &ldquo;Server&rdquo; => &ldquo;my-http-toy&rdquo;
+  }.merge(more)
+  if more.any?
+    more.each{ |k, v| headers &lt;&lt; &ldquo;#{k}: #{v}\r\n&rdquo; }
+  end
+  send_data headers + &ldquo;\r\n&rdquo;
+end
+{% endcodeblock %}</p>
+
+<p>以上代码的<code>close_connection_after_writing</code>方法也是EventMachine的API之一，文档在<a href="http://eventmachine.rubyforge.org/EventMachine/Connection.html#M000286">这里</a>。这个方法会等待<code>send_data</code>的完成再把与客户端之间的连接关闭。上述大段代码的作用就是读文件并用<code>send_data</code>返回。</p>
+
+<p>把它跑起来并通过浏览器可以测试一下它：</p>
+
+<p><img src="http://dl.dropbox.com/u/1080383/screenshot-my-http-toy.png" alt="screenshot" /></p>
+
+<p>查看完整的实现代码请点击<a href="http://gist.github.com/1580890">这里</a>。</p>
+
+<h3>Benchmark</h3>
+
+<p>最后来对比异步IO和同步的IO效率相差有多大，和本文实现的简单http file server对比的是Rack。用Rack来做对比是因为它几乎是最小最快的HTTP File server实现。代码如下：</p>
+
+<p>{% codeblock lang:ruby %}</p>
+
+<h1>file: config.ru</h1>
+
+<p>run Rack::File.new(Dir.pwd)
+{% endcodeblock %}</p>
+
+<p>压力测试用的是<a href="http://www.hpl.hp.com/research/linux/httperf/">HTTPerf</a>，作为测试Fixture的是一个名为index.html的小文件（47B）。</p>
+
+<p>Rack的File middleware在并发超过350的情况就歇菜了：</p>
+
+<p>{% codeblock lang:ruby %}
+$ rackup ./config.ru -p 8002
+$ httperf &ndash;rate=350 &ndash;timeout=5 &ndash;num-conns=350 &ndash;port=8002 &ndash;uri=/index.html</p>
+
+<p>Total: connections 350 requests 350 replies 347 test-duration 1.978 s</p>
+
+<p>Connection rate: 177.0 conn/s (5.7 ms/conn, &lt;=26 concurrent connections)
+Connection time [ms]: min 2.1 avg 68.5 max 1272.6 median 13.5 stddev 245.5
+Connection time [ms]: connect 63.6
+Connection length [replies/conn]: 1.000</p>
+
+<p>Request rate: 177.0 req/s (5.7 ms/req)
+Request size [B]: 72.0
+{% endcodeblock %}</p>
+
+<p>350个并发的请求用了接近2秒的时间，速度是177个连接每秒。接着再来测试我们的HTTPToy：</p>
+
+<p>{% codeblock lang:bash %}
+$ ruby ./httptoy.rb 8001
+$ httperf &ndash;rate=600 &ndash;timeout=5 &ndash;num-conns=600 &ndash;port=8001 &ndash;uri=/index.html</p>
+
+<p>Total: connections 600 requests 600 replies 600 test-duration 1.000 s</p>
+
+<p>Connection rate: 600.1 conn/s (1.7 ms/conn, &lt;=17 concurrent connections)
+Connection time [ms]: min 0.4 avg 2.8 max 25.9 median 0.5 stddev 3.9
+Connection time [ms]: connect 0.2
+Connection length [replies/conn]: 1.000</p>
+
+<p>Request rate: 600.1 req/s (1.7 ms/req)
+Request size [B]: 72.0
+{% endcodeblock %}</p>
+
+<p><strong>完胜</strong>，和前面的差距不是一星半点，一秒内响应600个连接。如果继续提高并发数，到了700以上我们的HTTPToy也会出现不稳定的情况（崩溃或连接失败）。</p>
+
+<h3>Conclusion</h3>
+
+<p>EventMachine应用的场景和Node.js基本一样，IO密集的高并发场景，比如</p>
+
+<ul>
+<li>Web Socket服务端，<a href="https://github.com/igrigorik/em-websocket">https://github.com/igrigorik/em-websocket</a></li>
+<li>并发的HTTP Client，<a href="https://github.com/igrigorik/em-http-request">https://github.com/igrigorik/em-http-request</a></li>
+<li>Proxy，<a href="https://github.com/igrigorik/em-proxy">https://github.com/igrigorik/em-proxy</a></li>
+</ul>
+
+
+<p>在生产环境中大量使用EventMachine公司就是<a href="www.postrank.com/">PostRank</a>，这个公司基于EventMachine开发了大量的框架和库，有兴趣可以点击<a href="https://github.com/igrigorik">igrigorik</a>和<a href="https://github.com/postrank-labs">postrank-labs</a>的Github帐号。</p>
+
+<p>最后谈下EventMachine缺点，和其它的Reactor模式实现一样，对付CPU密集的应用不行，而且使用的库全部都必须是异步，不然会把Main Event Loop阻塞（其后果是处理速度大大降低）。而像Node.js程序里出现了大量Callback的情况，在EventMachine上会好一点。</p>
+
+<p>本文中的运行环境是Mac OSX Lion，Ruby 1.9.3-p0。</p>
+]]></content>
+  </entry>
+  
+</feed>

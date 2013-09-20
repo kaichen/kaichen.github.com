@@ -1,0 +1,1227 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="本文是Inspect Rails的一部分，Inspect Rails是由我正在编写的讲解Rails内部实现与设计的一本书，欢迎阅读 前面的章节提到Rails Engine实现了Rails中著名的Convention over Configuration，其目的就在于统一有序地组织各种方面的代码。 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io/blog/page/2">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div class="blog-index">
+  
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2013/07/12/rails-paths">Rails Paths</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-07-12T21:44:00+08:00" pubdate data-updated="true">Jul 12<span>th</span>, 2013</time>
+        
+         | <a href="/2013/07/12/rails-paths#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><blockquote><p>本文是<a href="/inspect-rails">Inspect Rails</a>的一部分，<a href="/inspect-rails">Inspect Rails</a>是由我正在编写的讲解Rails内部实现与设计的一本书，欢迎阅读</p></blockquote>
+
+<p>前面的章节提到Rails Engine实现了Rails中著名的<a href="http://en.wikipedia.org/wiki/Convention_over_configuration">Convention over Configuration</a>，其目的就在于统一有序地组织各种方面的代码。</p>
+
+<p>而这个事情主要关心的就是加载路径，也就是让Rails能在对应的路径下找到相应的代码。Rails Engine对目录的配置代码主要如下：</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># railties/lib/rails/engine/configuration.rb</span>
+</span><span class='line'><span class="n">paths</span> <span class="o">=</span> <span class="ss">Rails</span><span class="p">:</span><span class="ss">:Paths</span><span class="o">::</span><span class="no">Root</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="vi">@root</span><span class="p">)</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;app&quot;</span><span class="p">,</span>                 <span class="n">eager_load</span><span class="p">:</span> <span class="kp">true</span><span class="p">,</span> <span class="ss">glob</span><span class="p">:</span> <span class="s2">&quot;*&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;app/assets&quot;</span><span class="p">,</span>          <span class="ss">glob</span><span class="p">:</span> <span class="s2">&quot;*&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;app/controllers&quot;</span><span class="p">,</span>     <span class="n">eager_load</span><span class="p">:</span> <span class="kp">true</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;app/helpers&quot;</span><span class="p">,</span>         <span class="n">eager_load</span><span class="p">:</span> <span class="kp">true</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;app/models&quot;</span><span class="p">,</span>          <span class="n">eager_load</span><span class="p">:</span> <span class="kp">true</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;app/mailers&quot;</span><span class="p">,</span>         <span class="n">eager_load</span><span class="p">:</span> <span class="kp">true</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;app/views&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;app/controllers/concerns&quot;</span><span class="p">,</span> <span class="n">eager_load</span><span class="p">:</span> <span class="kp">true</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;app/models/concerns&quot;</span><span class="p">,</span>      <span class="n">eager_load</span><span class="p">:</span> <span class="kp">true</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;lib&quot;</span><span class="p">,</span>                 <span class="n">load_path</span><span class="p">:</span> <span class="kp">true</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;lib/assets&quot;</span><span class="p">,</span>          <span class="ss">glob</span><span class="p">:</span> <span class="s2">&quot;*&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;lib/tasks&quot;</span><span class="p">,</span>           <span class="ss">glob</span><span class="p">:</span> <span class="s2">&quot;**/*.rake&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;config&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;config/environments&quot;</span><span class="p">,</span> <span class="ss">glob</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="no">Rails</span><span class="o">.</span><span class="n">env</span><span class="si">}</span><span class="s2">.rb&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;config/initializers&quot;</span><span class="p">,</span> <span class="ss">glob</span><span class="p">:</span> <span class="s2">&quot;**/*.rb&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;config/locales&quot;</span><span class="p">,</span>      <span class="ss">glob</span><span class="p">:</span> <span class="s2">&quot;*.{rb,yml}&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;config/routes.rb&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;db&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;db/migrate&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;db/seeds.rb&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;vendor&quot;</span><span class="p">,</span>              <span class="n">load_path</span><span class="p">:</span> <span class="kp">true</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;vendor/assets&quot;</span><span class="p">,</span>       <span class="ss">glob</span><span class="p">:</span> <span class="s2">&quot;*&quot;</span>
+</span><span class='line'><span class="n">paths</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Rails Application的<code>paths</code>是这样的:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># railties/lib/rails/application/configuration.rb</span>
+</span><span class='line'><span class="vi">@paths</span> <span class="o">||=</span> <span class="k">begin</span>
+</span><span class='line'>  <span class="n">paths</span> <span class="o">=</span> <span class="k">super</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;config/database&quot;</span><span class="p">,</span>    <span class="ss">with</span><span class="p">:</span> <span class="s2">&quot;config/database.yml&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;config/environment&quot;</span><span class="p">,</span> <span class="ss">with</span><span class="p">:</span> <span class="s2">&quot;config/environment.rb&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;lib/templates&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;log&quot;</span><span class="p">,</span>                <span class="ss">with</span><span class="p">:</span> <span class="s2">&quot;log/</span><span class="si">#{</span><span class="no">Rails</span><span class="o">.</span><span class="n">env</span><span class="si">}</span><span class="s2">.log&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;public&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;public/javascripts&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;public/stylesheets&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;tmp&quot;</span>
+</span><span class='line'>  <span class="n">paths</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>根目录</h2>
+
+<p>目录结构配置是在Rails Engine定义的，这里最终得到的paths是每个Engine的根目录，而<code>Rails.root</code>是来自最顶层的Rails Application的根目录。这里Rails对根目录的判断，在Engine和Application的不一样，Application是通过检查存在<code>config.ru</code>文件的目录，而Engine只是查找存在<code>lib</code>目录的目录。</p>
+
+<h2>路径集合</h2>
+
+<p>在上面的配置代码里的<code>paths.add</code>会做两件事情，一是将传进来的字符串定义为<strong>一组路径</strong>，二是将对应的字符串作为这组路径的默认目录。这个Paths里的每一项。比如，在配置完成之后<code>paths["app/models"]</code>可以将这组路径里的所有目录都取回来。</p>
+
+<p>也就是说每一组路径都是一个集合，而有些特殊的路径里只有一个文件，比如<code>paths["config/database"]</code>。在Rails内部在查找对应目录或文件的时候，都是通过这个<code>paths</code>去查找，而不是硬编码相对目录位置。</p>
+
+<p>另外可以看到<code>paths.add</code>方法除了目录之外，还会接受一些选项</p>
+
+<ul>
+<li>eager_load: 是否使用预加载</li>
+<li>glob: 目录内的文件查找通配符</li>
+<li>with: 指定为唯一的文件</li>
+<li>load_path: 作为<code>require</code>或<code>load</code>时候可以查找到的路径</li>
+</ul>
+
+
+<p>在了解完目录与加载的事实之后，你会知道Rails其实并不能控制你把Model放到<code>app/controllers</code>或其他地方下，它处理的只是把某些目录设置为查找代码的加载路径。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2013/07/04/code-loading-of-rails">Code Loading of Rails</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-07-04T23:03:00+08:00" pubdate data-updated="true">Jul 4<span>th</span>, 2013</time>
+        
+         | <a href="/2013/07/04/code-loading-of-rails#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><blockquote><p>本文是<a href="/inspect-rails">Inspect Rails</a>的一部分，<a href="/inspect-rails">Inspect Rails</a>是由我正在编写的讲解Rails内部的实现与设计的一本书，欢迎阅读</p></blockquote>
+
+<p>Ruby on Rails中实现了一套复杂的代码加载机制，比如怎样自动加载对应的模型，在开发模式
+如何重新加载整个项目的代码，以及开发模式下的代码预加载。</p>
+
+<h2>ActiveSupport::Dependencies</h2>
+
+<p>本篇中讲到的Ruby on Rails的代码加载机制大部分实现代码都在<a href="https://github.com/rails/rails/blob/4-0-stable/activesupport/lib/active_support/dependencies.rb"><code>ActiveSupport::Dependencies</code></a>这个类中，这其中的实现逻辑算是比较复杂，我不想在这里贴满代码，在本篇中只是讲到实现机制以及对应的方法，请读者自行去看对应的代码。</p>
+
+<p><code>ActiveSupport::Dependencies</code>这个类所在的文件被require时，就会自动进行初始化，以下是这个文件的最后一行代码。</p>
+
+<p>ActiveSupport::Dependencies.hook!</p>
+
+<p>我们可以先看看这个对应的<code>hook!</code>方法</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># ActiveSupport::Dependencies</span>
+</span><span class='line'><span class="k">def</span> <span class="nf">hook!</span>
+</span><span class='line'>  <span class="no">Object</span><span class="o">.</span><span class="n">class_eval</span> <span class="p">{</span> <span class="kp">include</span> <span class="no">Loadable</span> <span class="p">}</span>
+</span><span class='line'>  <span class="no">Module</span><span class="o">.</span><span class="n">class_eval</span> <span class="p">{</span> <span class="kp">include</span> <span class="no">ModuleConstMissing</span> <span class="p">}</span>
+</span><span class='line'>  <span class="no">Exception</span><span class="o">.</span><span class="n">class_eval</span> <span class="p">{</span> <span class="kp">include</span> <span class="no">Blamable</span> <span class="p">}</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>它就是将所需的各种Meta Programming挂到Object和Module下，以下就会一步步讲到对应的秘密。</p>
+
+<h2>自动加载</h2>
+
+<p>Ruby on Rails开发者一般不需关心这样一个问题，从来没有手动加载某个模型类或者控制器类，但为什么这个类可以直接使用呢？其中的秘密就是Rails使用了Ruby的其中一个Meta Programming功能，<code>const_missing</code>。所有的类和模组在Ruby里都是常量，当Ruby解析器在遇到没有见过的常量时，就会去调用对应上下文的<code>const_missing</code>方法。开启<code>const_missing</code>的地方就在前面看到加载到Module里的<code>ModuleConstMissing</code>模组中。</p>
+
+<p>当Rails项目代码里遇到一个从来没有加载过的类或模组时，会调用
+<code>Dependencies.load_missing_constant</code>方法去尝试利用之前章节提到的文件结构惯例加载对应代码。这个<code>load_missing_constant</code>的基本思路是，调用<code>Dependencies.search_for_file</code>方法去找到对应的文件，找到后通过<code>Dependencies.require_or_load</code>去加载。这过程其中需要将已经加载的所有内容都记录下来，以便对这个加载状态进行管理。</p>
+
+<h2>开发模式的代码重新加载</h2>
+
+<p>Rails的一个著名的功能就是在开发时，当你修改了某个文件后，Rails会帮你自动去重新加载对应的代码。</p>
+
+<p>ActiveSupport里实现了一个名为FileUpdateChecker的类，可以监视文件变化，当文件被更
+改的时候调用相应的逻辑。Rails通过这种方式去监视所有标记为<code>autoload</code>的目录下的文件，
+当下一次请求过来时，在文件被修改的条件下会自动去进行重新加载。</p>
+
+<p>而重新加载的机制，同样是利用Ruby语言的Meta Programming，通过<a href="http://www.ruby-doc.org/core-2.0/Module.html#method-i-remove_const">remove_const</a>去
+把已经加载的类和模组都从内存中清空，这就让加载状态又回到了原点。虽然这个实现的思路很简单，但是由于Ruby里对于命名空间的处理是以嵌套的形式存在的，故需要循环遍历所有已加载的类和模组，并对其下的类和模组做深度遍历，最后将它们通通都清理。</p>
+
+<p>这部分对应的代码入口如下</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># ActiveSupport::Dependencies</span>
+</span><span class='line'><span class="k">def</span> <span class="nf">clear</span>
+</span><span class='line'>  <span class="n">log_call</span>
+</span><span class='line'>  <span class="n">loaded</span><span class="o">.</span><span class="n">clear</span>
+</span><span class='line'>  <span class="n">remove_unloadable_constants!</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>另外，由于不是所有的代码都是通过这种自动加载的方法，那么利用<code>require</code>和<code>load</code>手动显式加载的。因此必须替换系统的<code>require</code>和<code>load</code>，以记录哪些代码已经被加载进来，实现之后的代码重载。这个就是最开始提到的<code>Dependenciese.hook!</code>里include到Object类中的<code>Loadable</code>模组做的事情。</p>
+
+<h2>生产模式的代码预加载</h2>
+
+<p>Rails在生产模式下，为了提高运行时的速度，去掉在处理请求时加载对应代码的延迟，所以会在
+启动后把所有的业务代码都预先加载进来。它是通过如下的initializer来实现的，这个功能
+通过<code>eager_load</code>的选项来控制。</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># Rails::Application::Finisher</span>
+</span><span class='line'><span class="n">initializer</span> <span class="ss">:eager_load!</span> <span class="k">do</span>
+</span><span class='line'>  <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">eager_load</span>
+</span><span class='line'>    <span class="no">ActiveSupport</span><span class="o">.</span><span class="n">run_load_hooks</span><span class="p">(</span><span class="ss">:before_eager_load</span><span class="p">,</span> <span class="nb">self</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">config</span><span class="o">.</span><span class="n">eager_load_namespaces</span><span class="o">.</span><span class="n">each</span><span class="p">(</span><span class="o">&amp;</span><span class="ss">:eager_load!</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>如果需要某个环境启用预加载的话，可以对应环境将这个<code>eager_load</code>选项打开。</p>
+
+<h2>加载日志</h2>
+
+<p>ActiveSupport::Dependencies内部的所有操作都是可以输出到日志，但默认情况Rails关闭了这部分日志，希望读者在读完这部分内容后去打开日志选项，去实际看看在你的项目中代码是怎样被加载的。打开的方法也很简单，在你的<code>config/application.rb</code>的Application类定义里加上这几行代码:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">config</span><span class="o">.</span><span class="n">after_initialize</span> <span class="k">do</span>
+</span><span class='line'>  <span class="ss">ActiveSupport</span><span class="p">:</span><span class="ss">:Dependencies</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="no">Rails</span><span class="o">.</span><span class="n">logger</span>
+</span><span class='line'>  <span class="ss">ActiveSupport</span><span class="p">:</span><span class="ss">:Dependencies</span><span class="o">.</span><span class="n">log_activity</span> <span class="o">=</span> <span class="kp">true</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>如果你在项目里引用了一些Rails Engine，由于前面章节所提到的Rails Engine与Rails Application的关系，Engine的MVC组件的加载也是通过同种方式进行，因此也能看到相应的Rails Engine里的日志。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2013/06/19/activerecord-migration-tricks-and-tips">你可能不知道的ActiveRecord Migration小技巧</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-06-19T10:22:00+08:00" pubdate data-updated="true">Jun 19<span>th</span>, 2013</time>
+        
+         | <a href="/2013/06/19/activerecord-migration-tricks-and-tips#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>ActiveRecord的Migration是ActiveRecord用来维护RDBMS Schema的工具，
+使开发者的机器和服务器上的Schema保持同步。其原理在于将每次对数据库的改动都保存为一个脚本，
+并以改动内容以及时间戳命名防止重复。</p>
+
+<p>以下我分享一些关于Migration的小技巧。</p>
+
+<h2>say/say_with_time</h2>
+
+<p>我们有时会在Migration里执行数据的改动或更新，而此时最好能在输出里打印一些对应的信息，或者记录下对应的代码的执行时间。</p>
+
+<p><a href="http://api.rubyonrails.org/classes/ActiveRecord/Migration.html#method-i-say">say</a>和
+<a href="http://api.rubyonrails.org/classes/ActiveRecord/Migration.html#method-i-say_with_time">say_with_time</a>就是为了上述需求而诞生的。对比使用<code>puts</code>之类的方法的优点是，这类输出会带有缩进或对应的与
+Migration各种API更一致的输出。</p>
+
+<p>下次需要在Migration里输出点什么的话，请用<code>say</code>以及<code>say_with_time</code>吧。</p>
+
+<h2>references/belongs_to</h2>
+
+<p>很多时候我们会创建互相关联的表，这就需要在表里加入一些引用到其它表的外键字段，这时我们一般会以添加一个
+integer类型的字段，并赋以对应的名字(一般为对应模型的单数形式再加上<code>_id</code>)。ActiveRecord提供了<a href="http://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/TableDefinition.html#method-i-references">references</a>API帮助我们更快捷地处理这种情况。</p>
+
+<p>这里列出文档中的一个非常好的例子，这个例子非常明显地体现了使用这个API的好处。</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">create_table</span> <span class="ss">:taggings</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+</span><span class='line'>  <span class="n">t</span><span class="o">.</span><span class="n">references</span> <span class="ss">:tag</span><span class="p">,</span> <span class="ss">index</span><span class="p">:</span> <span class="p">{</span> <span class="nb">name</span><span class="p">:</span> <span class="s1">&#39;index_taggings_on_tag_id&#39;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="n">t</span><span class="o">.</span><span class="n">references</span> <span class="ss">:tagger</span><span class="p">,</span> <span class="ss">polymorphic</span><span class="p">:</span> <span class="kp">true</span><span class="p">,</span> <span class="ss">index</span><span class="p">:</span> <span class="kp">true</span>
+</span><span class='line'>  <span class="n">t</span><span class="o">.</span><span class="n">references</span> <span class="ss">:taggable</span><span class="p">,</span> <span class="ss">polymorphic</span><span class="p">:</span> <span class="p">{</span> <span class="ss">default</span><span class="p">:</span> <span class="s1">&#39;Photo&#39;</span> <span class="p">}</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>以上的代码等价于下面较长的代码：</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">create_table</span> <span class="ss">:taggings</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+</span><span class='line'>  <span class="n">t</span><span class="o">.</span><span class="n">integer</span> <span class="ss">:tag_id</span><span class="p">,</span> <span class="ss">:tagger_id</span><span class="p">,</span> <span class="ss">:taggable_id</span>
+</span><span class='line'>  <span class="n">t</span><span class="o">.</span><span class="n">string</span>  <span class="ss">:tagger_type</span>
+</span><span class='line'>  <span class="n">t</span><span class="o">.</span><span class="n">string</span>  <span class="ss">:taggable_type</span><span class="p">,</span> <span class="ss">default</span><span class="p">:</span> <span class="s1">&#39;Photo&#39;</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'><span class="n">add_index</span> <span class="ss">:taggings</span><span class="p">,</span> <span class="ss">:tag_id</span><span class="p">,</span> <span class="nb">name</span><span class="p">:</span> <span class="s1">&#39;index_taggings_on_tag_id&#39;</span>
+</span><span class='line'><span class="n">add_index</span> <span class="ss">:taggings</span><span class="p">,</span> <span class="o">[</span><span class="ss">:tagger_id</span><span class="p">,</span> <span class="ss">:tagger_type</span><span class="o">]</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>此外，<code>references</code>这个API也被alias为更容易记住的<code>belongs_to</code>。</p>
+
+<h2>change_table</h2>
+
+<p>在Migration里提供了Schema操作的API都操作了两种形式，比如<code>add_column</code>和<code>column</code>。在<code>create_table</code>里
+可以使用如<code>column</code>比较简短形式的API，这与Form Helper在Form Buildler里可以使用不带<code>_tag</code>后缀的API一致。</p>
+
+<p>当我们需要去对同一个表做多次操作的时候，可以通过<code>change_table</code>来化简代码，在<code>change_table</code>的代码块中，
+可以使用简短形式的API</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">change_table</span><span class="p">(</span><span class="ss">:suppliers</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+</span><span class='line'>  <span class="n">t</span><span class="o">.</span><span class="n">column</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">:string</span><span class="p">,</span> <span class="ss">limit</span><span class="p">:</span> <span class="mi">60</span>
+</span><span class='line'>  <span class="n">t</span><span class="o">.</span><span class="n">remove</span> <span class="ss">:company_id</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>create_join_table/drop_join_table</h2>
+
+<p>当我们使用多对多(has_and_belongs_to_many)关联时需要创建关联表，而关联Schema很简单，只是
+需要把关联的两张表的ID字段分别记录下来，而其中涉及了ActiveRecord的命名规范。这时使用
+<a href="http://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-create_join_table">create_join_table</a>这个API就能很方便地帮我们去处理命名的事情，
+只需要将对应两个表的表名作为参数传进去。</p>
+
+<p>对应的也有一个<a href="http://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-drop_join_table">drop_join_table</a>API去帮我们删除这种关联表。</p>
+
+<h2>change_column_default/change_column_null</h2>
+
+<p>业务总是在不断变化的，有时数据库里一些字段可能会由非空改为允许为空，修改默认值。当你把这些规则放到数据库时就
+需要修改对应的字段和数据。</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">change_column_null</span><span class="p">(</span><span class="ss">:users</span><span class="p">,</span> <span class="ss">:nickname</span><span class="p">,</span> <span class="kp">false</span><span class="p">)</span>
+</span><span class='line'><span class="n">change_column_default</span><span class="p">(</span><span class="ss">:accounts</span><span class="p">,</span> <span class="ss">:authorized</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><code>change_column_default</code>会做两个事情，首先是把对应的字段填上指定的默认值，之后再修改Schema。</p>
+
+<h2>reversible</h2>
+
+<p>我们知道Migration提供了Up/Down两个方向，相当于do和undo。随着<code>change</code>API的流行，很多时候我们不会去写
+up和down两个方法，但有时就是需要写两个方向的代码。比如下面这个例子，在添加了first_name和last_name两个字段
+后，在up这个方法上需要从full_name字段提取出first_name和last_name，而down的方法又需要合并出full_name的数据，这就是<a href="http://api.rubyonrails.org/classes/ActiveRecord/Migration.html#method-i-reversible">reversible</a>的使用场景。</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">SplitNameMigration</span> <span class="o">&lt;</span> <span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Migration</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">change</span>
+</span><span class='line'>    <span class="n">add_column</span> <span class="ss">:users</span><span class="p">,</span> <span class="ss">:first_name</span><span class="p">,</span> <span class="ss">:string</span>
+</span><span class='line'>    <span class="n">add_column</span> <span class="ss">:users</span><span class="p">,</span> <span class="ss">:last_name</span><span class="p">,</span> <span class="ss">:string</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">reversible</span> <span class="k">do</span> <span class="o">|</span><span class="n">dir</span><span class="o">|</span>
+</span><span class='line'>      <span class="no">User</span><span class="o">.</span><span class="n">reset_column_information</span>
+</span><span class='line'>      <span class="no">User</span><span class="o">.</span><span class="n">all</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">u</span><span class="o">|</span>
+</span><span class='line'>        <span class="n">dir</span><span class="o">.</span><span class="n">up</span>   <span class="p">{</span> <span class="n">u</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">last_name</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">full_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span> <span class="p">}</span>
+</span><span class='line'>        <span class="n">dir</span><span class="o">.</span><span class="n">down</span> <span class="p">{</span> <span class="n">u</span><span class="o">.</span><span class="n">full_name</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">u</span><span class="o">.</span><span class="n">first_name</span><span class="si">}</span><span class="s2"> </span><span class="si">#{</span><span class="n">u</span><span class="o">.</span><span class="n">last_name</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">}</span>
+</span><span class='line'>        <span class="n">u</span><span class="o">.</span><span class="n">save</span>
+</span><span class='line'>      <span class="k">end</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">revert</span> <span class="p">{</span> <span class="n">add_column</span> <span class="ss">:users</span><span class="p">,</span> <span class="ss">:full_name</span><span class="p">,</span> <span class="ss">:string</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>revert</h2>
+
+<p>某些时候写反向的逻辑会比正向的逻辑好写一点，比如有时我们会用<code>unless</code>而不是<code>if</code>。Migration里的
+<a href="http://api.rubyonrails.org/classes/ActiveRecord/Migration.html#method-i-revert">revert</a>方法就能提供这样的形式去编写数据库改动。</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">FixTLMigration</span> <span class="o">&lt;</span> <span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Migration</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">change</span>
+</span><span class='line'>    <span class="n">revert</span> <span class="k">do</span>
+</span><span class='line'>      <span class="n">create_table</span><span class="p">(</span><span class="ss">:horses</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+</span><span class='line'>        <span class="n">t</span><span class="o">.</span><span class="n">text</span> <span class="ss">:content</span>
+</span><span class='line'>        <span class="n">t</span><span class="o">.</span><span class="n">datetime</span> <span class="ss">:remind_at</span>
+</span><span class='line'>      <span class="k">end</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>    <span class="n">create_table</span><span class="p">(</span><span class="ss">:apples</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+</span><span class='line'>      <span class="n">t</span><span class="o">.</span><span class="n">string</span> <span class="ss">:variety</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>同时<code>revert</code>这个方法也支持传入一个Migration的名字，其作用是执行该Migration的down方法，当某个Migration已经同步上代码库后，希望撤销这个Migration时特别有用。</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">require_relative</span> <span class="s1">&#39;2012121212_tenderlove_migration&#39;</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">FixupTLMigration</span> <span class="o">&lt;</span> <span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Migration</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">change</span>
+</span><span class='line'>    <span class="n">revert</span> <span class="no">TenderloveMigration</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">create_table</span><span class="p">(</span><span class="ss">:apples</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+</span><span class='line'>      <span class="n">t</span><span class="o">.</span><span class="n">string</span> <span class="ss">:variety</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>At the end</h2>
+
+<p>最后，提示一下，以上的API有些在Rails 3.x中没有加入，在Rails 4.0上以上的API可以找到。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2013/06/14/rails-internal-hierarchy">Rails Internal Hierarchy</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-06-14T21:19:00+08:00" pubdate data-updated="true">Jun 14<span>th</span>, 2013</time>
+        
+         | <a href="/2013/06/14/rails-internal-hierarchy#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><blockquote><p>本文是<a href="/inspect-rails">Inspect Rails</a>的一部分，<a href="/inspect-rails">Inspect Rails</a>是由我正在编写的讲解Rails内部的实现与设计的一本书，欢迎阅读</p></blockquote>
+
+<p>Rails 内部有清晰的层级结构，以实现Rails应用程序和Rails插件的配置以及初始化。</p>
+
+<p><img src='/images/graphviz/g-a8120f3125874b4ee9b996faea11e8f1.svg'></p>
+
+<p>如上图所示，所有Rails Application继承自Rails Engine，而Rails Engine继承自Railtie，这套继承体系的实现全部都封装在railties这个Rubygem里。值得一提的是，Railtie和Rails Engine的子类都是<a href="http://en.wikipedia.org/wiki/Singleton_pattern">Singleton</a>，Rails Application本身就是<a href="http://en.wikipedia.org/wiki/Singleton_pattern">Singleton</a>，所以在一个程序里Rails Application只有一个实例。</p>
+
+<h2>Railtie</h2>
+
+<p>我们先从Railtie说起，如果你翻查过一些Rails插件的源码，会发现它都继承了Railtie。Railtie位于层级里最低最底层的部分，它实现了配置和初始化这两大功能，其中的逻辑都组织在以下两个Modules中</p>
+
+<ul>
+<li>Initializable, 实现位于<code>rails/lib/rails/initializable</code></li>
+<li>Configuration, 实现位于<code>rails/lib/rails/railtie/configuration</code></li>
+</ul>
+
+
+<p>Initializable 模块顾名思义就是负责初始化，常用的方法只有一个叫<code>initializer</code>的方法，它的方法签名如下，接受一个名字，一个可选的参数，一个代码块</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">initializer</span><span class="p">(</span><span class="nb">name</span><span class="p">,</span> <span class="n">opts</span> <span class="o">=</span> <span class="p">{},</span> <span class="o">&amp;</span><span class="n">blk</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>定义好的 Initializer 代码块会在Rails应用程序启动时执行，并且可以在参数里指定<code>before</code>或者<code>after</code>选项，
+让其在某个已定义的Initializer执行之前或之后执行，这个功能是通过<a href="http://www.ruby-doc.org/stdlib-2.0/libdoc/tsort/rdoc/TSort.html">Ruby内置的TSort</a>实现的。以下是ActiveRecord设置Logger的Initializer</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">initializer</span> <span class="s2">&quot;active_record.logger&quot;</span> <span class="k">do</span>
+</span><span class='line'>  <span class="no">ActiveSupport</span><span class="o">.</span><span class="n">on_load</span><span class="p">(</span><span class="ss">:active_record</span><span class="p">)</span> <span class="p">{</span> <span class="nb">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">||=</span> <span class="o">::</span><span class="no">Rails</span><span class="o">.</span><span class="n">logger</span> <span class="p">}</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Configuration 是实现常见的<code>config.xxx = yyy</code>这一常见写法的源头，它使用了Ruby的method_missing实现了配置参数的属性访问和设置，全部的配置都放在一个名为<code>@@options</code>的类变量里。</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">method_missing</span><span class="p">(</span><span class="nb">name</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">blk</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">if</span> <span class="nb">name</span><span class="o">.</span><span class="n">to_s</span> <span class="o">=~</span> <span class="sr">/=$/</span>
+</span><span class='line'>    <span class="vc">@@options</span><span class="o">[</span><span class="vg">$`</span><span class="o">.</span><span class="n">to_sym</span><span class="o">]</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">first</span>
+</span><span class='line'>  <span class="k">elsif</span> <span class="vc">@@options</span><span class="o">.</span><span class="n">key?</span><span class="p">(</span><span class="nb">name</span><span class="p">)</span>
+</span><span class='line'>    <span class="vc">@@options</span><span class="o">[</span><span class="nb">name</span><span class="o">]</span>
+</span><span class='line'>  <span class="k">else</span>
+</span><span class='line'>    <span class="k">super</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Action Mailer, Action Controller, Action View和Active Record 它们集成到Rails框架的都是通过Railtie实现。</p>
+
+<p>如果你去看现实中的各种插件写的Railtie中，基本上就是调用initializer方法配置初始化逻辑和通过config变量在添加自身相关的各种配置选项。而且Rails也使用这两个模块去设置各种框架本身的初始化和参数配置。</p>
+
+<p>Railtie除此之外，它还负责rake tasks和generator等部分与Rails应用程序的集成，暂不讲。</p>
+
+<h2>Rails Engine</h2>
+
+<p>Rails Engine主要的设想就是把一些通用的Rails应用程序抽象出来并得到重用，也就是说每个Rails Engine几乎就是一个Rails应用程序，它拥有MVC结构，具有自己的路由，独立的Middleware Stack。社区里最广为人知的一个Rails Engine应该是<a href="https://github.com/plataformatec/devise">devise</a>。</p>
+
+<p>Rails Engine中实现Rails广为人知的&ldquo;<a href="http://en.wikipedia.org/wiki/Convention_over_configuration">Convention over Configuration</a>&rdquo;特性，整套目录结构的加载就是在这里定义的。</p>
+
+<p>Rails Engine是一个Rack Middleware，它实现了<code>call</code>方法，所以能Mount到其他Rails Engine或者Rails Application的路由上。</p>
+
+<p>关于Rails的代码加载方式会在后续的章节详细讲解。</p>
+
+<h2>Rails Application</h2>
+
+<p>组织起Rails应用程序的启动流程，是Rails Application这个类最主要的事情。而Rails Application区别于Rails Engine在于需要管理很多外部的资源，比如以下的内容</p>
+
+<ul>
+<li><code>Rails.logger</code></li>
+<li><code>Rails.cache</code></li>
+<li>Session 的存储机制</li>
+<li>维护完整Middleware Stack</li>
+<li>代码重新加载</li>
+<li>与Bundler的集成</li>
+</ul>
+
+
+<p>关于Rails的启动流程和Middleware Stack等话题会在后续的章节中展开并详细讲解。</p>
+
+<p>本节暂时到此。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2013/06/12/dependencies-of-rails">Dependencies of Rails</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-06-12T21:43:00+08:00" pubdate data-updated="true">Jun 12<span>th</span>, 2013</time>
+        
+         | <a href="/2013/06/12/dependencies-of-rails#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><blockquote><p>本文是<a href="/inspect-rails">Inspect Rails</a>的一部分，<a href="/inspect-rails">Inspect Rails</a>是由我正在编写的讲解Rails内部的实现与设计的一本书，欢迎阅读</p></blockquote>
+
+<p>我们平时安装Rails时，执行的是<code>gem install rails</code>，安装的Rubygem名称就叫rails，而
+这个Rubygem其实只是个没有代码的Meta Gem，它的作用就是定义rails依赖的组件，从
+rails的gemspec看到</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># rails.gemspec</span>
+</span><span class='line'><span class="n">s</span><span class="o">.</span><span class="n">add_dependency</span> <span class="s1">&#39;activesupport&#39;</span><span class="p">,</span> <span class="n">version</span>
+</span><span class='line'><span class="n">s</span><span class="o">.</span><span class="n">add_dependency</span> <span class="s1">&#39;actionpack&#39;</span><span class="p">,</span>    <span class="n">version</span>
+</span><span class='line'><span class="n">s</span><span class="o">.</span><span class="n">add_dependency</span> <span class="s1">&#39;activerecord&#39;</span><span class="p">,</span>  <span class="n">version</span>
+</span><span class='line'><span class="n">s</span><span class="o">.</span><span class="n">add_dependency</span> <span class="s1">&#39;actionmailer&#39;</span><span class="p">,</span>  <span class="n">version</span>
+</span><span class='line'><span class="n">s</span><span class="o">.</span><span class="n">add_dependency</span> <span class="s1">&#39;railties&#39;</span><span class="p">,</span>      <span class="n">version</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">s</span><span class="o">.</span><span class="n">add_dependency</span> <span class="s1">&#39;bundler&#39;</span><span class="p">,</span>         <span class="s1">&#39;&gt;= 1.3.0&#39;</span><span class="p">,</span> <span class="s1">&#39;&lt; 2.0&#39;</span>
+</span><span class='line'><span class="n">s</span><span class="o">.</span><span class="n">add_dependency</span> <span class="s1">&#39;sprockets-rails&#39;</span><span class="p">,</span> <span class="s1">&#39;~&gt; 2.0.0.rc4&#39;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>以上的依赖声明说明了Rails依赖于哪些组件，首先有几个active或action打头的Rubygem</p>
+
+<ul>
+<li>activesupport, 对Ruby语言的一些扩展，Rails的所有核心组件都是依赖于它</li>
+<li>actionpack, 包含了处理Web请求逻辑，包含了MVC中的Controller和View</li>
+<li>activerecord, 以Active Record模式为基础的ORM</li>
+<li>actionmailer, 包含邮件发送和接收逻辑</li>
+<li>railties, 把以上的组件组合起来</li>
+<li><a href="https://github.com/rails/sprockets-rails">sprockets-rails</a>, <a href="https://github.com/sstephenson/sprockets">Sprockets</a>的Rails
+集成代码，Sprockets为Rails带来了著名的Assets Pipeline，Rails 3.1引入</li>
+<li><a href="https://github.com/carlhuda/bundler">bundler</a>, 管理依赖Rubygem的版本</li>
+</ul>
+
+
+<p>除了Bundler和sprockets-rails外的几个Act***框架都是放在
+<a href="https://github.com/rails/rails">Rails的Repo</a>里，还有以下介绍的大部分***-rails
+的Rails与其它库的集成都是放在<a href="https://github.com/rails">Rails的Github账号</a>下的，
+如sprockets-rails。</p>
+
+<p>当然，各个组件还引用了其它的依赖</p>
+
+<ul>
+<li><a href="https://github.com/jimweirich/builder">builder</a>, 创建XML数据的DSL</li>
+<li><a href="https://github.com/rack/rack">rack</a>, Ruby的Web Server接口，我们知道Rails是
+一个基于Rack的Web框架</li>
+<li><a href="https://github.com/brynary/rack-test">rack-test</a>, rack的测试框架</li>
+<li><a href="https://github.com/kwatch/erubis">erubis</a>, 最快的ERB渲染引擎</li>
+<li><a href="https://github.com/rails/arel">arel</a>, 基于关系代数的SQL生成框架</li>
+<li><a href="https://github.com/jimweirich/rake">rake</a>, 不解释</li>
+<li><a href="https://github.com/wycats/thor">thor</a>, rake的替代品，在Rails中只用到了Thor的
+文件操作功能去构建Generator</li>
+</ul>
+
+
+<p><a name='req-deps' href='#req-deps'></a></p>
+
+<h2>必要组件</h2>
+
+<p>Rails在gemspec里声明是核心组件，但并非是必要的组件，比如Assets Pipeline，
+ActiveRecord和AtionMailer不是一定需要包含在你的Rails Application里。</p>
+
+<p>Rails 应用程序首先必须是个Rails Application，所以需要railites去维护整个程序的
+加载和目录结构等。除此以外，Rails是个Web Framework，所以actionpack也是其必要的
+组件之一。剩下的一个必要组件是，ActiveSupport，所有组件的必要依赖。</p>
+
+<p><a name='opt-deps' href='#opt-deps'></a></p>
+
+<h2>可选组件</h2>
+
+<p>AcitveRecord，在Rails 3之后属于可替换的组件。由于在Actionpack里如Routing和Form
+Helper严重依赖于ActiveRecord，所以Rails Core Team就抽象出了ActiveModel去解开
+这个依赖，将Routing和Form Helper等需要调用到的部分，以Module的形式定义好接口，
+只要包含或者实现了ActiveModel接口就能完美地与ActionPack协作。</p>
+
+<p>ActionMailer，不是所有的Rails应用都有发邮件的需求，显然这不是必要的组件。</p>
+
+<p>Sprockets，为Rails提供Assets Pipeline功能，但并不是所有人都喜欢它。在Rails应用
+生成器里也提供了这个选项，去掉Assets Pipeline功能。</p>
+
+<p>Test::Unit，Rails默认的测试框架，但由于Test::Unit是Ruby语言自带的，当开发者不想
+直接使用它的时候，Rails只是关闭相关的代码生成器。另外，其他任何的测试框架都只是
+Test::Unit的包装，添加了Syntax Sugar而已。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2013/06/08/hello-octopress">Hello Octopress</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-06-08T23:06:00+08:00" pubdate data-updated="true">Jun 8<span>th</span>, 2013</time>
+        
+         | <a href="/2013/06/08/hello-octopress#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>开始使用<a href="http://octopress.org/">Octopress</a> Blog Engine，加上<a href="https://github.com/lucaslew/whitespace">whitespace</a>
+这个Theme。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/08/01/got-a-hhkb-pro2">Got a HHKB Pro2</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-08-01T00:00:00+08:00" pubdate data-updated="true">Aug 1<span>st</span>, 2012</time>
+        
+         | <a href="/2012/08/01/got-a-hhkb-pro2#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>本文写在<a href="http://en.wikipedia.org/wiki/Happy_Hacking_Keyboard">HHKB</a>入手3个月后，觉着要使用一段时间之后才能写出比较客观的感受。这个键盘是在<a href="http://weibo.com/2051369563/ye9QmzIwW">4月11日</a>老婆偷偷买了送给我的。</p>
+
+<p>这是刚买来时的样子</p>
+
+<p><img src="http://ww3.sinaimg.cn/bmiddle/7a456a5bjw1drw179o1apj.jpg" alt="My Keyboard" /></p>
+
+<h2>HHKB</h2>
+
+<p>HHKB是Happy Hacking Keyboard的缩写，PFU出品，HHKB系列只有三种型号，HHKB
+Pro2 Type-S，HHKB Pro2和HHKB
+Lite2。其中Type-S的价格要比普通的Pro2再贵个1K左右。</p>
+
+<p>值得一提的是HHKB Pro2是静电电容键盘，而HHKB
+Lite2是薄膜键盘，都并非是机械键盘。</p>
+
+<h2>外形</h2>
+
+<p>这个是个白色无刻的键盘，我理想中的HHKB只有白色无刻和黑色同刻这两款，就觉得这两款感觉上非常Cool，一让人看到就有种装X的感觉。在连接方面，键盘带了一根可以拆卸的USB连接线。</p>
+
+<h2>键位布局</h2>
+
+<p>由于HHKB的键位布局和一般的键盘有比较大的差异，再加上无刻，刚使用那段时间有点不适应。</p>
+
+<p>一开始最不适应的有两个地方，数字键上的符号，和<code>~</code>移到键盘最右上角。<code>~</code>和<code>|</code>很快能习惯。以前一直是看着符号来按的，用了这个无刻的键盘经常会按错。但经过一段时间的使用，手指的肌肉已经记住了每个数字键和符号的位置。</p>
+
+<p>而很早之前我就是把Cap lock设置为Control，HHKB上原生的这种Unix的键位设置对我来说更是如鱼得水。Control加上Esc的位置让我这个<a href="https://bitbucket.org/kaichen/vimrc">Vim的重度用户</a>用起来非常的舒服。</p>
+
+<p>这么几个月使用下来，由于完全不用低头看键盘（无刻看了也没用），所以输入效率着实提高了不少。</p>
+
+<h2>手感</h2>
+
+<p>手感很软，估计相当于红轴的机械键盘（试过<a href="https://plus.google.com/100461408096595815099">同事</a>的红轴键盘），所以手指不需要怎么发力。另外是键程比较长，按键的回弹力量刚刚好，所以打字的段落感和节奏感非常好。长时间使用下来，对比以前的打字经验，在速度快的时候敲击的错误率降低。这里的错误是输入的键在一般键盘上顺序就串了，比如rails很容易输错为rials，但HHKB上没有这样的情况，这让我感觉很神奇，也许这就是这个键盘的价值所在吧。</p>
+
+<h2>其他</h2>
+
+<p>HHKB对Mac的支持很好，支持跳线设置为Mac模式，以支持几个常用的功能键，Volume Up/Down和Mute。</p>
+
+<p>这两天还败了个HHKB的专用包，理由是每天都背着这个键盘上下班，有时听到键盘在包里撞来撞去的声音有些心寒。这个包没现货需要订货，估计下星期能到手。</p>
+
+<p>推荐大家在有经济能力的情况下可以败一个，毕竟真的能提高一些效率。当然这也就是个普通的键盘，对你基本的能力并没有提升，提高的只是输入的体验，让你把精力都focus在hacking上，达到这个键盘所称的境界，Happy Hacking。再次感谢我老婆，我自己是狠不下心买的。</p>
+
+<p>最后附上网上的一篇比较好的HHKB的评测</p>
+
+<ul>
+<li><a href="http://cyher.net/peripherals/the-art-of-hhkb-pro-2">Happy Hacking keyboard pro 2的艺术</a></li>
+</ul>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/05/02/instance-property-of-coffeescript">Instance Property of CoffeeScript</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-05-02T20:00:00+08:00" pubdate data-updated="true">May 2<span>nd</span>, 2012</time>
+        
+         | <a href="/2012/05/02/instance-property-of-coffeescript#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>用Class语法定义的Instance Property是直接append到prototype上，当
+你把一个property定义为某个对象(非立即值)时，那所有的
+Instance都会指向同一个内存地址上。</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='coffeescript'><span class='line'><span class="k">class</span> <span class="nx">Foo</span>
+</span><span class='line'>  <span class="nv">favSites: </span><span class="p">[</span><span class="s">&quot;Google&quot;</span><span class="p">]</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>会编译得到：</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="kd">var</span> <span class="nx">Foo</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">Foo</span> <span class="o">=</span> <span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>  <span class="kd">function</span> <span class="nx">Foo</span><span class="p">()</span> <span class="p">{}</span>
+</span><span class='line'>  <span class="nx">Foo</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">favSites</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Google&quot;</span><span class="p">];</span>
+</span><span class='line'>  <span class="k">return</span> <span class="nx">Foo</span><span class="p">;</span>
+</span><span class='line'><span class="p">})();</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>这里容易犯错的地方就是当有实例去修改上面提到的共享
+内存地址的内容，这样就会得到一个奇怪的结果。</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='coffeescript'><span class='line'><span class="nv">foo1 = </span><span class="k">new</span> <span class="nx">Foo</span>
+</span><span class='line'><span class="nv">foo2 = </span><span class="k">new</span> <span class="nx">Foo</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">foo1</span><span class="p">.</span><span class="nx">favSites</span><span class="p">.</span><span class="nx">push</span> <span class="s">&quot;Github&quot;</span>
+</span><span class='line'><span class="nx">alert</span> <span class="nx">foo2</span><span class="p">.</span><span class="nx">favSites</span> <span class="c1"># =&gt; [&quot;Google&quot;, &quot;Github&quot;]</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>当不想出现这种情况时最好避免直接把Instance Property定义在
+Class Contructor的prototype上。</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='coffeescript'><span class='line'><span class="k">class</span> <span class="nx">Foo</span>
+</span><span class='line'>  <span class="nv">constructor: </span><span class="nf">(@options = {}) -&gt;</span>
+</span><span class='line'>    <span class="vi">@favSites = </span><span class="p">[</span><span class="s">&quot;Google&quot;</span><span class="p">]</span>
+</span><span class='line'>
+</span><span class='line'><span class="nv">foo1 = </span><span class="k">new</span> <span class="nx">Foo</span>
+</span><span class='line'><span class="nv">foo2 = </span><span class="k">new</span> <span class="nx">Foo</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">foo1</span><span class="p">.</span><span class="nx">favSites</span><span class="p">.</span><span class="nx">push</span> <span class="s">&quot;Github&quot;</span>
+</span><span class='line'><span class="nx">alert</span> <span class="nx">foo2</span><span class="p">.</span><span class="nx">favSites</span> <span class="c1"># =&gt; [&quot;Google&quot;]</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>在Backbonejs里也是这么处理的，比如在Model中，每个实例的所
+有属性值(<code>attributes</code>)：</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="kd">var</span> <span class="nx">Model</span> <span class="o">=</span> <span class="nx">Backbone</span><span class="p">.</span><span class="nx">Model</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">attributes</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="kd">var</span> <span class="nx">defaults</span><span class="p">;</span>
+</span><span class='line'>    <span class="nx">attributes</span> <span class="o">||</span> <span class="p">(</span><span class="nx">attributes</span> <span class="o">=</span> <span class="p">{});</span>
+</span><span class='line'>    <span class="err">#</span><span class="p">...</span>
+</span><span class='line'>    <span class="k">this</span><span class="p">.</span><span class="nx">attributes</span> <span class="o">=</span> <span class="p">{};</span>
+</span><span class='line'>    <span class="k">this</span><span class="p">.</span><span class="nx">_escapedAttributes</span> <span class="o">=</span> <span class="p">{};</span>
+</span><span class='line'>    <span class="k">this</span><span class="p">.</span><span class="nx">cid</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">uniqueId</span><span class="p">(</span><span class="s1">&#39;c&#39;</span><span class="p">);</span>
+</span><span class='line'>    <span class="k">this</span><span class="p">.</span><span class="nx">changed</span> <span class="o">=</span> <span class="p">{};</span>
+</span><span class='line'>    <span class="k">this</span><span class="p">.</span><span class="nx">_silent</span> <span class="o">=</span> <span class="p">{};</span>
+</span><span class='line'>    <span class="k">this</span><span class="p">.</span><span class="nx">_pending</span> <span class="o">=</span> <span class="p">{};</span>
+</span><span class='line'>    <span class="err">#</span><span class="p">...</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+</div>
+  
+  
+
+
+    </article>
+  
+  <div class="pagination">
+    
+      <a class="prev" href="/blog/page/3/">&larr; Older</a>
+    
+    <a href="/blog/archives">Blog Archives</a>
+    
+    <a class="next" href="/">Newer &rarr;</a>
+    
+  </div>
+</div>
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'thekaiway';
+      
+        
+        var disqus_script = 'count.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,405 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>ActionView Safe Buffer - The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="本文是Inspect Rails的一部分, Inspect Rails是由我正在编写的讲解Rails内部实现与设计的一本书, 欢迎阅读 为了提高安全性，ActionView的模版在Rails 3中实现了名为SafeBuffer用来减少被XSS攻击的风险。 XSS攻击 XSS，全称为Cross- &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io/2013/08/17/actionview-safe-buffer">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">ActionView Safe Buffer</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-08-17T17:04:00+08:00" pubdate data-updated="true">Aug 17<span>th</span>, 2013</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><blockquote><p>本文是<a href="/inspect-rails">Inspect Rails</a>的一部分, <a href="/inspect-rails">Inspect Rails</a>是由我正在编写的讲解Rails内部实现与设计的一本书, 欢迎阅读</p></blockquote>
+
+<p>为了提高安全性，ActionView的模版在Rails 3中实现了名为SafeBuffer用来减少被<a href="http://en.wikipedia.org/wiki/Cross-site_scripting">XSS攻击</a>的风险。</p>
+
+<h2>XSS攻击</h2>
+
+<p>XSS，全称为Cross-site Scripting，中文叫跨站脚本攻击。这是通过对目标网页注入脚本（最常见是JavaScript，也可以是VBScript等），然后通过这段脚本来盗取用户cookies或做跨站提交等。</p>
+
+<p>要防止这种攻击，Rails开发者必须非常小心地处理用户输入的内容，本篇讲到SafeBuffer就是帮助开发者减小被攻击的风险。</p>
+
+<h2>HTML Safe</h2>
+
+<p>在ActionView的Template中，默认的内容是HTML Unsafe的，HTML Unsafe的内容被拼接时会先用<code>ERB::Utils.html_escape</code>方法先处理一遍。只有两种才会被认为是HTML Safe的</p>
+
+<ul>
+<li>Numeric</li>
+<li>AS::SafeBuffer的实例对象</li>
+</ul>
+
+
+<p>这里可能会让人出乎意料的是，SafeBuffer的实现放在ActiveSupport的String Extention里，具体定义文件在<code>active_support/core_ext/string/output_safety.rb
+</code>。</p>
+
+<p>SafeBuffer被定义为String的子类，与普通的String不同是SafeBuffer的<code>html_safe</code>属性为True。</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">module</span> <span class="nn">ActiveSupport</span> <span class="c1">#:nodoc:</span>
+</span><span class='line'>  <span class="k">class</span> <span class="nc">SafeBuffer</span> <span class="o">&lt;</span> <span class="nb">String</span>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="o">*</span><span class="p">)</span>
+</span><span class='line'>      <span class="vi">@html_safe</span> <span class="o">=</span> <span class="kp">true</span>
+</span><span class='line'>      <span class="k">super</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>    <span class="c1"># other methods</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>另外，对于其他的对象，通过打开类的方式将Object的html_safe设置为False，而Numeric被设置为True。具体定义如下</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Object</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">html_safe?</span>
+</span><span class='line'>    <span class="kp">false</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">Numeric</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">html_safe?</span>
+</span><span class='line'>    <span class="kp">true</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>我们知道String的内容是可变的，同样SafeBuffer的内容也是可变的。出于安全性考虑SafeBuffer会将产生新对象或修改内容本身的方法，比如<code>capitalize</code>，<code>gsub</code>等等，都替换为结果是HTML Unsafe的字符串</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="nb">class_eval</span> <span class="o">&lt;&lt;-</span><span class="no">EOT</span><span class="p">,</span> <span class="bp">__FILE__</span><span class="p">,</span> <span class="bp">__LINE__</span> <span class="o">+</span> <span class="mi">1</span>
+</span><span class='line'><span class="sh">  def #{unsafe_method}(*args, &amp;block)</span>
+</span><span class='line'><span class="sh">    to_str.#{unsafe_method}(*args, &amp;block)</span>
+</span><span class='line'><span class="sh">  end</span>
+</span><span class='line'>
+</span><span class='line'><span class="sh">  def #{unsafe_method}!(*args)</span>
+</span><span class='line'><span class="sh">    @html_safe = false</span>
+</span><span class='line'><span class="sh">    super</span>
+</span><span class='line'><span class="sh">  end</span>
+</span><span class='line'><span class="no">EOT</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>比如替换后的capistalize方法是</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">capitalize</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+</span><span class='line'>  <span class="n">to_str</span><span class="o">.</span><span class="n">capitalize</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">capitalize!</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+</span><span class='line'>  <span class="vi">@html_safe</span> <span class="o">=</span> <span class="kp">false</span>
+</span><span class='line'>  <span class="k">super</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>稍微解释一下方法替换的意义，在非<a href="http://dablog.rubypal.com/2007/8/15/bang-methods-or-danger-will-rubyist">bang方法</a>中，先调用<code>to_str</code>就将原字符串转化为普通的String，由于除了SafeBuffer外的对象都是unsafe的，通过这么转化本来HTML Safe的内容又变回了HTML Unsafe的状态。</p>
+
+<p>当需要将内容标记为html safe状态的时候，可以调用<code>html_safe</code>方法，这个方法的原理就是构造一个新的SafeBuffer对象，代码如下</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">String</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">html_safe</span>
+</span><span class='line'>    <span class="ss">ActiveSupport</span><span class="p">:</span><span class="ss">:SafeBuffer</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="nb">self</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>接口</h2>
+
+<p>基本上所有模版语言都放出了，一些回调接口让开发者可以替换掉原有的Buffer实现。ActionView里定义的Template Handler就完成了模版语言Buffer实现的替换，比如这里的<a href="https://github.com/rails/rails/blob/4-0-stable/actionpack/lib/action_view/template/handlers/erb.rb">对Erb的替换</a>。</p>
+
+<p>一些第三方的模板语言，比如<a href="https://github.com/haml/haml">Haml</a>直接集成了SafeBuffer，<a href="https://github.com/slim-template/slim">Slim</a>通过其依赖的<a href="https://github.com/judofyr/temple">Temple</a>也集成了SafeBuffer。</p>
+
+<h2>参考</h2>
+
+<ul>
+<li><a href="http://yehudakatz.com/2010/02/01/safebuffers-and-rails-3-0/">http://yehudakatz.com/2010/02/01/safebuffers-and-rails-3-0/</a></li>
+<li><a href="http://www.railsdispatch.com/posts/security">http://www.railsdispatch.com/posts/security</a></li>
+</ul>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Kai Chen</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-08-17T17:04:00+08:00" pubdate data-updated="true">Aug 17<span>th</span>, 2013</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/ruby/'>Ruby</a>, <a class='category' href='/blog/categories/ruby-on-rails/'>Ruby on Rails</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://kaichen.github.io/2013/08/17/actionview-safe-buffer" data-via="" data-counturl="http://kaichen.github.io/2013/08/17/actionview-safe-buffer" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2013/08/16/rails-ujs" title="Previous Post: Rails ujs">&laquo; Rails ujs</a>
+      
+      
+        <a class="basic-alignment right" href="/2013/09/08/read-write-activerecord-attribute" title="Next Post: Read and Write Activerecord Attribute">Read and Write Activerecord Attribute &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'thekaiway';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://kaichen.github.io/2013/08/17/actionview-safe-buffer.html';
+        var disqus_url = 'http://kaichen.github.io/2013/08/17/actionview-safe-buffer';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

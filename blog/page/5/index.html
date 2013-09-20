@@ -1,0 +1,998 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="最近开发中遇到一些有趣的rails pulgin，好像国内连介绍都没有，所以打算写写。 Rails Widgets http://www.seesaw.it/en/toolbox/widgets/ 一个DSLful的Page widgets plugin，让你简单地在页面上添加各种widgets， &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io/blog/page/5">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div class="blog-index">
+  
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/08/06/a-few-interesting-rails-plugin">A Few Interesting Rails Plugin</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-08-06T00:00:00+08:00" pubdate data-updated="true">Aug 6<span>th</span>, 2008</time>
+        
+         | <a href="/2008/08/06/a-few-interesting-rails-plugin#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>最近开发中遇到一些有趣的rails pulgin，好像国内连介绍都没有，所以打算写写。</p>
+
+<p><strong>Rails Widgets</strong></p>
+
+<p><a href="http://www.seesaw.it/en/toolbox/widgets/">http://www.seesaw.it/en/toolbox/widgets/</a></p>
+
+<p>一个DSLful的Page widgets plugin，让你简单地在页面上添加各种widgets，如tab，nav等，这些似乎是现在页面上不可或缺的页面元素。这个框架旨在减少手工维护这些widgets的代价，手工维护的话，so buggy！</p>
+
+<p>具体看<a href="http://www.slideshare.net/paolo.dona/rails-widgets-by-paolo-dona-at-railstoitaly">其演示文档</a>可以看到它是干嘛的。</p>
+
+<hr />
+
+<p><strong>Bj</strong></p>
+
+<p><a href="http://codeforpeople.rubyforge.org/svn/bj">http://codeforpeople.rubyforge.org/svn/bj</a></p>
+
+<p>一个让Rails参与管理Server上后台进程（background job）的plugin。这样有什么好处呢？如果你前台Rails app是使用了后台的某些服务的，那这个插件就非常有用了。</p>
+
+<p>不过这个plugin非常少资料，只能从它的<a href="http://codeforpeople.rubyforge.org/svn/bj/trunk/README">README</a>中获得比较多的信息。</p>
+
+<p>&hellip;&hellip;</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/07/10/_%E7%AC%AC6%E4%B8%AA%E5%AD%A6%E6%9C%9F%E7%BB%93%E6%9D%9F">大三结束</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-07-10T00:00:00+08:00" pubdate data-updated="true">Jul 10<span>th</span>, 2008</time>
+        
+         | <a href="/2008/07/10/_%E7%AC%AC6%E4%B8%AA%E5%AD%A6%E6%9C%9F%E7%BB%93%E6%9D%9F#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>今天考完试，大学生涯就剩下一年了，开始发牢骚。</p>
+
+<p>每次考试完了之后总会觉得考试很假，都是学期初看完了书和相关的东西，比较有兴趣的东西才会去深入研究。但身边大多数人不是这样，一般都是到了最后一周左右时间才开始背书，一般这类同学都会得到比较高的分数。这与老师的出题方向也有关，出题基本都是作业题，就算什么也不会，考试前去背背作业就能拿很高分。记得中央台还报道过学校这里考试前打印店就非常热闹，其实最后一两天打印都是字特别小的“资料”。</p>
+
+<p>中午发现了这个东西挺搞笑：<a href="http://www.cnbeta.com/articles/59918.htm"><a href="http://www.cnbeta.com/articles/59918.htm">http://www.cnbeta.com/articles/59918.htm</a></a></p>
+
+<p>原来做游戏的是比魔鬼还魔鬼，应该去枪毙。其实我一直就认为现在社会上很多奇诡的问题和国人的经济水平，文化水平不高有关。想想小时候家里的电器还不多，就电冰箱电视机，想买本十万个为什么还要和爸妈讲几天。然后忽然到了小学到了中学，再到大学，一时间生活完全变了，物质水平面目全非，精神水平也不敢恭维。这种变化速度国人无法适应。他们说游戏是毒品，他们就是为了赚钱让你玩更长时间，他们还在高楼大厦里，这个逻辑如果放到其它行业其实也是成立的。</p>
+
+<p>还想到一个事情，如果中国不存在盗版软件或者盗版没那么猖獗，计算机会不会不那么流行。在国外来说，现在正常人使用的计算机，应该是软件贵过硬件。</p>
+
+<p>目前国人的所谓家长群体，认为上网就是玩游戏，用电脑就是玩游戏。特别是目前大学生这个群体，很多人买计算机就是买了一部多功能游戏机，目的主要是娱乐。这是个性价比超低的买卖，花五千块去买部计算机打游戏看A片还不如花一千买部psp爽。但大部分人还是买了，用的是家长的血汗钱，就算是家庭经济水平不高的同学也为了面子也会购入计算机，理由是查资料。然后大学宿舍楼就会出现这样的喊声：“XX，建图阿”，“XX，我在X场X桌”，学生会为了娱乐（不单游戏，还有其他），逃课，通宵等等。大学生玩游戏时一般也会有比较多噪音出来，比如我常听见的“你会不会的阿？”，“你们这群傻13/垃圾”，“那么厉害不去打第一名”，“我踢，我踢，看你们还敢打我”&hellip;&hellip;祖国未来的花朵就是这么成长的。</p>
+
+<p>最近sourceforge还给封了。</p>
+
+<p>这个世界太假拉。</p>
+
+<p>发完牢骚，该干嘛干嘛去，END</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/07/02/fxruby%E5%88%9D%E4%BD%93%E9%AA%8Cpart4">FxRuby Part4</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-07-02T00:00:00+08:00" pubdate data-updated="true">Jul 2<span>nd</span>, 2008</time>
+        
+         | <a href="/2008/07/02/fxruby%E5%88%9D%E4%BD%93%E9%AA%8Cpart4#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>之前的：FxRuby初体验<a href="http://redworld.blog.ubuntu.org.cn/2008/07/01/fxruby%e5%88%9d%e4%bd%93%e9%aa%8cpart1/">Part1</a>，<a href="http://redworld.blog.ubuntu.org.cn/2008/07/01/fxruby%e5%88%9d%e4%bd%93%e9%aa%8cpart2/">Part2</a>，<a href="http://redworld.blog.ubuntu.org.cn/2008/07/02/fxruby%e5%88%9d%e4%bd%93%e9%aa%8cpart3/">Part3</a>。</p>
+
+<p>到了PictureBook的V0.4了。这个版本算是基本的功能都做足了，包括了加上了相册选择，相册持久化等等。</p>
+
+<pre><code>#album_list_view.rb
+require 'fox16'
+
+include Fox
+
+class AlbumListView &amp;lt; FXList
+  attr_reader :album_list
+  def initialize(p, opts)
+    super(p, :opts =&amp;gt; opts)
+  end
+  def switcher=(sw)
+    @switcher = sw
+  end
+
+  def add_album(album)
+    appendItem(album.title)
+    AlbumView.new(@switcher, album)
+  end
+
+  def album_list=(albums)
+    @album_list = albums
+    @album_list.each_album do |album|
+      add_album(album)
+    end
+  end
+end
+
+#picture_book.rb
+$KCODE = "U"
+require 'fox16'
+require 'yaml'
+
+include Fox
+
+require 'album'
+require 'album_list'
+require 'photo'
+require 'photo_view'
+require 'album_view'
+require 'album_list_view'
+
+class PictureBook &amp;lt; FXMainWindow
+  def initialize(app)
+    super(app, "Picture Book" , :width =&amp;gt; 600, :height =&amp;gt; 400)
+    add_menu_bar
+    begin
+      @album_list = YAML.load_file("picturebook.yml" )
+    rescue
+      @album_list = AlbumList.new
+      @album_list.add_album(Album.new("My Photos" ))
+    end
+    splitter = FXSplitter.new(self,
+      :opts =&amp;gt; SPLITTER_HORIZONTAL|LAYOUT_FILL)
+    @album_list_view = AlbumListView.new(splitter, LAYOUT_FILL)
+    @switcher = FXSwitcher.new(splitter, :opts =&amp;gt; LAYOUT_FILL)
+    @switcher.connect(SEL_UPDATE) do
+      @switcher.current = @album_list_view.currentItem
+    end
+    @album_list_view.switcher = @switcher
+    @album_list_view.album_list = @album_list
+  end
+
+
+  def create
+    super
+    show(PLACEMENT_SCREEN)
+  end
+
+    def add_menu_bar
+      # 创建一个菜单栏的实例
+      menu_bar = FXMenuBar.new(self, LAYOUT_SIDE_TOP|LAYOUT_FILL_X)
+      # 创建一个菜单栏项
+      file_menu = FXMenuPane.new(self)
+      FXMenuTitle.new(menu_bar, "文件" , :popupMenu =&amp;gt; file_menu)
+      # 下面是一个创建菜单栏项和所关联动作的绑定
+      import_cmd = FXMenuCommand.new(file_menu, "导入..." )
+      import_cmd.connect(SEL_COMMAND) do
+        dialog = FXFileDialog.new(self, "导入图片" )
+        dialog.selectMode = SELECTFILE_MULTIPLE
+        dialog.patternList = ["JPEG Images (*.jpg, *.jpeg)" ]
+        if dialog.execute != 0
+          import_photos(dialog.filenames)
+        end
+      end
+      new_album_command = FXMenuCommand.new(file_menu, "New Album..." )
+      new_album_command.connect(SEL_COMMAND) do
+        album_title = FXInputDialog.getString("My Album" , self, "New Album" , "Name:" )
+        if album_title
+          album = Album.new(album_title)
+          @album_list.add_album(album)
+          @album_list_view.add_album(album)
+          AlbumView.new(@switcher, album)
+        end
+      end
+     exit_cmd = FXMenuCommand.new(file_menu, "退出" )# 一个简单的退出项
+     exit_cmd.connect(SEL_COMMAND) do
+      store_album_list
+      exit
+    end
+  end
+
+  def import_photos(filenames)
+    filenames.each do |filename|
+      photo = Photo.new(filename)
+      current_album.add_photo(photo)
+      current_album_view.add_photo(photo)
+    end
+    current_album_view.create
+  end
+
+  def current_album_view
+    @switcher.childAtIndex(@switcher.current)
+  end
+
+  def current_album
+    current_album_view.album
+  end
+
+  def store_album_list
+    File.open("picturebook.yml" , "w" ) do |io|
+      io.write(YAML.dump(@album_list))
+    end
+  end
+
+end
+
+if __FILE__ == $0
+  FXApp.new do |app|
+    PictureBook.new(app)
+    app.create
+    app.run
+  end
+end
+</code></pre>
+
+<p>剩下的晚上再写。。。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/07/02/fxruby%E5%88%9D%E4%BD%93%E9%AA%8Cpart3">FxRuby Part3</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-07-02T00:00:00+08:00" pubdate data-updated="true">Jul 2<span>nd</span>, 2008</time>
+        
+         | <a href="/2008/07/02/fxruby%E5%88%9D%E4%BD%93%E9%AA%8Cpart3#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>之前的：FxRuby初体验<a href="http://redworld.blog.ubuntu.org.cn/2008/07/01/fxruby%e5%88%9d%e4%bd%93%e9%aa%8cpart1/">Part1</a>，<a href="http://redworld.blog.ubuntu.org.cn/2008/07/01/fxruby%e5%88%9d%e4%bd%93%e9%aa%8cpart2/">Part2</a>。</p>
+
+<p>这个V0.3的PictureBook添加了相册视图，也就是把相片都放到其中。看看下面的代码吧，我把每次都贴上完整的代码，方便大家复制粘帖:-)</p>
+
+<pre><code>#photo.rb
+class Photo
+  attr_reader :path
+  def initialize(path)
+    @path = path
+  end
+end
+
+#album.rb
+class Album
+  attr_reader :title
+  def initialize(title)
+    @title = title
+    @photos = []
+  end
+  def add_photo(photo)
+    @photos &amp;lt;&amp;lt; photo
+  end
+  def each_photo
+    @photos.each { |photo| yield photo }
+  end
+end
+
+#album_list.rb
+class AlbumList
+  def initialize
+    @albums = []
+  end
+
+  def add_album(album)
+    @albums &amp;lt;&amp;lt; album
+  end
+  def remove_album(album)
+    @albums.delete(album)
+  end
+  def each_album
+    @albums.each { |album| yield album }
+  end
+end
+
+#photo_view.rb
+class PhotoView &amp;lt; FXImageFrame
+  MAX_WIDTH = 200
+  MAX_HEIGHT = 200
+  def initialize(p, photo)
+    super(p, nil)
+    load_image(photo.path)
+  end
+  def load_image(path)
+    File.open(path, "rb" ) do |io|
+      self.image = FXJPGImage.new(app, io.read)
+      scale_to_thumbnail
+    end
+  end
+  def scaled_width(width)
+    [width, MAX_WIDTH].min
+  end
+  def scaled_height(height)
+    [height, MAX_HEIGHT].min
+  end
+  def scale_to_thumbnail
+    aspect_ratio = image.width.to_f/image.height
+    if image.width &amp;gt; image.height
+      image.scale(
+        scaled_width(image.width),
+        scaled_width(image.width)/aspect_ratio,
+        1
+      )
+    else
+      image.scale(
+        aspect_ratio*scaled_height(image.height),
+        scaled_height(image.height),
+        1
+      )
+    end
+  end
+end
+
+#album_view.rb
+require 'photo_view'
+class AlbumView &amp;lt; FXMatrix
+  attr_reader :album
+  def initialize(p, album)
+    super(p, :opts =&amp;gt; LAYOUT_FILL|MATRIX_BY_COLUMNS)
+    @album = album
+    @album.each_photo { |photo| add_photo(photo) }
+  end
+  def add_photo(photo)
+    PhotoView.new(self, photo)
+  end
+  def layout
+    self.numColumns = [width/PhotoView::MAX_WIDTH, 1].max
+    super
+  end
+end
+
+#picture_book.rb
+require 'fox16'
+include Fox
+require 'album'
+require 'album_view'
+require 'photo'
+class PictureBook &amp;lt; FXMainWindow
+  def initialize(app)
+    super(app, "Picture Book" , :width =&amp;gt; 600, :height =&amp;gt; 400)
+    add_menu_bar
+    @album = Album.new("My Photos" )
+    @album_view = AlbumView.new(self, @album)
+  end
+  def add_menu_bar
+    menu_bar = FXMenuBar.new(self, LAYOUT_SIDE_TOP|LAYOUT_FILL_X)
+    file_menu = FXMenuPane.new(self)
+    FXMenuTitle.new(menu_bar, "File" , :popupMenu =&amp;gt; file_menu)
+    import_cmd = FXMenuCommand.new(file_menu, "Import..." )
+    import_cmd.connect(SEL_COMMAND) do
+      dialog = FXFileDialog.new(self, "Import Photos" )
+      dialog.selectMode = SELECTFILE_MULTIPLE
+      dialog.patternList = ["JPEG Images (*.jpg, *.jpeg)" ]
+      if dialog.execute != 0
+        import_photos(dialog.filenames)
+      end
+    end
+    exit_cmd = FXMenuCommand.new(file_menu, "Exit" )
+    exit_cmd.connect(SEL_COMMAND) do
+      exit
+    end
+  end
+  def import_photos(filenames)
+    filenames.each do |filename|
+      photo = Photo.new(filename)
+      @album.add_photo(photo)
+      @album_view.add_photo(photo)
+    end
+    @album_view.create
+  end
+  def create
+    super
+    show(PLACEMENT_SCREEN)
+  end
+end
+
+if __FILE__ == $0
+  FXApp.new do |app|
+    PictureBook.new(app)
+    app.create
+    app.run
+  end
+end
+</code></pre>
+
+<p>这里相对于上个版本的改动的地方有，PictureBook增加了菜单栏，增加了一个视图AlbumView，PhotoView实例的创建放在了AlbumView中，PhotoView中增加了图片的缩略图操作。</p>
+
+<p>菜单栏的创建也听挺麻烦的，先创建<a href="http://www.fxruby.org/doc/api/classes/Fox/FXMenuBar.html">FXMenuBar的</a>实例，然后是创建<a href="http://www.fxruby.org/doc/api/classes/Fox/FXMenuTitle.html">FXMenuTitle</a>和<a href="http://www.fxruby.org/doc/api/classes/Fox/FXMenuPane.html">FXMenuPane</a>的实例，FXMenuTitle是FXMenuBar的下级元素，就是菜单栏的每一段，FXMenuPane是FXMenuTitle的弹出菜单。然后要创建<a href="http://www.fxruby.org/doc/api/classes/Fox/FXCommand.html">FXMenuCommand</a>，它是FXMenuPane的下级元素，实例化后就要用connect方法给出的代码块将其绑定到一定的行为上。</p>
+
+<p>File&gt;Importd这个动作是打开一个文件对话框<a href="http://www.fxruby.org/doc/api/classes/Fox/FXDialogBox.html">FXFileDialog</a>让你选择文件，然后用filenames方法获得选择得到的文件的数组。退出的菜单项很简单，就是一个exit方法。</p>
+
+<p>在PhotoView中的图片操作功能是从FXImageFrame继承得到的，这个能力和接口很像RMagic。 AlbumView 是<a href="http://www.fxruby.org/doc/api/classes/Fox/FXMatrix.html">FXMatrix</a>的实例，FXMatrix是一种布局管理器，它以行列的方式来对组件进行布局。好像布局管理器的基类就是<a href="http://www.fxruby.org/doc/api/classes/Fox/FXPacker.html">FXPacker </a>，可以通过重写它的Layout方法来改变布局流。像这里就改变了FXMatrix的行数。</p>
+
+<p>接着书中作者又改了一下，因为FXMatrix不能够在图片太多的情况下全部显示，会产生因为图片过多导致产生很多行，然后让超出主窗体的图片行无法看见，所以作者又对AlbumView换了一个布局管理器。</p>
+
+<pre><code>#album_view.rb
+require 'photo_view'
+class AlbumView &amp;lt; FXScrollWindow
+  attr_reader :album
+  def initialize(p, album)
+    super(p, :opts =&amp;gt; LAYOUT_FILL)
+    @album = album
+    FXMatrix.new(self, :opts =&amp;gt; LAYOUT_FILL|MATRIX_BY_COLUMNS)
+    @album.each_photo { |photo| add_photo(photo) }
+  end
+  def layout
+    contentWindow.numColumns = [width/PhotoView::MAX_WIDTH, 1].max
+    super
+  end
+  def add_photo(photo)
+    PhotoView.new(contentWindow, photo)
+  end
+end
+</code></pre>
+
+<p><a href="http://www.fxruby.org/doc/api/classes/Fox/FXScrollWindow.html">FXScrollWindow</a>是另一种布局管理器，它只是多了滚动条。其中还是包含了一个FXMatrix。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/07/01/fxruby%E5%88%9D%E4%BD%93%E9%AA%8Cpart2">FxRuby Part2</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-07-01T00:00:00+08:00" pubdate data-updated="true">Jul 1<span>st</span>, 2008</time>
+        
+         | <a href="/2008/07/01/fxruby%E5%88%9D%E4%BD%93%E9%AA%8Cpart2#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>接上一篇：<a href="http://redworld.blog.ubuntu.org.cn/2008/07/01/fxruby%e5%88%9d%e4%bd%93%e9%aa%8cpart1/">FxRuby初体验Part1</a></p>
+
+<p>本书的入门例子是个相册管理的桌面应用，名曰Picture Book。这个例子书中用了5 Chapter（2－6）来讲，基本讲到了常用的Gui组件。</p>
+
+<p>不废话现在来看看代码，下面是第一个版本的Picture Book App：</p>
+
+<pre><code>#photo.rb
+class Photo
+  attr_reader :path
+  def initialize(path)
+    @path = path
+  end
+end
+
+#album.rb
+class Album
+  attr_reader :title
+  def initialize(title)
+    @title = title
+    @photos = []
+  end
+  def add_photo(photo)
+    @photos &amp;lt;&amp;lt; photo
+  end
+  def each_photo
+    @photos.each { |photo| yield photo }
+  end
+end
+
+#album_list.rb
+class AlbumList
+  def initialize
+    @albums = []
+  end
+
+  def add_album(album)
+    @albums &amp;lt;&amp;lt; album
+  end
+  def remove_album(album)
+    @albums.delete(album)
+  end
+  def each_album
+    @albums.each { |album| yield album }
+  end
+end
+
+#photo_view.rb
+class PhotoView &amp;lt; FXImageFrame
+   def initialize(p, photo)
+      super(p, nil)
+      load_image(photo.path)
+   end
+   def load_image(path)
+      File.open(path, "rb" ) do |io|
+        self.image = FXJPGImage.new(app, io.read)
+      end
+   end
+end
+
+#picturebook.rb
+require 'fox16'
+include Fox
+require 'photo'
+require 'photo_view'
+class PictureBook &amp;lt; FXMainWindow
+  def initialize(app)
+    super(app, "Picture Book" , :width =&amp;gt; 600, :height =&amp;gt; 400)
+    photo = Photo.new("shoe.jpg" )
+    photo_view = PhotoView.new(self, photo)
+  end
+  def create
+    super
+    show(PLACEMENT_SCREEN)
+  end
+end
+if __FILE__ == $0
+  FXApp.new do |app|
+    PictureBook.new(app)
+    app.create
+    app.run
+  end
+end
+</code></pre>
+
+<p>这是个V0.1的版本。不过你从中看出这个应用写得很MVC。</p>
+
+<p>Model部分就是Photo，Album，AlbumList三个，Controller部分（当然它还没有细化）就是PictureBook，View部分就是PhotoView。就是如此清晰的结构，我想如果是正在学着什么MFC的可怜人儿们看到了之后会把那本什么深入浅出MFC扔了吧。</p>
+
+<p>对比那个HelloWorld，这堆代码除了多了几个普通的Ruby Class（扮演Model的那几个）外，就是多了一个继承自<a href="http://www.fxruby.org/doc/api/classes/Fox/FXImageFrame.html">FXImageFrame</a>的PhotoView，还有在FXMainWindow的构造方法中多了对PhotoView的实例化，实例化时将其自身挂钩到PictureBook（构造方法的第一个参数）。之后在App实例化后会实例化MainWindow，接着实例化MainWindow包含的组件，比如PhotoView这个FxImageFrame。PhotoView中对图片的包装是这样的，它先读入Photo的路径，然后用<a href="http://www.fxruby.org/doc/api/classes/Fox/FXImage.html">FxImage</a>组件对图片进行包装，然后保存为自己的一个实例变量image中。</p>
+
+<p>PictureBook的第一个版本就是这样。</p>
+
+<p>接着下一篇讲下个版本和下下篇讲下下个版本，然后就介绍完了。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/07/01/fxruby%E5%88%9D%E4%BD%93%E9%AA%8Cpart1">FxRuby Part1</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-07-01T00:00:00+08:00" pubdate data-updated="true">Jul 1<span>st</span>, 2008</time>
+        
+         | <a href="/2008/07/01/fxruby%E5%88%9D%E4%BD%93%E9%AA%8Cpart1#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>FxRuby，一个更新较为频繁的Ruby GUI 开发库。今年还出了本书，今晚刚好有空，吃了饭后，6：30开始到现在9：30，看完了它的入门例子。其实是因为今晚不用开工，而想起了一个想做很久的事情，就是开发一个编辑器，一个能够用Ruby作为配置和开发语言的编辑器，就像Emacs能用Lisp在其上开发一样，而且能支持Rails，Rspec，Rake语法和开发辅助（如MVC跳转）等等，这是个妄想:-)</p>
+
+<p><a href="http://pragprog.com/titles/fxruby/fxruby"><img src="http://www.fxruby.org/images/fxruby-book.jpg" alt="FxRuby book" /></a>
+<a href="http://pragprog.com/titles/fxruby/fxruby"><a href="http://pragprog.com/titles/fxruby/fxruby">http://pragprog.com/titles/fxruby/fxruby</a>
+</a></p>
+
+<p>先来看看它的HelloWorld的代码：
+    require &lsquo;fox16&rsquo;
+    include Fox
+    class HelloWindow &lt; FXMainWindow
+      def initialize(app)
+        super(app, &ldquo;Hello, World!&rdquo; , :width =&gt; 200, :height =&gt; 100)
+      end
+      def create
+        super
+        show(PLACEMENT_SCREEN)
+      end
+    end
+    if <strong>FILE</strong> == $0
+      FXApp.new do |app|
+        HelloWindow.new(app)
+        app.create
+        app.run
+      end
+    end</p>
+
+<p>HW没什么太多好讲的，有些东西要提一提就Ok了。GUI应用，肯定有个明显的入口点，就是<a href="http://www.fxruby.org/doc/api/classes/Fox/FXApp.html">FxApp</a>的实例，因为是Desktop app，所以一般都有个主窗体，在FxRuby中是<a href="http://www.fxruby.org/doc/api/classes/Fox/FXMainWindow.html">FXMainWindow</a>的实例。FxRuby中，App实例创建之后还要调用create和run两个方法，主窗体的构造函数要做的事情是设置好主窗体的属性，App的create方法会调用会调用每个下级控件的create方法，在create中要加入的就是显示的方式(好像窗体才需要)等等。从上面的HW就可以看到这些。
+<a href="http://www.fxruby.org/doc/ch03s05.html">
+FxRuby官方手册</a>中还有另一个复杂一点点的HelloWorld。</p>
+
+<p>入门例子是个相册管理的桌面应用，名曰Picture Book。这个例子书中用了5 Chapter（2－6）来讲，基本讲到了常用的Gui组件。</p>
+
+<p>好像太长了，拆开放到另一个日志上吧。</p>
+
+<p>参考Link：</p>
+
+<p>FxRuby官站：<a href="http://www.fxruby.org/"><a href="http://www.fxruby.org/">http://www.fxruby.org/</a></a></p>
+
+<p>FxRuby的Rdoc：<a href="http://www.fxruby.org/doc/api/"><a href="http://www.fxruby.org/doc/api/">http://www.fxruby.org/doc/api/</a></a></p>
+
+<p>FxRuby在线手册：<a href="http://www.fxruby.org/doc/book.html"><a href="http://www.fxruby.org/doc/book.html">http://www.fxruby.org/doc/book.html</a></a></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/06/27/%E6%9C%89%E7%9C%BC%E4%B8%8D%E8%AF%86ror">有眼不识Ruby on Rails</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-06-27T00:00:00+08:00" pubdate data-updated="true">Jun 27<span>th</span>, 2008</time>
+        
+         | <a href="/2008/06/27/%E6%9C%89%E7%9C%BC%E4%B8%8D%E8%AF%86ror#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>前天，学校的网页设计大赛，展示并且评审。我用的是Ruby on Rails开发一个Web日程管理的应用。结果评委老师们一直认为RoR是一个网站，和他们讲了许久，他们还是认为我和另一个也是用RoR开发的同学是抄袭所谓开源项目的。并且他们对开源项目这种东西，觉得十分的小儿科，觉得很新奇，很Toyful。当我在展示应用中的很多有趣的Ajax效果之后台下同学们还有有些兴趣，但是我看到老师们全部是低下头不听我讲的。虽然最后我获得了一个所谓的最佳代码奖，但是我和同学都不爽，不爽的是自己的作品被人认为是抄袭。更令我失望的是，虽然很多同学看到演示觉得很好玩，但是只有一个学生向我要了联系方式，而且也没有联系我。</p>
+
+<p>今晚看了最新一期的程序员，这一期的主题讲的是开源，很多地方都提到了一点，就是开源要从大学教育开始，让学生在学习的过程中去阅读这些开源的项目，并且去参与其中，甚至去做出贡献。我觉得这个离国内的现实还是好远，国内的大学绝大多数的学生和老师都对开源没什么认识，他们只认得Ms，认得Windows，他们认为VC就是C++，SQL就是SQL Server，认为电脑就是Windows，课件就叫PPT。</p>
+
+<p>我自从发现了Linux下校园网的上网解决方案之后，就再也没有怎么用过windows，并一年前就把windows删除了。其实我也向很多人推广了Linux，但是很多人都是一两天新鲜过后就删除了或者根本没有用过。现在我怎么用IDE，怎么不爽，总觉得写完一个东西之后一定要按下Esc，:w。</p>
+
+<p>在中国大陆的校园内接触开源软件接触的人还是太少。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/06/26/%E4%BD%BF%E7%94%A8skinny-spec%E7%9A%84%E4%B8%80%E4%B8%AA%E5%B0%8F%E6%8A%80%E5%B7%A7">Skinny Spec的小技巧</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-06-26T00:00:00+08:00" pubdate data-updated="true">Jun 26<span>th</span>, 2008</time>
+        
+         | <a href="/2008/06/26/%E4%BD%BF%E7%94%A8skinny-spec%E7%9A%84%E4%B8%80%E4%B8%AA%E5%B0%8F%E6%8A%80%E5%B7%A7#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>使用Skinny Spec对Controller进行测试时需要定义shared_request来进行请求，
+但是这个方法的命名非常的令我费解，一般都是使用do_get，
+make_request，do_request等等，那要使用Skinny_Spec对原来的Spec进行测试时比较挺麻烦。</p>
+
+<p>因为我是个懒人，简单Hack一下就不用定义多个shared_request方法。</p>
+
+<div>
+  <pre><code class='ruby'>#spec/spec_helper.rb
+    module ControllerMacros
+      
+       module ExampleMethods
+           def shared_request
+               verb = [:get, :post, :put, :delete].find{|verb| respond_to? :&quot;do_#{verb}&quot;}
+               raise &quot;未定义do_get, do_post, do_put, 或do_delete方法 / No do_get, do_post_ do_put, or do_delete has been defined&quot; unless verb
+               send(&quot;do_#{verb}&quot;)
+           end
+       end
+    end
+    Spec::Runner.configure do |config|
+       #...
+       config.include(ControllerMacros, :type =&amp;gt; :controllers)
+    end</code></pre>
+</div>
+
+
+
+</div>
+  
+  
+
+
+    </article>
+  
+  <div class="pagination">
+    
+      <a class="prev" href="/blog/page/6/">&larr; Older</a>
+    
+    <a href="/blog/archives">Blog Archives</a>
+    
+    <a class="next" href="/blog/page/4/">Newer &rarr;</a>
+    
+  </div>
+</div>
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'thekaiway';
+      
+        
+        var disqus_script = 'count.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

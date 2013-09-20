@@ -1,0 +1,323 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>check spelling on rails - The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="A few days ago I need to do spell checking for a rails project, but can&rsquo;t find a ready-to-use plugin, so I implemented one. I use the Aspell &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io/2008/09/11/check-spelling-on-rails">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Check Spelling on Rails</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-09-11T00:00:00+08:00" pubdate data-updated="true">Sep 11<span>th</span>, 2008</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>A few days ago I need to do spell checking for a rails project, but can&rsquo;t find a ready-to-use plugin, so I implemented one.</p>
+
+<p>I use the<a href="http://aspell.net/"> Aspell </a>Lib to do the checking work, and ajax for editing.</p>
+
+<p>First you need to install the Aspell and at lease one dictionary.</p>
+
+<p>Mac:
+<strong>  sudo port install aspell aspell-dict-en</strong></p>
+
+<p>Ubuntu:
+<strong>  sudo apt-get install aspell libaspell-dev aspell-en</strong></p>
+
+<p>Arch:
+<strong>  sudo pacman -S aspell aspell-en </strong></p>
+
+<p>And install the Aspell Ruby binding: <a href="http://github.com/fauna/raspell/tree/master">raspell</a></p>
+
+<p><strong>    sudo gem install raspell</strong></p>
+
+<p>Add a controller:</p>
+
+<pre><code># app/controllers/spelling_controller.rb
+class SpellingController &lt;&lt; ApplicationController
+  def check
+    render :update do |page|
+      page.replace_html 'check-result', SpellingChecker.check_spell(params[:text])
+    end
+  end
+end
+</code></pre>
+
+<p>Add a SpellingChecker Class to Lib
+    # lib/spelling_checker.rb
+    class SpellingChecker</p>
+
+<pre><code>  def self.check_spell text
+    speller = Aspell.new("en_US")
+    speller.suggestion_mode = Aspell::NORMAL
+    wrongs = []
+    text.gsub(/[\w\']+/) do |word|
+      wrongs &lt;&lt; word unless speller.check(word)
+    end
+    wrongs.uniq.each do |wrong|
+      text.sub!(wrong, "&lt;span class='wrong'&gt;#{wrong}&lt;/span&gt;")
+    end
+    return text
+  end
+
+end
+</code></pre>
+
+<p>in the view:
+    <label for="description">Description: </label>
+    <div id="check-desc" style="display:none;">
+      &lt;%=link_to_function &lsquo;Resume editing&rsquo;, &ldquo;ttoggleChecking()&rdquo; %>
+      <br />
+      <div id="check-result">Checking&hellip;</div>
+    </div>
+    <div id="edit-desc">
+      &lt;%=link_to_function &lsquo;Check spelling&rsquo;, &ldquo;new Ajax.Updater({ success:toggleChecking()},
+                                                              &lsquo;/spelling/check&rsquo;,
+                                                              {method:&lsquo;get&rsquo;, parameters:{text:$F(&lsquo;ticket_description&rsquo;)}});&rdquo; %>
+      <br />
+      &lt;%= f.text_area :description, :cols => 84, :rows => 10 %>
+    </div>
+    <script type='text/javascript'>
+      function toggleChecking() {
+        $(&lsquo;edit-desc&rsquo;, &lsquo;check-desc&rsquo;).invoke(&lsquo;toggle&rsquo;);
+      }
+    </script></p>
+
+<p>This is what it looks like:</p>
+
+<p><a href="http://www.chenk85.com/wp-content/uploads/2008/09/feedbackmine.png"><img src="http://www.chenk85.com/wp-content/uploads/2008/09/feedbackmine.png" alt="" title="check_spelling1" width="500" height="167" class="aligncenter size-full wp-image-128" /></a></p>
+
+<p><a href="http://www.chenk85.com/wp-content/uploads/2008/09/feedbackmine2.png"><img src="http://www.chenk85.com/wp-content/uploads/2008/09/feedbackmine2.png" alt="" title="checkspelling2" width="500" height="168" class="aligncenter size-full wp-image-129" /></a></p>
+
+<p><a href="http://www.chenk85.com/wp-content/uploads/2008/09/feedbackmine3.png"><img src="http://www.chenk85.com/wp-content/uploads/2008/09/feedbackmine3.png" alt="" title="checkspelling3" width="500" height="172" class="aligncenter size-full wp-image-130" /></a></p>
+
+<p>That is it, quite sample, isn&rsquo;t it? I would like to make a plugin for it, but no much time recently.</p>
+
+<p>Thank yawl for pointing out my grammar misstake.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Kai Chen</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-09-11T00:00:00+08:00" pubdate data-updated="true">Sep 11<span>th</span>, 2008</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://kaichen.github.io/2008/09/11/check-spelling-on-rails" data-via="" data-counturl="http://kaichen.github.io/2008/09/11/check-spelling-on-rails" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2008/08/22/a-rspec-cheetsheet" title="Previous Post: a rspec cheetsheet">&laquo; a rspec cheetsheet</a>
+      
+      
+        <a class="basic-alignment right" href="/2008/09/11/rails-i18n-feature" title="Next Post: rails i18n feature">rails i18n feature &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'thekaiway';
+      
+        
+        var disqus_script = 'count.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,303 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>10分钟在Netbean 6上完成Rails 2.0的Weblog - The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="原文来自：http://blogs.sun.com/divas/entry/creating_a_rails_2_0 本文是之前NetBean6关于Ruby部分的教程（http://www.ruby-lang.org.cn/forums/thread-1896-1-1.html）其中的一个例子， &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io/2008/01/23/10%E5%88%86%E9%92%9F%E5%9C%A8netbeans6%E4%B8%8A%E5%88%9B%E5%BB%BArails20%E7%9A%84weblog-2">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">10分钟在Netbean 6上完成Rails 2.0的Weblog</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-01-23T00:00:00+08:00" pubdate data-updated="true">Jan 23<span>rd</span>, 2008</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>原文来自：<a href="http://blogs.sun.com/divas/entry/creating_a_rails_2_0"><a href="http://blogs.sun.com/divas/entry/creating_a_rails_2_0">http://blogs.sun.com/divas/entry/creating_a_rails_2_0</a></a></p>
+
+<p>本文是之前NetBean6关于Ruby部分的教程（<a href="http://www.ruby-lang.org.cn/forums/thread-1896-1-1.html"><a href="http://www.ruby-lang.org.cn/forums/thread-1896-1-1.html">http://www.ruby-lang.org.cn/forums/thread-1896-1-1.html</a></a>）其中的一个例子，如何在10分钟创建一个Weblog的升级版。<!--more-->我会把和之前的不同之处用<font color="Blue">蓝色</font>标记出来</p>
+
+<p>Rails2.0到来之后带来了很多新的特性，新的变化，这样就导致了以前大量的Rails1.2.X的示例无法在升级到Rails2.0之后运行。 NetBeans6关于Ruby部分的教程中的例子就是这样，由于之前采用的是Rails1.2.5还有ActionController的脚手架方法（scaffold），这些与Rails 2.0并不兼容，故作者写了一篇文章，也就是之前那篇的升级版，一边学习Rails 2.0的新特性新变化，一边修改例子。</p>
+
+<p>首先创建一个Rails项目，这个和以前一样，也就是File &gt; New Project，名字取weblog2.0吧，具体参考上面提到的那篇旧的文章！</p>
+
+<p>创建出项目后自动打开database.yml，真是神奇，NB6竟然帮我们修改好了，使用了以前默认的MySQL，莫非它知道我们对MySQL比较熟？配置一下用户名和密码吧。然后就<font color="Blue">右键点击项目选择Rake Task =&gt; db =&gt; create</font>来创建数据库。</p>
+
+<p>接着开始使用Rails 2.0的脚手架创建Model和Controller。右击项目后选择Generate，<font color="Blue">接着在下拉列表中选择scaffold，再在Model栏中输入Post title:string。注意在Rails 2.0下不能在此对话框的Controller和Action栏里填入字符。</font>这样就创建好了Post model和PostsController还有<font color="Blue">相关的view（可以看到后缀都改为.html.erb了）</font>。在生成的迁移任务（migrate）中可以看到Rails 2.0的新脚手架已经帮你填好了，如下代码：</p>
+
+<pre><code># db/migrate/001_create_posts.rb
+class CreatePosts &amp;lt; ActiveRecord::Migration
+  def self.up
+    create_table :posts do |t|
+      t.string :title
+      t.timestamps
+    end
+  end
+  def self.down
+    drop_table :posts
+  end
+end
+</code></pre>
+
+<p>那就直接可以运行migrate了，和之前一样，右击项目=&gt; Migrate Database =&gt; To current version，或者 Rake Task =&gt; db =&gt; migrate。</p>
+
+<p>接下来就可以运行一下看看这个应用了。不过先要修改默认路由，注释掉默认路由（welcome），然后添加新的路由:</p>
+
+<pre><code># config/routes.rb
+# map.root :controller =&amp;gt; "welcome"
+map.root :controller =&amp;gt; "posts"
+</code></pre>
+
+<p>Rails 2.0脚手架默认生成的规则是REST的，以后添加自定义的Controller的Action要用REST化的方式编写路由。这里可以看到用的也是 <font color="Blue">具名路由，map.root</font>。接着删除了public/ index.html后按下NB6工具栏上面大大的三角形运行服务器，这就可以用浏览器打开那localhost:3000看到我们刚刚完成的一切了。</p>
+
+<p>按照之前的教程里，下一步就是添加Post的字段。右击Database Magrate =&gt; Generate，接着在Argument栏中填入AddBodyToPost body:text。这样Rails 2.0又帮我们写好了migrate任务，剩下的就是执行migrate任务。添加了新的字段后，就要修改view了，让我们再次打开Generate对话框，在下拉框中选择scaffold，在Model栏输入Post title:string body:text &ndash;skip-migration，并且这次要在下面的单选按钮中选择overwrite。然后就可以打开浏览器看看生效了没有。</p>
+
+<p>下一步就是让Rails对创建Post时进行输入校验。这里展示的是对Post的属性进行非空校验，在Post Model源码（app/model/post.rb）中新建一行，输入vp再按tab，NB6的模板完成功能就体现了，vp自动扩展为 validates_presence_of，那接着就输入:title, :body。（由此可得vu就是 validates_uniqueness_of，试了一下，果然，具体模板完成请看NB6中选项里关于模板的部分）下来就是打开浏览器试验一下。</p>
+
+<p>最后一步就是稍微打扮一下weblog，打开app/view/posts/index.html.erb，把文件里的内容替换为以下内容：</p>
+
+<pre><code>&amp;lt;h1&amp;gt;The Ruby Blog&amp;lt;/h1&amp;gt;
+ &amp;lt;% @posts.each do |post| %&amp;gt;
+  &amp;lt;h2&amp;gt;&amp;lt;%= post.title %&amp;gt;&amp;lt;/h2&amp;gt;
+  &amp;lt;p&amp;gt;&amp;lt;%= post.body %&amp;gt;&amp;lt;/p&amp;gt;
+  &amp;lt;small&amp;gt; &amp;lt;%= link_to 'Permalink', post_path(post) %&amp;gt;&amp;lt;/small&amp;gt;
+  &amp;lt;hr&amp;gt;
+&amp;lt;% end %&amp;gt;
+&amp;lt;br /&amp;gt;
+ &amp;lt;%= link_to 'New post', new_post_path %&amp;gt;
+</code></pre>
+
+<p>最后就是让Posts按时间顺序显示，把上面第3行代码改为：</p>
+
+<pre><code>&amp;lt;% @posts.reverse.each do |post| %&amp;gt;
+</code></pre>
+
+<p>可以看到在视图中，新的脚手架创建的这句代码&lt;%= link_to &lsquo;New post&rsquo;, new_post_path %&gt;中的new_post_path，这是Rails2.0中REST化的体现之一。另外，原文中第6行代码还是以前那种写法，也就是指定controller和action的写法，我改了过来，让它和下面New Post的写法统一，我在原文下面留言提了这个。</p>
+
+<p>很多同学都有问我，Rails升级到2.0后NB6中关于Ruby的这个10分钟创建weblog的教程怎么做，这里就是答案。有什么错误请大家指出来哦。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Kai Chen</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-01-23T00:00:00+08:00" pubdate data-updated="true">Jan 23<span>rd</span>, 2008</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://kaichen.github.io/2008/01/23/10%E5%88%86%E9%92%9F%E5%9C%A8netbeans6%E4%B8%8A%E5%88%9B%E5%BB%BArails20%E7%9A%84weblog-2" data-via="" data-counturl="http://kaichen.github.io/2008/01/23/10%E5%88%86%E9%92%9F%E5%9C%A8netbeans6%E4%B8%8A%E5%88%9B%E5%BB%BArails20%E7%9A%84weblog-2" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2008/01/21/%E5%AF%92%E5%81%87%E5%BC%80%E5%A7%8B" title="Previous Post: 暑假开始">&laquo; 暑假开始</a>
+      
+      
+        <a class="basic-alignment right" href="/2008/01/25/ruby19%E7%9A%84%E5%8F%98%E5%8C%96%EF%BC%88%E4%B8%80%EF%BC%89-%E6%96%B0%E7%9A%84%E8%AF%AD%E6%B3%95%E5%92%8C%E8%AF%AD%E6%84%8F" title="Next Post: Ruby 1.9的新语法">Ruby 1.9的新语法 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'thekaiway';
+      
+        
+        var disqus_script = 'count.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

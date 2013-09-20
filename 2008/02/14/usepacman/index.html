@@ -1,0 +1,309 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Pacman in ArchLinux - The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="pacman是什么，就是和apt-get之于Ubuntu一样，pacman就是Arch的apt-get。 熟悉一下几个pacman的几个常用命令
+pacman -S packagename #安装软件包
+pacman -R packagename #删除软件包
+pacman -Syu # &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io/2008/02/14/usepacman">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Pacman in ArchLinux</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-02-14T00:00:00+08:00" pubdate data-updated="true">Feb 14<span>th</span>, 2008</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>pacman是什么，就是和apt-get之于Ubuntu一样，pacman就是Arch的apt-get。</p>
+
+<!--more-->
+
+
+<p>熟悉一下几个pacman的几个常用命令
+<code>pacman -S packagename #安装软件包
+pacman -R packagename #删除软件包
+pacman -Syu #升级系统中的所有包
+pacman -Ss package #查询软件包
+pacman -Qs package #查询已安装的包
+pacman -Sw package #下载但不安装包
+pacman -U /path/package.pkg.tar.gz #安装本地包
+pacman -Scc #清理包缓存
+pacman -Sf pacman #重新安装包</code></p>
+
+<p>其实要容易记的话可以自己在bashrc里配置一下alias就好。</p>
+
+<p>再说说包下载的提速。。。
+修改一下/etc/pacman.conf，把下面这句的注释去掉：</p>
+
+<pre><code>XferCommand = /usr/bin/wget -c --passive-ftp -c %u
+</code></pre>
+
+<p>这样就可以使用wget来下载包。</p>
+
+<p>也可以用aria2，在配置文件中加上这句：</p>
+
+<pre><code>XferCommand = /usr/bin/aria2c -s 4 -m 2 -d / -o %o %u
+</code></pre>
+
+<p>-s后面是连接的服务器数量，-m是线程数。</p>
+
+<p>wiki中提供了<a href="http://wiki.archlinux.org/index.php/Improve_Pacman_Performance">另一个脚本</a>，是用aria2下载的。</p>
+
+<p>在wiki中还<a href="http://wiki.archlinux.org/index.php/Colored_Pacman_output">提供了几个包查询彩色输出的脚本</a>。</p>
+
+<p>pacman也有GUI前端，不过我还没有见过用过，过几天回学校就会用上的。</p>
+
+<blockquote><p>Java interfaces:</p>
+
+<ul>
+<li> jacman A nice Java-based interface.</li>
+</ul>
+
+
+<p>GTK2/Gnome interfaces:</p>
+
+<ul>
+<li> gtkpacman Pygtk gui to ArchLinux pacman. An -svn version is available as well (gtkpacman-svn).</li>
+<li> alunn Tray notifications of new updates and news from Arch front page.</li>
+<li> guzuta Yet another PyGTK frontend.</li>
+<li> pacmon-svn Tray applet that notifies the user of available pacman updates.</li>
+</ul>
+
+
+<p>KDE/Qt interfaces:</p>
+
+<ul>
+<li> pacmanager-svn Qt4 package manager based on pacman.</li>
+<li> kpacupdate Pacman update notification tool for the KDE system tray.</li>
+</ul>
+</blockquote>
+
+<p>之后就慢慢研究一下启动加载的模块，然后在编译一下内核，Arch好好玩。。。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Kai Chen</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-02-14T00:00:00+08:00" pubdate data-updated="true">Feb 14<span>th</span>, 2008</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://kaichen.github.io/2008/02/14/usepacman" data-via="" data-counturl="http://kaichen.github.io/2008/02/14/usepacman" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2008/02/10/%E5%87%A0%E4%B8%AAshell%E5%BF%AB%E6%8D%B7%E9%94%AE" title="Previous Post: Shell快捷键">&laquo; Shell快捷键</a>
+      
+      
+        <a class="basic-alignment right" href="/2008/02/20/%E5%AF%92%E5%81%87%E7%BB%93%E6%9D%9F" title="Next Post: 寒假结束">寒假结束 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'thekaiway';
+      
+        
+        var disqus_script = 'count.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

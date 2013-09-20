@@ -1,0 +1,300 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>一日一D(1) - The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="通过D语言的项目主页dsource.org上的基础教程，来学习D语言吧。。。 D语言已经到了2.0，DMD也到了2.0a，不过很多项目还是只支持到DMD1.0。不过也可以用另一个编译器GNU的DGC。D语言有两个标准库，默认C风格的Phobos和C++风格的Tango。 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io/2008/02/10/%E4%B8%80%E6%97%A5%E4%B8%80D%281%29">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">一日一D(1)</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-02-10T00:00:00+08:00" pubdate data-updated="true">Feb 10<span>th</span>, 2008</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>通过D语言的项目主页dsource.org上的基础教程，来学习D语言吧。。。</p>
+
+<p>D语言已经到了2.0，DMD也到了2.0a，不过很多项目还是只支持到DMD1.0。不过也可以用另一个编译器GNU的DGC。D语言有两个标准库，默认C风格的Phobos和C++风格的Tango。更多的项目都是基于Tango开发的，一些基于Phobos的项目也开始向着Tango转移。从这里可以看出D语言的主要受众是原C/C++的用户。</p>
+
+<p>这次有三个示例代码，三个示例：
+第一个是Helloworld</p>
+
+<pre><code>import std.stdio;
+void main() {
+  nbspwritef("Hello");
+}
+</code></pre>
+
+<p>可以看到这里用的是<a href="http://www.digitalmars.com/d/2.0/phobos/std_stdio.html">std.stdio</a>中的输出方法writef()，一个很类似C的printf的方法，可以对输出进行格式化。</p>
+
+<p>第二个示例展示的是代码的赋值，传统的类C式风格。</p>
+
+<pre><code>import std.stdio;
+int magicNumber = 42;
+char[6u] password = "sesame";
+void main() {
+  writefln("Magic number: ", magicNumber);
+  writefln("Password: ", password);
+}
+</code></pre>
+
+<p>这里要注意的是由于D语言是原生支持utf8的，所以在数组中可以使用nu这样的数量表示。</p>
+
+<p>第三个例子是展示D语言的数据类型。</p>
+
+<pre><code>import std.stdio;
+int main() {
+  // Show information about integer types...
+  writefln("bool\tmin: %d\tmax: %d (%d)", bool.min, bool.max, bool.sizeof);
+  writefln("ubyte\tmin: %d\tmax: %d (%d)", ubyte.min, ubyte.max, ubyte.sizeof);
+  writefln("ushort\tmin: %d\tmax: %d (%d)", ushort.min, ushort.max, ushort.sizeof);
+  writefln("uint\tmin: %d\tmax: %d (%d)", uint.min, uint.max, uint.sizeof);
+  writefln("ulong\tmin: %d\tmax: %d (%d)\n", ulong.min, ulong.max, ulong.sizeof);
+  writefln("byte\tmin: %d\tmax: %d (%d)", byte.min, byte.max, byte.sizeof);
+  writefln("short\tmin: %d\tmax: %d (%d)", short.min, short.max, short.sizeof);
+  writefln("int\tmin: %d\tmax: %d (%d)", int.min, int.max, int.sizeof);
+  writefln("long\tmin: %d\tmax: %d (%d)\n", long.min, long.max, long.sizeof);
+
+  // Show information about floating-point types...
+  writef("float (%d)\tdouble (%d)\treal (%d)\t", float.sizeof, double.sizeof, real.sizeof);
+  writef("ifloat (%d)\tidouble (%d)\tireal (%d)\t", ifloat.sizeof, idouble.sizeof, ireal.sizeof);
+  writef("cfloat (%d)\tcdouble (%d)\tcreal (%d)\t", cfloat.sizeof, cdouble.sizeof, creal.sizeof);
+
+  // Show information about character types...
+  writef("char (%d)\twchar (%d)\tdchar (%d)\t", char.sizeof, wchar.sizeof, dchar.sizeof);
+  return 0;
+}
+</code></pre>
+
+<p>这里就看到了std.stdio.writefln()方法的格式化功能。每种数据类型都有min和max，sizeof属性，这就是D语言的特性之一的原生属性支持（现代面向对象思想）。其中，浮点数里以i开头的表示复数中的虚部，以c开头就是复数，没有前缀的就是实数，而float，double，real的精度逐渐递减，c开头的浮点数类型的长度是无前缀的和以i开头的浮点数的长度之和。字符中，无前缀的char是utf8编码的，8位，w开头的wchar是utf16的，16位，d开头的dchar是utf32，32位。具体的D语言的数据类型可以参看<a href="http://www.digitalmars.com/d/2.0/type.html">D语言规范中关于数据类型的部分</a>。</p>
+
+<p>可以看到D语言的语句还是比较面熟的，是最流行的C风格。在之后的“一日一DD”中会继续看代码学D语言的。</p>
+
+<p>代码来自<a href="http://www.dsource.org/projects/tutorials/wiki/TutorialFundamentals">TutorialFundamentals</a></p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Kai Chen</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-02-10T00:00:00+08:00" pubdate data-updated="true">Feb 10<span>th</span>, 2008</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://kaichen.github.io/2008/02/10/%E4%B8%80%E6%97%A5%E4%B8%80D%281%29" data-via="" data-counturl="http://kaichen.github.io/2008/02/10/%E4%B8%80%E6%97%A5%E4%B8%80D%281%29" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2008/02/08/%E8%BF%87%E5%B9%B4%E5%90%8C%E5%AD%A6%E4%BC%9A" title="Previous Post: 2008同学会">&laquo; 2008同学会</a>
+      
+      
+        <a class="basic-alignment right" href="/2008/02/10/%E5%87%A0%E4%B8%AAshell%E5%BF%AB%E6%8D%B7%E9%94%AE" title="Next Post: Shell快捷键">Shell快捷键 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'thekaiway';
+      
+        
+        var disqus_script = 'count.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

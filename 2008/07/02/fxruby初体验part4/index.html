@@ -1,0 +1,382 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>FxRuby Part4 - The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="之前的：FxRuby初体验Part1，Part2，Part3。 到了PictureBook的V0.4了。这个版本算是基本的功能都做足了，包括了加上了相册选择，相册持久化等等。 #album_list_view.rb
+require 'fox16' include Fox class &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io/2008/07/02/fxruby%E5%88%9D%E4%BD%93%E9%AA%8Cpart4">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">FxRuby Part4</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-07-02T00:00:00+08:00" pubdate data-updated="true">Jul 2<span>nd</span>, 2008</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>之前的：FxRuby初体验<a href="http://redworld.blog.ubuntu.org.cn/2008/07/01/fxruby%e5%88%9d%e4%bd%93%e9%aa%8cpart1/">Part1</a>，<a href="http://redworld.blog.ubuntu.org.cn/2008/07/01/fxruby%e5%88%9d%e4%bd%93%e9%aa%8cpart2/">Part2</a>，<a href="http://redworld.blog.ubuntu.org.cn/2008/07/02/fxruby%e5%88%9d%e4%bd%93%e9%aa%8cpart3/">Part3</a>。</p>
+
+<p>到了PictureBook的V0.4了。这个版本算是基本的功能都做足了，包括了加上了相册选择，相册持久化等等。</p>
+
+<pre><code>#album_list_view.rb
+require 'fox16'
+
+include Fox
+
+class AlbumListView &amp;lt; FXList
+  attr_reader :album_list
+  def initialize(p, opts)
+    super(p, :opts =&amp;gt; opts)
+  end
+  def switcher=(sw)
+    @switcher = sw
+  end
+
+  def add_album(album)
+    appendItem(album.title)
+    AlbumView.new(@switcher, album)
+  end
+
+  def album_list=(albums)
+    @album_list = albums
+    @album_list.each_album do |album|
+      add_album(album)
+    end
+  end
+end
+
+#picture_book.rb
+$KCODE = "U"
+require 'fox16'
+require 'yaml'
+
+include Fox
+
+require 'album'
+require 'album_list'
+require 'photo'
+require 'photo_view'
+require 'album_view'
+require 'album_list_view'
+
+class PictureBook &amp;lt; FXMainWindow
+  def initialize(app)
+    super(app, "Picture Book" , :width =&amp;gt; 600, :height =&amp;gt; 400)
+    add_menu_bar
+    begin
+      @album_list = YAML.load_file("picturebook.yml" )
+    rescue
+      @album_list = AlbumList.new
+      @album_list.add_album(Album.new("My Photos" ))
+    end
+    splitter = FXSplitter.new(self,
+      :opts =&amp;gt; SPLITTER_HORIZONTAL|LAYOUT_FILL)
+    @album_list_view = AlbumListView.new(splitter, LAYOUT_FILL)
+    @switcher = FXSwitcher.new(splitter, :opts =&amp;gt; LAYOUT_FILL)
+    @switcher.connect(SEL_UPDATE) do
+      @switcher.current = @album_list_view.currentItem
+    end
+    @album_list_view.switcher = @switcher
+    @album_list_view.album_list = @album_list
+  end
+
+
+  def create
+    super
+    show(PLACEMENT_SCREEN)
+  end
+
+    def add_menu_bar
+      # 创建一个菜单栏的实例
+      menu_bar = FXMenuBar.new(self, LAYOUT_SIDE_TOP|LAYOUT_FILL_X)
+      # 创建一个菜单栏项
+      file_menu = FXMenuPane.new(self)
+      FXMenuTitle.new(menu_bar, "文件" , :popupMenu =&amp;gt; file_menu)
+      # 下面是一个创建菜单栏项和所关联动作的绑定
+      import_cmd = FXMenuCommand.new(file_menu, "导入..." )
+      import_cmd.connect(SEL_COMMAND) do
+        dialog = FXFileDialog.new(self, "导入图片" )
+        dialog.selectMode = SELECTFILE_MULTIPLE
+        dialog.patternList = ["JPEG Images (*.jpg, *.jpeg)" ]
+        if dialog.execute != 0
+          import_photos(dialog.filenames)
+        end
+      end
+      new_album_command = FXMenuCommand.new(file_menu, "New Album..." )
+      new_album_command.connect(SEL_COMMAND) do
+        album_title = FXInputDialog.getString("My Album" , self, "New Album" , "Name:" )
+        if album_title
+          album = Album.new(album_title)
+          @album_list.add_album(album)
+          @album_list_view.add_album(album)
+          AlbumView.new(@switcher, album)
+        end
+      end
+     exit_cmd = FXMenuCommand.new(file_menu, "退出" )# 一个简单的退出项
+     exit_cmd.connect(SEL_COMMAND) do
+      store_album_list
+      exit
+    end
+  end
+
+  def import_photos(filenames)
+    filenames.each do |filename|
+      photo = Photo.new(filename)
+      current_album.add_photo(photo)
+      current_album_view.add_photo(photo)
+    end
+    current_album_view.create
+  end
+
+  def current_album_view
+    @switcher.childAtIndex(@switcher.current)
+  end
+
+  def current_album
+    current_album_view.album
+  end
+
+  def store_album_list
+    File.open("picturebook.yml" , "w" ) do |io|
+      io.write(YAML.dump(@album_list))
+    end
+  end
+
+end
+
+if __FILE__ == $0
+  FXApp.new do |app|
+    PictureBook.new(app)
+    app.create
+    app.run
+  end
+end
+</code></pre>
+
+<p>剩下的晚上再写。。。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Kai Chen</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-07-02T00:00:00+08:00" pubdate data-updated="true">Jul 2<span>nd</span>, 2008</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://kaichen.github.io/2008/07/02/fxruby%E5%88%9D%E4%BD%93%E9%AA%8Cpart4" data-via="" data-counturl="http://kaichen.github.io/2008/07/02/fxruby%E5%88%9D%E4%BD%93%E9%AA%8Cpart4" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2008/07/02/fxruby%E5%88%9D%E4%BD%93%E9%AA%8Cpart3" title="Previous Post: FxRuby Part3">&laquo; FxRuby Part3</a>
+      
+      
+        <a class="basic-alignment right" href="/2008/07/10/_%E7%AC%AC6%E4%B8%AA%E5%AD%A6%E6%9C%9F%E7%BB%93%E6%9D%9F" title="Next Post: 大三结束">大三结束 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'thekaiway';
+      
+        
+        var disqus_script = 'count.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

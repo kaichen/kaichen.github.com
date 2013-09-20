@@ -1,0 +1,313 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Rails 2.0 Multiple View - The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="作者： madpilot 原文链接：
+http://www.sitepoint.com/blogs/2007/10/26/rails-20-features-multiple-views/ 下一个主要版本的Ruby on Rails（指2.0）加入了复合视图这个新特性。大约上个月底，预览版发布了， &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io/2007/10/28/%E7%BF%BB%E8%AF%91rails-20-features-multiple-views">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Rails 2.0 Multiple View</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2007-10-28T00:00:00+08:00" pubdate data-updated="true">Oct 28<span>th</span>, 2007</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>作者： madpilot</p>
+
+<p>原文链接：
+<a href="http://www.sitepoint.com/blogs/2007/10/26/rails-20-features-multiple-views/">http://www.sitepoint.com/blogs/2007/10/26/rails-20-features-multiple-views/</a></p>
+
+<p>下一个主要版本的Ruby on Rails（指2.0）加入了复合视图这个新特性。大约上个月底，预览版发布了，我有幸试用了一下，我想及时地概述一下一些新特点。</p>
+
+<p>复合视图</p>
+
+<p>在rails 1.2中，支持多种数据类型的respond_to块被引入，它可以轻松地支持象XML或者JSON。你需要做就是像下面这样：
+CODE:</p>
+
+<div>
+  <pre><code class='ruby'>def index
+      @stories = Story.find :all
+      respond to do |format|
+        format.html { render }
+        format.xml {
+          render :xml =&gt; @stories.to_xml
+        }
+        format.json {
+          render :json =&gt; @stories.to_json
+        }
+      end
+    end</code></pre>
+</div>
+
+
+<p>然后在浏览器上，如果你加上了扩展文件（比如/stories/index.xml）并得到包括请求格式的内容，那么你可以在environment.rb文件的最后添加MIME::Type.register，来创建自定义的类型。</p>
+
+<p>这种做法的一个问题是，基于扩展文件这种方式没有办法支持不同的HTML页面。因为MIME::Type解析器工作方式是，添加其他MIME类型为 text/html的内容标识（handler）会扰乱默认的标识（handler），这意味着上面的代码会提供错误的视图。</p>
+
+<p>输入Mime::Type.register_alias</p>
+
+<p>现在你可以告诉Rails用HTML响应你希望使用的多种文件类型。就是说你想设计一个mobile版本和iPhone版本的站点，你能通过添加下面的代码到/config/initializers/mime_types.rb文件创建两个新的格式：</p>
+
+<div>
+  <pre><code class='ruby'>Mime::Type.register_alias &quot;text/html&quot;, :iphone
+    Mime::Type.register_alias &quot;text/html&quot;, :mobile</code></pre>
+</div>
+
+
+<p>这使下面代码可以运作:</p>
+
+<div>
+  <pre><code class='ruby'>def index
+    @stories = Story.find :all
+    respond to { |format|
+    format.html {}
+    format.xml {
+    render :xml =&amp;gt; @stories.to_xml
+    }
+    format.json {
+    render :json =&amp;gt; @stories.to_json
+    }
+    format.iphone {
+    // Serve up the iPhone version
+    }
+    format.mobile {
+    // Serve up the mobile version
+    }
+    }
+    end</code></pre>
+</div>
+
+
+<p>当然，必须在每个respond_to代码块用手工提交不同的版本的做法不太符合DRY原则，所以已经为所有的视图文件创建了一种新的命名惯例。相对于在上面的index.rhtml中调用视图文件，根据你要使用的方式建立三种不同的版本的视图文件更好，比如， index.html.erb, index.iphone.erb 和 index.mobile.erb。</p>
+
+<p>当rails找到一个匹配的视图就使用它;当找不到时就使用默认的.html.erb或者.rhtml文件。这让你的站点方便地用不同的版本的视图提供服务。</p>
+
+<p>PS： 这篇文章有drive2me大哥帮我校对，谢谢drive2me帮我耐心地讲解，和校对。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Kai Chen</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2007-10-28T00:00:00+08:00" pubdate data-updated="true">Oct 28<span>th</span>, 2007</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://kaichen.github.io/2007/10/28/%E7%BF%BB%E8%AF%91rails-20-features-multiple-views" data-via="" data-counturl="http://kaichen.github.io/2007/10/28/%E7%BF%BB%E8%AF%91rails-20-features-multiple-views" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2007/10/23/%E4%B8%89%E6%9C%AC%E5%A4%A7%E4%B9%A6%E6%9D%A5%E4%BA%86" title="Previous Post: 三本大书">&laquo; 三本大书</a>
+      
+      
+        <a class="basic-alignment right" href="/2007/10/28/%E7%BF%BB%E8%AF%91%E5%A5%BD%E9%9A%BE" title="Next Post: 翻译其实很难">翻译其实很难 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'thekaiway';
+      
+        
+        var disqus_script = 'count.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

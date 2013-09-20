@@ -1,0 +1,273 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Inspect Rails - The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="Inspect Rails 这是一本关于Ruby on Rails框架内部实现的书，目标针对中高级开发者，帮助大家去理解Rails的实现和设计，在阅读本书之后能一直跟进Rails框架的源码更新。本书是基于Rails 4.0 stable编写的。 目前完成度已经有40%，正在陆续整理并发布上来。 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io/inspect-rails">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article role="article">
+  
+  <header>
+    <h1 class="entry-title">Inspect Rails</h1>
+    
+  </header>
+  
+  <p>这是一本关于Ruby on Rails框架内部实现的书，目标针对中高级开发者，帮助大家去理解Rails的实现和设计，在阅读本书之后能一直跟进Rails框架的源码更新。本书是基于Rails 4.0 stable编写的。</p>
+
+<p>目前完成度已经有40%，正在陆续整理并发布上来。</p>
+
+<ul>
+<li>Framework Structure
+
+<ul>
+<li><a href="/2013/06/12/dependencies-of-rails">Components</a>
+<br>Rails有多少个组件，每个组件还有哪些依赖</li>
+<li>Assets Pipeline Dependences
+<br>Assets Pipeline为Rails带来了哪些依赖</li>
+<li>Rails Doc
+<br>Rails的官方文档有哪些，是如何组织和编写的</li>
+</ul>
+</li>
+<li>Rails Applcation
+
+<ul>
+<li><a href="/2013/06/14/rails-internal-hierarchy/">Railite Hierarchy</a>
+<br>Railite是所有组件整合在一起的核心，Rails应用和Rails Engine是怎样的一个关系</i></li>
+<li><a href="/2013/07/12/rails-paths/">File Convension</a>
+<br>Rails的Convention Over Configuration是怎样实现的</li>
+<li><a href="/2013/07/04/code-loading-of-rails/">Code Loading</a>
+<br>Rails会自动加载内部</li>
+<li>Rails Application booting under hook
+<br>Rails应用的启动流程</li>
+<li>Rails Middleware Stack
+<br>Rails的中间件栈组织机制</li>
+</ul>
+</li>
+<li>ActionDispatch
+
+<ul>
+<li>HTTP Hack base on Rack</li>
+<li>Middlewares</li>
+<li>Routing</li>
+</ul>
+</li>
+<li>ActionView
+
+<ul>
+<li><a href="/2013/08/10/actionview-architect">Rendering Stack</a>
+<br>整个ActionView的Stack是怎么组织</li>
+<li>Renderers</li>
+<li>Template Lookup
+<br>ActionView是如何找到正确的模版</li>
+<li>Handle Template</li>
+<li><a href="/2013/08/17/actionview-safe-buffer">Safe Output Buffer</a>
+<br>ActionView的Buffer机制怎样处理</li>
+</ul>
+</li>
+<li>ActiveRecord
+
+<ul>
+<li><a href="/2013/07/26/assemble-ar-object">Assemble ActiveRecord Object</a>
+<br>数据记录如何变成AR对象</li>
+<li>Table Mapping
+<br>数据库表结构怎样映射到AR模型</li>
+<li><a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Attribute</a></li>
+<li>Dynamic Finder
+<br>被最多人谈论的动态查询方法是怎么生成出来的</li>
+<li>Database Connection</li>
+<li>SQL Generation</li>
+<li>Association Mapping
+<br>模型间的关联的实现机制</li>
+</ul>
+</li>
+<li>ActionMailer</li>
+</ul>
+
+
+<p>评论、问题、意见或建议都可以发表在本书自带的 Disqus 论坛里， 也可以通过 <a href="http://www.douban.com/people/chenk85/">豆瓣</a> 、 <a href="http://ruby-china.org/_kaichen">Ruby China</a> 或 <a href="https://twitter.com/_kaichen">Twitter</a> 联系我， 我会尽可能地回复。</p>
+
+<p>要获得本书的最新动态，可以订阅我博客的<a href="http://thekaiway.com/atom.xml">RSS</a>。</p>
+
+  
+    <footer>
+      
+      
+        <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://kaichen.github.io/inspect-rails/index.html" data-via="" data-counturl="http://kaichen.github.io/inspect-rails/index.html" >Tweet</a>
+  
+  
+  
+</div>
+
+      
+    </footer>
+  
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'thekaiway';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://kaichen.github.io/inspect-rails/index.html.html';
+        var disqus_url = 'http://kaichen.github.io/inspect-rails/index.html';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

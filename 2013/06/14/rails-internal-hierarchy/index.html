@@ -1,0 +1,349 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Rails Internal Hierarchy - The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="本文是Inspect Rails的一部分，Inspect Rails是由我正在编写的讲解Rails内部的实现与设计的一本书，欢迎阅读 Rails 内部有清晰的层级结构，以实现Rails应用程序和Rails插件的配置以及初始化。 如上图所示，所有Rails Application继承自Rails &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io/2013/06/14/rails-internal-hierarchy">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Rails Internal Hierarchy</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-06-14T21:19:00+08:00" pubdate data-updated="true">Jun 14<span>th</span>, 2013</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><blockquote><p>本文是<a href="/inspect-rails">Inspect Rails</a>的一部分，<a href="/inspect-rails">Inspect Rails</a>是由我正在编写的讲解Rails内部的实现与设计的一本书，欢迎阅读</p></blockquote>
+
+<p>Rails 内部有清晰的层级结构，以实现Rails应用程序和Rails插件的配置以及初始化。</p>
+
+<p><img src='/images/graphviz/g-a8120f3125874b4ee9b996faea11e8f1.svg'></p>
+
+<p>如上图所示，所有Rails Application继承自Rails Engine，而Rails Engine继承自Railtie，这套继承体系的实现全部都封装在railties这个Rubygem里。值得一提的是，Railtie和Rails Engine的子类都是<a href="http://en.wikipedia.org/wiki/Singleton_pattern">Singleton</a>，Rails Application本身就是<a href="http://en.wikipedia.org/wiki/Singleton_pattern">Singleton</a>，所以在一个程序里Rails Application只有一个实例。</p>
+
+<h2>Railtie</h2>
+
+<p>我们先从Railtie说起，如果你翻查过一些Rails插件的源码，会发现它都继承了Railtie。Railtie位于层级里最低最底层的部分，它实现了配置和初始化这两大功能，其中的逻辑都组织在以下两个Modules中</p>
+
+<ul>
+<li>Initializable, 实现位于<code>rails/lib/rails/initializable</code></li>
+<li>Configuration, 实现位于<code>rails/lib/rails/railtie/configuration</code></li>
+</ul>
+
+
+<p>Initializable 模块顾名思义就是负责初始化，常用的方法只有一个叫<code>initializer</code>的方法，它的方法签名如下，接受一个名字，一个可选的参数，一个代码块</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">initializer</span><span class="p">(</span><span class="nb">name</span><span class="p">,</span> <span class="n">opts</span> <span class="o">=</span> <span class="p">{},</span> <span class="o">&amp;</span><span class="n">blk</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>定义好的 Initializer 代码块会在Rails应用程序启动时执行，并且可以在参数里指定<code>before</code>或者<code>after</code>选项，
+让其在某个已定义的Initializer执行之前或之后执行，这个功能是通过<a href="http://www.ruby-doc.org/stdlib-2.0/libdoc/tsort/rdoc/TSort.html">Ruby内置的TSort</a>实现的。以下是ActiveRecord设置Logger的Initializer</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">initializer</span> <span class="s2">&quot;active_record.logger&quot;</span> <span class="k">do</span>
+</span><span class='line'>  <span class="no">ActiveSupport</span><span class="o">.</span><span class="n">on_load</span><span class="p">(</span><span class="ss">:active_record</span><span class="p">)</span> <span class="p">{</span> <span class="nb">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">||=</span> <span class="o">::</span><span class="no">Rails</span><span class="o">.</span><span class="n">logger</span> <span class="p">}</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Configuration 是实现常见的<code>config.xxx = yyy</code>这一常见写法的源头，它使用了Ruby的method_missing实现了配置参数的属性访问和设置，全部的配置都放在一个名为<code>@@options</code>的类变量里。</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">method_missing</span><span class="p">(</span><span class="nb">name</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">blk</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">if</span> <span class="nb">name</span><span class="o">.</span><span class="n">to_s</span> <span class="o">=~</span> <span class="sr">/=$/</span>
+</span><span class='line'>    <span class="vc">@@options</span><span class="o">[</span><span class="vg">$`</span><span class="o">.</span><span class="n">to_sym</span><span class="o">]</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">first</span>
+</span><span class='line'>  <span class="k">elsif</span> <span class="vc">@@options</span><span class="o">.</span><span class="n">key?</span><span class="p">(</span><span class="nb">name</span><span class="p">)</span>
+</span><span class='line'>    <span class="vc">@@options</span><span class="o">[</span><span class="nb">name</span><span class="o">]</span>
+</span><span class='line'>  <span class="k">else</span>
+</span><span class='line'>    <span class="k">super</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Action Mailer, Action Controller, Action View和Active Record 它们集成到Rails框架的都是通过Railtie实现。</p>
+
+<p>如果你去看现实中的各种插件写的Railtie中，基本上就是调用initializer方法配置初始化逻辑和通过config变量在添加自身相关的各种配置选项。而且Rails也使用这两个模块去设置各种框架本身的初始化和参数配置。</p>
+
+<p>Railtie除此之外，它还负责rake tasks和generator等部分与Rails应用程序的集成，暂不讲。</p>
+
+<h2>Rails Engine</h2>
+
+<p>Rails Engine主要的设想就是把一些通用的Rails应用程序抽象出来并得到重用，也就是说每个Rails Engine几乎就是一个Rails应用程序，它拥有MVC结构，具有自己的路由，独立的Middleware Stack。社区里最广为人知的一个Rails Engine应该是<a href="https://github.com/plataformatec/devise">devise</a>。</p>
+
+<p>Rails Engine中实现Rails广为人知的&ldquo;<a href="http://en.wikipedia.org/wiki/Convention_over_configuration">Convention over Configuration</a>&rdquo;特性，整套目录结构的加载就是在这里定义的。</p>
+
+<p>Rails Engine是一个Rack Middleware，它实现了<code>call</code>方法，所以能Mount到其他Rails Engine或者Rails Application的路由上。</p>
+
+<p>关于Rails的代码加载方式会在后续的章节详细讲解。</p>
+
+<h2>Rails Application</h2>
+
+<p>组织起Rails应用程序的启动流程，是Rails Application这个类最主要的事情。而Rails Application区别于Rails Engine在于需要管理很多外部的资源，比如以下的内容</p>
+
+<ul>
+<li><code>Rails.logger</code></li>
+<li><code>Rails.cache</code></li>
+<li>Session 的存储机制</li>
+<li>维护完整Middleware Stack</li>
+<li>代码重新加载</li>
+<li>与Bundler的集成</li>
+</ul>
+
+
+<p>关于Rails的启动流程和Middleware Stack等话题会在后续的章节中展开并详细讲解。</p>
+
+<p>本节暂时到此。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Kai Chen</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-06-14T21:19:00+08:00" pubdate data-updated="true">Jun 14<span>th</span>, 2013</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/ruby/'>Ruby</a>, <a class='category' href='/blog/categories/ruby-on-rails/'>Ruby on Rails</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://kaichen.github.io/2013/06/14/rails-internal-hierarchy" data-via="" data-counturl="http://kaichen.github.io/2013/06/14/rails-internal-hierarchy" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2013/06/12/dependencies-of-rails" title="Previous Post: Dependencies of Rails">&laquo; Dependencies of Rails</a>
+      
+      
+        <a class="basic-alignment right" href="/2013/06/19/activerecord-migration-tricks-and-tips" title="Next Post: 你可能不知道的ActiveRecord Migration小技巧">你可能不知道的ActiveRecord Migration小技巧 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'thekaiway';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://kaichen.github.io/2013/06/14/rails-internal-hierarchy.html';
+        var disqus_url = 'http://kaichen.github.io/2013/06/14/rails-internal-hierarchy';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

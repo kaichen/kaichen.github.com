@@ -1,0 +1,367 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Rails Paths - The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="本文是Inspect Rails的一部分，Inspect Rails是由我正在编写的讲解Rails内部实现与设计的一本书，欢迎阅读 前面的章节提到Rails Engine实现了Rails中著名的Convention over Configuration，其目的就在于统一有序地组织各种方面的代码。 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io/2013/07/12/rails-paths">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Rails Paths</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-07-12T21:44:00+08:00" pubdate data-updated="true">Jul 12<span>th</span>, 2013</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><blockquote><p>本文是<a href="/inspect-rails">Inspect Rails</a>的一部分，<a href="/inspect-rails">Inspect Rails</a>是由我正在编写的讲解Rails内部实现与设计的一本书，欢迎阅读</p></blockquote>
+
+<p>前面的章节提到Rails Engine实现了Rails中著名的<a href="http://en.wikipedia.org/wiki/Convention_over_configuration">Convention over Configuration</a>，其目的就在于统一有序地组织各种方面的代码。</p>
+
+<p>而这个事情主要关心的就是加载路径，也就是让Rails能在对应的路径下找到相应的代码。Rails Engine对目录的配置代码主要如下：</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># railties/lib/rails/engine/configuration.rb</span>
+</span><span class='line'><span class="n">paths</span> <span class="o">=</span> <span class="ss">Rails</span><span class="p">:</span><span class="ss">:Paths</span><span class="o">::</span><span class="no">Root</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="vi">@root</span><span class="p">)</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;app&quot;</span><span class="p">,</span>                 <span class="n">eager_load</span><span class="p">:</span> <span class="kp">true</span><span class="p">,</span> <span class="ss">glob</span><span class="p">:</span> <span class="s2">&quot;*&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;app/assets&quot;</span><span class="p">,</span>          <span class="ss">glob</span><span class="p">:</span> <span class="s2">&quot;*&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;app/controllers&quot;</span><span class="p">,</span>     <span class="n">eager_load</span><span class="p">:</span> <span class="kp">true</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;app/helpers&quot;</span><span class="p">,</span>         <span class="n">eager_load</span><span class="p">:</span> <span class="kp">true</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;app/models&quot;</span><span class="p">,</span>          <span class="n">eager_load</span><span class="p">:</span> <span class="kp">true</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;app/mailers&quot;</span><span class="p">,</span>         <span class="n">eager_load</span><span class="p">:</span> <span class="kp">true</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;app/views&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;app/controllers/concerns&quot;</span><span class="p">,</span> <span class="n">eager_load</span><span class="p">:</span> <span class="kp">true</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;app/models/concerns&quot;</span><span class="p">,</span>      <span class="n">eager_load</span><span class="p">:</span> <span class="kp">true</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;lib&quot;</span><span class="p">,</span>                 <span class="n">load_path</span><span class="p">:</span> <span class="kp">true</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;lib/assets&quot;</span><span class="p">,</span>          <span class="ss">glob</span><span class="p">:</span> <span class="s2">&quot;*&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;lib/tasks&quot;</span><span class="p">,</span>           <span class="ss">glob</span><span class="p">:</span> <span class="s2">&quot;**/*.rake&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;config&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;config/environments&quot;</span><span class="p">,</span> <span class="ss">glob</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="no">Rails</span><span class="o">.</span><span class="n">env</span><span class="si">}</span><span class="s2">.rb&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;config/initializers&quot;</span><span class="p">,</span> <span class="ss">glob</span><span class="p">:</span> <span class="s2">&quot;**/*.rb&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;config/locales&quot;</span><span class="p">,</span>      <span class="ss">glob</span><span class="p">:</span> <span class="s2">&quot;*.{rb,yml}&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;config/routes.rb&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;db&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;db/migrate&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;db/seeds.rb&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;vendor&quot;</span><span class="p">,</span>              <span class="n">load_path</span><span class="p">:</span> <span class="kp">true</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;vendor/assets&quot;</span><span class="p">,</span>       <span class="ss">glob</span><span class="p">:</span> <span class="s2">&quot;*&quot;</span>
+</span><span class='line'><span class="n">paths</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Rails Application的<code>paths</code>是这样的:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># railties/lib/rails/application/configuration.rb</span>
+</span><span class='line'><span class="vi">@paths</span> <span class="o">||=</span> <span class="k">begin</span>
+</span><span class='line'>  <span class="n">paths</span> <span class="o">=</span> <span class="k">super</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;config/database&quot;</span><span class="p">,</span>    <span class="ss">with</span><span class="p">:</span> <span class="s2">&quot;config/database.yml&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;config/environment&quot;</span><span class="p">,</span> <span class="ss">with</span><span class="p">:</span> <span class="s2">&quot;config/environment.rb&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;lib/templates&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;log&quot;</span><span class="p">,</span>                <span class="ss">with</span><span class="p">:</span> <span class="s2">&quot;log/</span><span class="si">#{</span><span class="no">Rails</span><span class="o">.</span><span class="n">env</span><span class="si">}</span><span class="s2">.log&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;public&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;public/javascripts&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;public/stylesheets&quot;</span>
+</span><span class='line'>  <span class="n">paths</span><span class="o">.</span><span class="n">add</span> <span class="s2">&quot;tmp&quot;</span>
+</span><span class='line'>  <span class="n">paths</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>根目录</h2>
+
+<p>目录结构配置是在Rails Engine定义的，这里最终得到的paths是每个Engine的根目录，而<code>Rails.root</code>是来自最顶层的Rails Application的根目录。这里Rails对根目录的判断，在Engine和Application的不一样，Application是通过检查存在<code>config.ru</code>文件的目录，而Engine只是查找存在<code>lib</code>目录的目录。</p>
+
+<h2>路径集合</h2>
+
+<p>在上面的配置代码里的<code>paths.add</code>会做两件事情，一是将传进来的字符串定义为<strong>一组路径</strong>，二是将对应的字符串作为这组路径的默认目录。这个Paths里的每一项。比如，在配置完成之后<code>paths["app/models"]</code>可以将这组路径里的所有目录都取回来。</p>
+
+<p>也就是说每一组路径都是一个集合，而有些特殊的路径里只有一个文件，比如<code>paths["config/database"]</code>。在Rails内部在查找对应目录或文件的时候，都是通过这个<code>paths</code>去查找，而不是硬编码相对目录位置。</p>
+
+<p>另外可以看到<code>paths.add</code>方法除了目录之外，还会接受一些选项</p>
+
+<ul>
+<li>eager_load: 是否使用预加载</li>
+<li>glob: 目录内的文件查找通配符</li>
+<li>with: 指定为唯一的文件</li>
+<li>load_path: 作为<code>require</code>或<code>load</code>时候可以查找到的路径</li>
+</ul>
+
+
+<p>在了解完目录与加载的事实之后，你会知道Rails其实并不能控制你把Model放到<code>app/controllers</code>或其他地方下，它处理的只是把某些目录设置为查找代码的加载路径。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Kai Chen</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-07-12T21:44:00+08:00" pubdate data-updated="true">Jul 12<span>th</span>, 2013</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/ruby/'>Ruby</a>, <a class='category' href='/blog/categories/ruby-on-rails/'>Ruby on Rails</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://kaichen.github.io/2013/07/12/rails-paths" data-via="" data-counturl="http://kaichen.github.io/2013/07/12/rails-paths" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2013/07/04/code-loading-of-rails" title="Previous Post: Code loading of Rails">&laquo; Code loading of Rails</a>
+      
+      
+        <a class="basic-alignment right" href="/2013/07/23/getting-start-with-sass" title="Next Post: Sass入门">Sass入门 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'thekaiway';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://kaichen.github.io/2013/07/12/rails-paths.html';
+        var disqus_url = 'http://kaichen.github.io/2013/07/12/rails-paths';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

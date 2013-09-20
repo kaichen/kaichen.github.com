@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: jQuery | The Kai Way]]></title>
+  <link href="http://kaichen.github.io/blog/categories/jquery/atom.xml" rel="self"/>
+  <link href="http://kaichen.github.io/"/>
+  <updated>2013-09-20T23:29:29+08:00</updated>
+  <id>http://kaichen.github.io/</id>
+  <author>
+    <name><![CDATA[Kai Chen]]></name>
+    <email><![CDATA[kaichenxyz@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Learning jQuery Notes]]></title>
+    <link href="http://kaichen.github.io/2009/01/14/learning-jquery-notes"/>
+    <updated>2009-01-14T00:00:00+08:00</updated>
+    <id>http://kaichen.github.io/2009/01/14/learning-jquery-notes</id>
+    <content type="html"><![CDATA[<p>以下内容是Learning JQuery一书的前六章笔记摘要，基本的JQuery操作就在这里了。很多地方只是提一下，具体要用时还是去查<a href="http://docs.jquery.com">官方文档</a>。</p>
+
+<h2>Selecter</h2>
+
+<p>基本通过工厂方法<code>$()</code>进行选择，可以选择标签名（Tag），ID（id），类（Class）。</p>
+
+<p>通过子元素组合符（&gt;）可以选择到后代元素</p>
+
+<p>当需要通过属性进行选择时可以使用XPath语法：<code>tag[@attribute]</code>。更好的选择过滤符$=，^=，*=。</p>
+
+<p>JQuery特有的自定义选择符，以冒号开头（:）</p>
+
+<ul>
+<li><code>:not</code> 反向选择</li>
+<li><code>:eq(index)</code> 通过下标对数组进行选择</li>
+<li><code>:odd</code> 索引为奇数的元素</li>
+<li><code>:even</code> 索引为偶数的元素</li>
+<li><code>:nth-child(index)</code> 通过索引访问子元素</li>
+<li><code>:contains(string)</code> 包含指定字符串的元素</li>
+</ul>
+
+
+<p>选择到元素后可通过JQuery的特有遍历方式进行遍历</p>
+
+<p><code>filter()</code> 可以调用自定义选择符进行过滤
+<code>parent()</code> 取得父元素
+<code>next()</code> 取得下一个同辈元素
+<code>siblings()</code> 取得所有同辈元素
+<code>find()</code> 通过标签加选择符进行过滤</p>
+
+<p>通过<code>get(0)</code>或者<code>$(el)[0]</code>可以直接返回DOM元素</p>
+
+<h2>Event</h2>
+
+<p><code>$(document).ready()</code>是注册事件处理器的入口，它会在HTML下载完毕并解析为DOM树时自动执行，并且是按顺序执行注册的处理器。</p>
+
+<p>一般的形式：</p>
+
+<pre><code>$(document).ready(function(){
+    # codes....
+});
+</code></pre>
+
+<p>事件绑定是使用bind()函数进行的，常见形式：</p>
+
+<p><code>$(el).bind(event, function-define);</code></p>
+
+<p>bind到元素上的事件不会覆盖，即可为元素同个事件定义多个事件处理器并让其按顺序执行。</p>
+
+<p><code>bind()</code>的简写形式是直接调用与事件同名函数，如<code>click(functions-define)</code>。</p>
+
+<p><code>toggle()</code>方法接受两个函数参数，在第一次单击时会调用第一个函数，第二次则调用第二个函数并循环这个过程。</p>
+
+<p><code>toggleClass(classname)</code>方法会为元素切换指定的类。</p>
+
+<p><code>hover()</code>方法与<code>toggle()</code>方法类似，接受两个函数的参数，分别在鼠标指针进入和离开该元素范围时执行。</p>
+
+<p><code>unbind()</code>方法可以解除元素的事件处理器绑定，提供两个参数，一个事件名，和函数名。</p>
+
+<p><code>one()</code>方法可以绑定一次性事件，即绑定完成后解除。</p>
+
+<p><code>trigger()</code>方法可以模拟事件的发生。参数为事件名。其简写形式为不带任何参数的事件名同名函数。</p>
+
+<h2>Effect</h2>
+
+<p><code>css()</code>方法可以接受属性名和值来对元素的style进行设置。两种调用形式<code>css(property, value)</code>，<code>css(property1 : value1, property2 : value2...)</code>。</p>
+
+<p><code>css()</code>方法也可以取得对应属性名的值。</p>
+
+<p>BTW，<code>css()</code>方法类似reader和writer。</p>
+
+<p><code>hide()</code>和<code>show()</code>方法可以对元素进行隐藏和显示。</p>
+
+<p>所有的效果都可以加上速度参数：slow normal fast。</p>
+
+<p><code>fadeIn()</code>，<code>fadeOut()</code>和<code>fadeTo()</code>修改元素的不透明度。</p>
+
+<p><code>slideDown()</code>和<code>slideUp()</code>修改元素的高度。</p>
+
+<p><code>animate()</code>方法可以同时修改元素的多个属性。</p>
+
+<p>效果函数可以带上第二个参数作为回调函数，在效果完成后调用。</p>
+
+<p>效果的顺序原则：</p>
+
+<ol>
+<li>一组元素上的效果</li>
+<li>当在一个.antimate()方法中以多个属性的方式应用时，是同时发生的。</li>
+<li>当以方法连缀的形式应用时，是按顺序发生的（排队效果）。</li>
+<li>多组元素上的效果</li>
+<li>默认情况下是同时发生的。</li>
+<li>当在事件处理程序的回调函数中应用时，是按顺序发生的（排队效果）。</li>
+</ol>
+
+
+<h2>DOM</h2>
+
+<p><code>addClass()</code>和<code>removeClass()</code>，<code>togleClass()</code>可以对元素的类进行增删。</p>
+
+<p><code>attr()</code>和<code>removeAttr()</code>可以对元素属性进行操作。</p>
+
+<p><code>each(function(index){})</code>可以对元素组进行迭代。</p>
+
+<p><code>clone()</code>方法可以进行深度复制</p>
+
+<p><code>insertBefore()</code>，<code>before()</code>，<code>insertAfter()</code>，<code>after()</code>方法用于在相邻位置插入新元素。insertXxx和Xxx存在着被动与主动的关系。</p>
+
+<p><code>append()</code>，<code>appendTo()</code>，<code>prepend()</code>，<code>prependTo()</code>用于元素中插入新元素。</p>
+
+<p><code>wrap()</code>用于在元素外插入新元素，即用新元素包裹自身。</p>
+
+<p><code>html()</code>，<code>text()</code>使用新元素或文本进行替换</p>
+
+<p><code>empty()</code>移除元素</p>
+
+<p><code>remove()</code>移除元素及其后代元素</p>
+
+<h2>Ajax</h2>
+
+<p><code>load()</code>方法可以直接请求html片段并直接插入元素中。</p>
+
+<p><code>$.getJSON()</code>方法可以请求json文档，第二个参数可以带上回调函数。</p>
+
+<p><code>$.get()</code>和<code>$.post()</code>两个方法可以模拟GET和POST请求，并支持回调函数。第二个参数可以加上一个参数map。</p>
+
+<p><code>$('#form').find('input').serialize()</code>可以序列化表单数据。</p>
+
+<p><code>ajaxStart()</code>和<code>ajaxStop()</code>是两个Ajax请求的监听器，在请求开始时会调用注册在前一个函数的回调处理器，在请求结束时会调用后一个函数的回调处理器。</p>
+]]></content>
+  </entry>
+  
+</feed>

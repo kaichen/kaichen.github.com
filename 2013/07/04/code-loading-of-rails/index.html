@@ -1,0 +1,367 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Code loading of Rails - The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="本文是Inspect Rails的一部分，Inspect Rails是由我正在编写的讲解Rails内部的实现与设计的一本书，欢迎阅读 Ruby on Rails中实现了一套复杂的代码加载机制，比如怎样自动加载对应的模型，在开发模式
+如何重新加载整个项目的代码，以及开发模式下的代码预加载。 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io/2013/07/04/code-loading-of-rails">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Code Loading of Rails</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-07-04T23:03:00+08:00" pubdate data-updated="true">Jul 4<span>th</span>, 2013</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><blockquote><p>本文是<a href="/inspect-rails">Inspect Rails</a>的一部分，<a href="/inspect-rails">Inspect Rails</a>是由我正在编写的讲解Rails内部的实现与设计的一本书，欢迎阅读</p></blockquote>
+
+<p>Ruby on Rails中实现了一套复杂的代码加载机制，比如怎样自动加载对应的模型，在开发模式
+如何重新加载整个项目的代码，以及开发模式下的代码预加载。</p>
+
+<h2>ActiveSupport::Dependencies</h2>
+
+<p>本篇中讲到的Ruby on Rails的代码加载机制大部分实现代码都在<a href="https://github.com/rails/rails/blob/4-0-stable/activesupport/lib/active_support/dependencies.rb"><code>ActiveSupport::Dependencies</code></a>这个类中，这其中的实现逻辑算是比较复杂，我不想在这里贴满代码，在本篇中只是讲到实现机制以及对应的方法，请读者自行去看对应的代码。</p>
+
+<p><code>ActiveSupport::Dependencies</code>这个类所在的文件被require时，就会自动进行初始化，以下是这个文件的最后一行代码。</p>
+
+<p>ActiveSupport::Dependencies.hook!</p>
+
+<p>我们可以先看看这个对应的<code>hook!</code>方法</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># ActiveSupport::Dependencies</span>
+</span><span class='line'><span class="k">def</span> <span class="nf">hook!</span>
+</span><span class='line'>  <span class="no">Object</span><span class="o">.</span><span class="n">class_eval</span> <span class="p">{</span> <span class="kp">include</span> <span class="no">Loadable</span> <span class="p">}</span>
+</span><span class='line'>  <span class="no">Module</span><span class="o">.</span><span class="n">class_eval</span> <span class="p">{</span> <span class="kp">include</span> <span class="no">ModuleConstMissing</span> <span class="p">}</span>
+</span><span class='line'>  <span class="no">Exception</span><span class="o">.</span><span class="n">class_eval</span> <span class="p">{</span> <span class="kp">include</span> <span class="no">Blamable</span> <span class="p">}</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>它就是将所需的各种Meta Programming挂到Object和Module下，以下就会一步步讲到对应的秘密。</p>
+
+<h2>自动加载</h2>
+
+<p>Ruby on Rails开发者一般不需关心这样一个问题，从来没有手动加载某个模型类或者控制器类，但为什么这个类可以直接使用呢？其中的秘密就是Rails使用了Ruby的其中一个Meta Programming功能，<code>const_missing</code>。所有的类和模组在Ruby里都是常量，当Ruby解析器在遇到没有见过的常量时，就会去调用对应上下文的<code>const_missing</code>方法。开启<code>const_missing</code>的地方就在前面看到加载到Module里的<code>ModuleConstMissing</code>模组中。</p>
+
+<p>当Rails项目代码里遇到一个从来没有加载过的类或模组时，会调用
+<code>Dependencies.load_missing_constant</code>方法去尝试利用之前章节提到的文件结构惯例加载对应代码。这个<code>load_missing_constant</code>的基本思路是，调用<code>Dependencies.search_for_file</code>方法去找到对应的文件，找到后通过<code>Dependencies.require_or_load</code>去加载。这过程其中需要将已经加载的所有内容都记录下来，以便对这个加载状态进行管理。</p>
+
+<h2>开发模式的代码重新加载</h2>
+
+<p>Rails的一个著名的功能就是在开发时，当你修改了某个文件后，Rails会帮你自动去重新加载对应的代码。</p>
+
+<p>ActiveSupport里实现了一个名为FileUpdateChecker的类，可以监视文件变化，当文件被更
+改的时候调用相应的逻辑。Rails通过这种方式去监视所有标记为<code>autoload</code>的目录下的文件，
+当下一次请求过来时，在文件被修改的条件下会自动去进行重新加载。</p>
+
+<p>而重新加载的机制，同样是利用Ruby语言的Meta Programming，通过<a href="http://www.ruby-doc.org/core-2.0/Module.html#method-i-remove_const">remove_const</a>去
+把已经加载的类和模组都从内存中清空，这就让加载状态又回到了原点。虽然这个实现的思路很简单，但是由于Ruby里对于命名空间的处理是以嵌套的形式存在的，故需要循环遍历所有已加载的类和模组，并对其下的类和模组做深度遍历，最后将它们通通都清理。</p>
+
+<p>这部分对应的代码入口如下</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># ActiveSupport::Dependencies</span>
+</span><span class='line'><span class="k">def</span> <span class="nf">clear</span>
+</span><span class='line'>  <span class="n">log_call</span>
+</span><span class='line'>  <span class="n">loaded</span><span class="o">.</span><span class="n">clear</span>
+</span><span class='line'>  <span class="n">remove_unloadable_constants!</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>另外，由于不是所有的代码都是通过这种自动加载的方法，那么利用<code>require</code>和<code>load</code>手动显式加载的。因此必须替换系统的<code>require</code>和<code>load</code>，以记录哪些代码已经被加载进来，实现之后的代码重载。这个就是最开始提到的<code>Dependenciese.hook!</code>里include到Object类中的<code>Loadable</code>模组做的事情。</p>
+
+<h2>生产模式的代码预加载</h2>
+
+<p>Rails在生产模式下，为了提高运行时的速度，去掉在处理请求时加载对应代码的延迟，所以会在
+启动后把所有的业务代码都预先加载进来。它是通过如下的initializer来实现的，这个功能
+通过<code>eager_load</code>的选项来控制。</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># Rails::Application::Finisher</span>
+</span><span class='line'><span class="n">initializer</span> <span class="ss">:eager_load!</span> <span class="k">do</span>
+</span><span class='line'>  <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">eager_load</span>
+</span><span class='line'>    <span class="no">ActiveSupport</span><span class="o">.</span><span class="n">run_load_hooks</span><span class="p">(</span><span class="ss">:before_eager_load</span><span class="p">,</span> <span class="nb">self</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">config</span><span class="o">.</span><span class="n">eager_load_namespaces</span><span class="o">.</span><span class="n">each</span><span class="p">(</span><span class="o">&amp;</span><span class="ss">:eager_load!</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>如果需要某个环境启用预加载的话，可以对应环境将这个<code>eager_load</code>选项打开。</p>
+
+<h2>加载日志</h2>
+
+<p>ActiveSupport::Dependencies内部的所有操作都是可以输出到日志，但默认情况Rails关闭了这部分日志，希望读者在读完这部分内容后去打开日志选项，去实际看看在你的项目中代码是怎样被加载的。打开的方法也很简单，在你的<code>config/application.rb</code>的Application类定义里加上这几行代码:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">config</span><span class="o">.</span><span class="n">after_initialize</span> <span class="k">do</span>
+</span><span class='line'>  <span class="ss">ActiveSupport</span><span class="p">:</span><span class="ss">:Dependencies</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="no">Rails</span><span class="o">.</span><span class="n">logger</span>
+</span><span class='line'>  <span class="ss">ActiveSupport</span><span class="p">:</span><span class="ss">:Dependencies</span><span class="o">.</span><span class="n">log_activity</span> <span class="o">=</span> <span class="kp">true</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>如果你在项目里引用了一些Rails Engine，由于前面章节所提到的Rails Engine与Rails Application的关系，Engine的MVC组件的加载也是通过同种方式进行，因此也能看到相应的Rails Engine里的日志。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Kai Chen</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-07-04T23:03:00+08:00" pubdate data-updated="true">Jul 4<span>th</span>, 2013</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/ruby/'>Ruby</a>, <a class='category' href='/blog/categories/ruby-on-rails/'>Ruby on Rails</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://kaichen.github.io/2013/07/04/code-loading-of-rails" data-via="" data-counturl="http://kaichen.github.io/2013/07/04/code-loading-of-rails" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2013/06/19/activerecord-migration-tricks-and-tips" title="Previous Post: 你可能不知道的ActiveRecord Migration小技巧">&laquo; 你可能不知道的ActiveRecord Migration小技巧</a>
+      
+      
+        <a class="basic-alignment right" href="/2013/07/12/rails-paths" title="Next Post: Rails Paths">Rails Paths &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'thekaiway';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://kaichen.github.io/2013/07/04/code-loading-of-rails.html';
+        var disqus_url = 'http://kaichen.github.io/2013/07/04/code-loading-of-rails';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

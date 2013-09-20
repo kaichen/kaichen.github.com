@@ -1,0 +1,417 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Sass入门 - The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="Sass是一个CSS方言, 通过编译器实现将Sass/Scss编译为CSS。 http://sass-lang.com/ Sass具有两种语法, 一种是靠缩进去实现层级关系的Sass, 和另一种和CSS一样通过大括号实现层级的Scss。 特性 嵌套式语法 啥也不说了, 看代码 1
+2
+3
+4
+5 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io/2013/07/23/getting-start-with-sass">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Sass入门</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-07-23T19:01:00+08:00" pubdate data-updated="true">Jul 23<span>rd</span>, 2013</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>Sass是一个CSS方言, 通过编译器实现将Sass/Scss编译为CSS。</p>
+
+<p><a href="http://sass-lang.com/">http://sass-lang.com/</a></p>
+
+<p>Sass具有两种语法, 一种是靠缩进去实现层级关系的Sass, 和另一种和CSS一样通过大括号实现层级的Scss。</p>
+
+<h2>特性</h2>
+
+<h3>嵌套式语法</h3>
+
+<p>啥也不说了, 看代码</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='scss'><span class='line'><span class="nt">header</span> <span class="p">{</span>
+</span><span class='line'>  <span class="na">line-height</span><span class="o">:</span> <span class="mi">3</span><span class="kt">em</span><span class="p">;</span>
+</span><span class='line'>  <span class="nt">h1</span> <span class="p">{</span>
+</span><span class='line'>    <span class="na">font-weight</span><span class="o">:</span> <span class="no">bold</span><span class="p">;</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>这种形式的代码，大大减少了CSS编写层级定义时重复性。</p>
+
+<h3>变量</h3>
+
+<p>Sass可以通过变量去提高样式的可维护性。比如我们一套样式里, 我们常常会使用同样的间距, 但这往往要写到每个具体的元素上, 而当需要做出修改的时候就特别痛苦, 需要在每个用到的地方都去修改, 还不能简单粗暴地使用文本替换, 因为你不知道哪些是我们需要修改的。这种情况使用变量就特别适合, 示例如下</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='scss'><span class='line'><span class="nv">$margin</span><span class="o">:</span> <span class="mi">16</span><span class="kt">px</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nc">.main-content</span> <span class="p">{</span>
+</span><span class='line'>  <span class="na">padding</span><span class="o">:</span> <span class="nv">$margin</span><span class="p">;</span>
+</span><span class='line'>  <span class="na">margin</span><span class="o">:</span> <span class="nv">$margin</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nc">.sidebar</span> <span class="p">{</span>
+</span><span class='line'>  <span class="na">padding</span><span class="o">:</span> <span class="nv">$margin</span><span class="p">;</span>
+</span><span class='line'>  <span class="na">margin</span><span class="o">:</span> <span class="nv">$margin</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>函数</h3>
+
+<p>Sass内置了一些很实用的<a href="http://sass-lang.com/docs/yardoc/Sass/Script/Functions.html">函数</a>, 它们为样式编写提供了计算能力, 比如我最喜欢的<a href="http://sass-lang.com/docs/yardoc/Sass/Script/Functions.html#lighten-instance_method">lighten</a>, 它能把给出的颜色转换为更亮的颜色。</p>
+
+<p>函数的编写, 不仅可以使用Ruby, 也可以使用Sass本身, 比如下面是我最近写的一个函数</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='scss'><span class='line'><span class="k">@function</span> <span class="nt">opposite-position</span><span class="o">(</span><span class="err">$</span><span class="nt">direction</span><span class="o">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="k">@if</span> <span class="nv">$direction</span> <span class="o">==</span> <span class="s2">&quot;left&quot;</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">@return</span> <span class="s2">&quot;right&quot;</span>
+</span><span class='line'>  <span class="p">}</span> <span class="k">@else</span> <span class="nt">if</span> <span class="err">$</span><span class="nt">direction</span> <span class="o">==</span> <span class="s2">&quot;right&quot;</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">@return</span> <span class="s2">&quot;left&quot;</span>
+</span><span class='line'>  <span class="p">}</span> <span class="k">@else</span> <span class="nt">if</span> <span class="err">$</span><span class="nt">direction</span> <span class="o">==</span> <span class="s2">&quot;bottom&quot;</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">@return</span> <span class="s2">&quot;top&quot;</span>
+</span><span class='line'>  <span class="p">}</span> <span class="k">@else</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">@return</span> <span class="s2">&quot;bottom&quot;</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Mixins</h3>
+
+<p>Mixins的思路就是通过把一组样式绑定到一个名字上，然后某个层级样式可以复用这组样式。</p>
+
+<p>这个功能是Sass最强大的功能, 这提供及其强大的代码抽象能力, 让我们可以更好地组织起庞大的样式代码。各种Sass框架就通过Mixins来开放出它们的功能。</p>
+
+<h3>Import</h3>
+
+<p>Sass通过Import的形式来管理样式间的依赖, 这就像是Node.js的require。通过这个我们就能把样式打包为一个文件, 并且清晰地定义好加载顺序。</p>
+
+<h2>教程</h2>
+
+<p>官方Reference</p>
+
+<p><a href="http://sass-lang.com/docs/yardoc/file.SASS_REFERENCE.html">http://sass-lang.com/docs/yardoc/file.SASS_REFERENCE.html</a></p>
+
+<p>Sass缩进语法</p>
+
+<p><a href="http://sass-lang.com/docs/yardoc/file.INDENTED_SYNTAX.html">http://sass-lang.com/docs/yardoc/file.INDENTED_SYNTAX.html</a></p>
+
+<p>The Sass Way, 有分为不同阶段的文章</p>
+
+<p><a href="http://thesassway.com/">http://thesassway.com/</a></p>
+
+<p>组织Sass代码的方式</p>
+
+<p><a href="http://thesassway.com/beginner/how-to-structure-a-sass-project">http://thesassway.com/beginner/how-to-structure-a-sass-project</a></p>
+
+<p>应用</p>
+
+<p>得益于Sass强大的抽象能力和扩展力, 许多的框架基于它开发出来</p>
+
+<p>Compass是一个基于Sass开发的CSS Framework, 集成了许多实用的Mixins</p>
+
+<p><a href="http://compass-style.org/">http://compass-style.org/</a></p>
+
+<p>Twitter Bootstrap Sass, 使用Sass重写Bootstarp的项目</p>
+
+<p><a href="https://github.com/thomas-mcdonald/bootstrap-sass">https://github.com/thomas-mcdonald/bootstrap-sass</a></p>
+
+<p>方便处理Media Query的项目</p>
+
+<p><a href="https://github.com/paranoida/sass-mediaqueries">https://github.com/paranoida/sass-mediaqueries</a></p>
+
+<p>几个专门处理按钮样式的项目</p>
+
+<ul>
+<li><a href="https://github.com/ubuwaits/css3-buttons">https://github.com/ubuwaits/css3-buttons</a></li>
+<li><a href="https://github.com/alexwolfe/Buttons">https://github.com/alexwolfe/Buttons</a></li>
+</ul>
+
+
+<p>还有许多Sass的项目, 这里再列出几个, 更多请自行上Github搜索</p>
+
+<ul>
+<li><a href="https://github.com/csswizardry/inuit.css">https://github.com/csswizardry/inuit.css</a></li>
+<li><a href="https://github.com/GumbyFramework/Gumby">https://github.com/GumbyFramework/Gumby</a></li>
+</ul>
+
+
+<p>竞争对手有Less.js和Stylus, 对比介绍</p>
+
+<ul>
+<li><a href="https://gist.github.com/chriseppstein/674726">https://gist.github.com/chriseppstein/674726</a></li>
+<li><a href="http://net.tutsplus.com/tutorials/html-css-techniques/sass-vs-less-vs-stylus-a-preprocessor-shootout/">http://net.tutsplus.com/tutorials/html-css-techniques/sass-vs-less-vs-stylus-a-preprocessor-shootout/</a></li>
+<li><a href="http://coding.smashingmagazine.com/2011/09/09/an-introduction-to-less-and-comparison-to-sass/">http://coding.smashingmagazine.com/2011/09/09/an-introduction-to-less-and-comparison-to-sass/</a></li>
+</ul>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Kai Chen</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-07-23T19:01:00+08:00" pubdate data-updated="true">Jul 23<span>rd</span>, 2013</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/css/'>CSS</a>, <a class='category' href='/blog/categories/web-development/'>Web Development</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://kaichen.github.io/2013/07/23/getting-start-with-sass" data-via="" data-counturl="http://kaichen.github.io/2013/07/23/getting-start-with-sass" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2013/07/12/rails-paths" title="Previous Post: Rails Paths">&laquo; Rails Paths</a>
+      
+      
+        <a class="basic-alignment right" href="/2013/07/26/assemble-ar-object" title="Next Post: ActiveRecord 对象的拼装">ActiveRecord 对象的拼装 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'thekaiway';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://kaichen.github.io/2013/07/23/getting-start-with-sass.html';
+        var disqus_url = 'http://kaichen.github.io/2013/07/23/getting-start-with-sass';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

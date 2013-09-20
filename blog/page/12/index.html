@@ -1,0 +1,801 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="最近自己写了写代码，研究了一下关于Rails中用户认证方面的知识。 Rails中的用户认证解决方法，看到大多数是靠插件实现，比如： LoginGenerator
+Acts_as_authenticated
+restful_authentication 其中采用的方法都类似于《Agile Web &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io/blog/page/12">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div class="blog-index">
+  
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/01/28/Rails%E7%94%A8%E6%88%B7%E8%AE%A4%E8%AF%81">Rails的用户认证</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-01-28T00:00:00+08:00" pubdate data-updated="true">Jan 28<span>th</span>, 2008</time>
+        
+         | <a href="/2008/01/28/Rails%E7%94%A8%E6%88%B7%E8%AE%A4%E8%AF%81#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>最近自己写了写代码，研究了一下关于Rails中用户认证方面的知识。</p>
+
+<p>Rails中的用户认证解决方法，看到大多数是靠插件实现，比如：</p>
+
+<ul>
+<li><code>LoginGenerator</code></li>
+<li><code>Acts_as_authenticated</code></li>
+<li><code>restful_authentication</code></li>
+</ul>
+
+
+<p>其中采用的方法都类似于《Agile Web 2e》的dopet示例的处理方法：</p>
+
+<ul>
+<li>通过虚拟的password属性来作为密码</li>
+<li>通过随机生成的salt和密码明文（或者MD5等方法）加密后存入数据库</li>
+<li>在controller中通过before_filter来阻止未通过认证的用户对action进行调用</li>
+<li>在view中通过如islogin?，isadmin?等方法来让保护需要登录或者为管理员的行为</li>
+</ul>
+
+
+<p>插件中一般都是做出一个Model和两个Controller，处理用户数据的User。而Controller，一个负责登录和登出，另一个User的负责用户创建和删除。</p>
+
+<p>关于记住用户状态的实现，大部分用户认证的插件都有。参考<a href="http://codingbitch.com/p/comboy/User+authentication+in+Ruby+on+Rails">User+authentication+in+Ruby+on+Rails</a>：
+添加一个<code>cookie_hash</code>字段到user中：</p>
+
+<pre><code>class AddUserCookieHash &amp;lt; ActiveRecord::Migration
+  def self.up
+    add_column :users, :cookie_hash, :string
+  end
+  def self.down
+    remove_column :users, :cookie_hash
+  end
+end
+</code></pre>
+
+<p>接着在登录页面，如login.html.erb中，加入：</p>
+
+<pre><code>remember me
+</code></pre>
+
+<p>然后在管理login的controller中添加：</p>
+
+<pre><code>def login
+  if request.post?
+    @user = User.find_by_username(params[:login])
+    if @user and @user.password_is? params[:password]
+      session[:uid] = @user.id
+      # 当用户需要被记住时，开始对cookie进行处理
+      # 对cookie生成一个密钥之后放入cookie和存入数据库（user表中）
+      # 其中还指定了一个cookies失效时间，默认为30天，其实可以把这个参数提出来
+      if params[:remember]
+        cookie_pass = [Array.new(9){rand(256).chr}.join].pack("m").chomp
+        cookie_hash = Digest::MD5.hexdigest(cookie_pass +         @user.password_salt)
+        cookies[:userapp_login_pass] = { :value =&amp;gt; cookie_pass, :expires =&amp;gt; 30.days.from_now }
+        cookies[:userapp_login] = { :value =&amp;gt; @user.username, :expires =&amp;gt; 30.days.from_now }
+        User.update(@user.id, :cookie_hash =&amp;gt; cookie_hash)
+      end
+      redirect_to :controller =&amp;gt; 'panel', :action =&amp;gt; 'secret'
+    else
+      @auth_error = 'Bad username or password'
+    end
+  end
+end
+</code></pre>
+
+<p>最后在ApplicationController中加入：</p>
+
+<pre><code>session :session_key =&amp;gt; '_userapp_session_id'
+before_filter :check_cookie
+def check_cookie
+  return if session[:uid]
+  if cookies[:logowanie_login]
+    @user = User.find_by_username(cookies[:userapp_login])
+    return unless @user
+    cookie_hash = Digest::MD5.hexdigest(cookies[:userapp_login_pass] + @user.password_salt)
+    if @user.cookie_hash == cookie_hash
+      flash[:info] = 'You\'ve been automatically logged in' # annoying msg
+      session[:uid] = @user.id
+    else
+      flash[:error] = 'Something is wrong with your cookie'
+    end
+  end
+end
+</code></pre>
+
+<p>而关于角色的认证可以使用插件：<a href="http://active-rbac.rubyforge.org/">ActiveRBAC </a></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/01/25/ruby19%E7%9A%84%E5%8F%98%E5%8C%96%EF%BC%88%E4%B8%80%EF%BC%89-%E6%96%B0%E7%9A%84%E8%AF%AD%E6%B3%95%E5%92%8C%E8%AF%AD%E6%84%8F">Ruby 1.9的新语法</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-01-25T00:00:00+08:00" pubdate data-updated="true">Jan 25<span>th</span>, 2008</time>
+        
+         | <a href="/2008/01/25/ruby19%E7%9A%84%E5%8F%98%E5%8C%96%EF%BC%88%E4%B8%80%EF%BC%89-%E6%96%B0%E7%9A%84%E8%AF%AD%E6%B3%95%E5%92%8C%E8%AF%AD%E6%84%8F#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>资料来自：<a href="http://eigenclass.org/hiki.rb?Changes+in+Ruby+1.9">http://eigenclass.org/hiki.rb?Changes+in+Ruby+1.9</a></p>
+
+<p>文中有实验性标记的说明很可能会在短时间内被拿掉，原文中解释为”crazy ideas“。</p>
+
+<p>新的语法和语意</p>
+
+<p>新的字面量hash语法[Ruby2]</p>
+
+<pre><code>{a: "foo"}                # =&amp;gt; {:a=&amp;gt;"foo"}
+</code></pre>
+
+<p>代码块局部变量 [实验性]</p>
+
+<p>如下使用:</p>
+
+<pre><code># {normal args一般参数; 局部变量local variables}
+d = 2
+a = lambda{|;d| d = 1}
+a.call()
+d                # =&amp;gt; 2
+</code></pre>
+
+<p>当一个变量被隐藏时，Ruby1.9会给出一个警告:</p>
+
+<pre><code>-:2: warning: shadowing outer local variable - d
+</code></pre>
+
+<p>代码块参数的作用域总是在代码块内</p>
+
+<pre><code>a = 1
+10.times{|a| } # !&amp;gt; shadowing outer local variable - a 代码块外的局部变量a被隐藏
+a                                                 # =&amp;gt; 1
+</code></pre>
+
+<p>新的lambdas语法 [非常实验性]</p>
+
+<pre><code>a = -&amp;gt;(b,c){ b + c }
+a.call(1,2) # =&amp;gt; 3
+</code></pre>
+
+<p>注意这里没有说是替换目前传统的代码块语法。Matz已经明确说明了后者会永远有效。新的语法允许为代码块参数指定默认值，如</p>
+
+<pre><code>{|a,b=1| ... }
+</code></pre>
+
+<p>这种语法在目前的基于bison的Ruby解析器LALR是不能实现的.</p>
+
+<p>这种新语法可以不用括号包裹参数:</p>
+
+<pre><code>-&amp;gt; { }.call # =&amp;gt; nil
+-&amp;gt; a, b  { a + b }.call(1,2) # =&amp;gt; 3
+c = 1; -&amp;gt; a, b; c  { c = a + b }.call(1,2); c # =&amp;gt; 1
+</code></pre>
+
+<p>还可以更加诡异地使用:</p>
+
+<pre><code>c = 2; -&amp;gt; ;c { c = 1 }.call; c # =&amp;gt; 2
+</code></pre>
+
+<p>甚至是</p>
+
+<pre><code>c = 2; -&amp;gt; *d ; c { d }.call(1,2,3) # =&amp;gt; [1, 2, 3]
+c = 2; -&amp;gt; ; c { c = 1 }.call; c # =&amp;gt; 2
+</code></pre>
+
+<p>用<code>.()</code>替代使用call方法或者<code>[]</code>方法来调用Procs[实验性]</p>
+
+<p>现在可以这样做:</p>
+
+<pre><code>a = lambda{|*b| b}
+a.(1,2)                # =&amp;gt; [1, 2]
+</code></pre>
+
+<p>注意你需要句点:</p>
+
+<pre><code>a = lambda{|*b| b}
+a(1,2)                # =&amp;gt;
+#           (eval):2: syntax error...
+#                         (a)(1,2)...
+~&amp;gt; -:2: undefined method `a' for main:Object (NoMethodError)
+</code></pre>
+
+<p>可以在括号内使用任何表达式:</p>
+
+<pre><code>(lambda{|a,b| a + b}).(1,2)                # =&amp;gt; 3
+</code></pre>
+
+<p><code>.()</code>用法会无视接受者而调用其call方法:</p>
+
+<pre><code>"foo".(1,2)   # ~&amp;gt;  undefined method `call' for "foo":String (NoMethodError)
+</code></pre>
+
+<p>Block arguments代码块参数</p>
+
+<p>代码块可以使用&amp;block参数:</p>
+
+<pre><code>define_method(:foo){|&amp;amp;b| b.call(bar)}
+</code></pre>
+
+<p><a href="http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-dev/23533">ruby-dev:23533</a></p>
+
+<p>新的代码块参数语意</p>
+
+<p>|v|现在会像|v,|的形式工作:</p>
+
+<pre><code>[RUBY_VERSION, RUBY_RELEASE_DATE]                 # =&amp;gt; ["1.8.5", "2006-08-25"]
+def m; yield 1, 2; end
+m{|v| v}                                          # =&amp;gt; [1, 2] # !&amp;gt; multiple values for a block parameter (2 for 1)
+</code></pre>
+
+<p>相对应的：</p>
+
+<pre><code>[RUBY_VERSION, RUBY_RELEASE_DATE]                 # =&amp;gt; ["1.9.0", "2007-08-03"]
+def m; yield 1, 2; end
+m{|v| v}                                          # =&amp;gt; 1
+</code></pre>
+
+<p>to_splat 方法使用*参数</p>
+
+<p>用to_splat方法代替to_a方法</p>
+
+<p><code>nil.to_splat</code>返回 [].</p>
+
+<p>允许多个*操作符</p>
+
+<p>经Audrey Tang建议，Ruby1.9允许在方法调用是使用多个*操作符</p>
+
+<pre><code>def foo(*a)
+a
+end    
+foo(1, *[2,3], 4, *[5,6])                        # =&amp;gt; [1, 2, 3, 4, 5, 6]
+</code></pre>
+
+<p>表达式也是：</p>
+
+<pre><code>[RUBY_VERSION, RUBY_RELEASE_DATE]                # =&amp;gt; ["1.9.0", "2007-08-03"]
+a = [1,2,3]
+b = [4,5,6]
+[*a, *b]                                         # =&amp;gt; [1, 2, 3, 4, 5, 6]
+</code></pre>
+
+<p>允许在可选参数后加上必要参数</p>
+
+<p><a href="http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-dev/29014">ruby-dev:29014</a></p>
+
+<pre><code>def m(a, b=nil, *c, d)
+  [a,b,c,d]
+end
+m(1,2) # =&amp;gt; [1, nil, [], 2]
+</code></pre>
+
+<p>?c的语意</p>
+
+<p>?a现在返回一个单字符字符串代替原来的整数值:</p>
+
+<pre><code>?a   # =&amp;gt; "a"
+</code></pre>
+
+<p><code>[]</code>方法的参数</p>
+
+<p>可以在[]方法中使用星号，&ldquo;assocs&rdquo;(不用方括号的hash)和代码块参数:</p>
+
+<pre><code>RUBY_VERSION                                       # =&amp;gt; "1.9.0"
+RUBY_RELEASE_DATE                                  # =&amp;gt; "2006-06-11"
+class Foo; def [](*a, &amp;amp;block); block.call(a) end end
+
+a = (0..3).to_a
+Foo.new[*a, :op =&amp;gt; :+]{|x| x }                  # =&amp;gt; [0, 1, 2, 3, {:op=&amp;gt;:+}]
+</code></pre>
+
+<p>printf风格的格式化字符串(%)</p>
+
+<p>%c 可以输出单字符字符串
+%u 为负数提供类似%d的格式<a href="http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-core/11575">ruby-core:11575</a></p>
+
+<p>允许三元运算符( ? : )扩展到新行</p>
+
+<pre><code>p 1 == 2 ?
+   0
+   :
+   1
+# &amp;gt;&amp;gt; 1
+</code></pre>
+
+<p>[ruby-dev:29189](<a href="http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-dev/29189">http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-dev/29189</a></p>
+
+<p>defined?方法和局部变量</p>
+
+<pre><code>RUBY_VERSION                                      # =&amp;gt; "1.8.5"
+RUBY_RELEASE_DATE                                 # =&amp;gt; "2006-08-25"
+a = 0
+defined? a                                        # =&amp;gt; "local-variable"
+1.times do |i|
+  defined? i                                      # =&amp;gt; "local-variable(in-block)"
+end
+</code></pre>
+
+<p>相对应的：</p>
+
+<pre><code>RUBY_VERSION                                      # =&amp;gt; "1.9.0"
+RUBY_RELEASE_DATE                                 # =&amp;gt; "2007-08-03"
+a = 0
+defined? a                                        # =&amp;gt; "local-variable"
+1.times do |i|
+  defined? i                                      # =&amp;gt; "local-variable"
+end
+</code></pre>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/01/23/10%E5%88%86%E9%92%9F%E5%9C%A8netbeans6%E4%B8%8A%E5%88%9B%E5%BB%BArails20%E7%9A%84weblog-2">10分钟在Netbean 6上完成Rails 2.0的Weblog</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-01-23T00:00:00+08:00" pubdate data-updated="true">Jan 23<span>rd</span>, 2008</time>
+        
+         | <a href="/2008/01/23/10%E5%88%86%E9%92%9F%E5%9C%A8netbeans6%E4%B8%8A%E5%88%9B%E5%BB%BArails20%E7%9A%84weblog-2#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>原文来自：<a href="http://blogs.sun.com/divas/entry/creating_a_rails_2_0"><a href="http://blogs.sun.com/divas/entry/creating_a_rails_2_0">http://blogs.sun.com/divas/entry/creating_a_rails_2_0</a></a></p>
+
+<p>本文是之前NetBean6关于Ruby部分的教程（<a href="http://www.ruby-lang.org.cn/forums/thread-1896-1-1.html"><a href="http://www.ruby-lang.org.cn/forums/thread-1896-1-1.html">http://www.ruby-lang.org.cn/forums/thread-1896-1-1.html</a></a>）其中的一个例子，如何在10分钟创建一个Weblog的升级版。</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/2008/01/23/10%E5%88%86%E9%92%9F%E5%9C%A8netbeans6%E4%B8%8A%E5%88%9B%E5%BB%BArails20%E7%9A%84weblog-2">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/01/21/%E5%AF%92%E5%81%87%E5%BC%80%E5%A7%8B">暑假开始</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-01-21T00:00:00+08:00" pubdate data-updated="true">Jan 21<span>st</span>, 2008</time>
+        
+         | <a href="/2008/01/21/%E5%AF%92%E5%81%87%E5%BC%80%E5%A7%8B#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>2008年的寒假，一回到家就感冒了。。。有点郁闷，明明学校比家冷那么多我都没有感冒，怎么一回家就感冒了。</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/2008/01/21/%E5%AF%92%E5%81%87%E5%BC%80%E5%A7%8B">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/01/21/%E5%AF%92%E5%81%87%E4%B9%A6%E5%8D%95">暑假书单</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-01-21T00:00:00+08:00" pubdate data-updated="true">Jan 21<span>st</span>, 2008</time>
+        
+         | <a href="/2008/01/21/%E5%AF%92%E5%81%87%E4%B9%A6%E5%8D%95#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>这是寒假的看书计划</p>
+
+<p>励志类：
+《高效能人士的七个习惯》《要事第一》，科维的两本修身的书。</p>
+
+<p>技术类：
+《RESTful Web Services》，深入认识REST，这本书的大部分例子都是用rails写的。DHH作序推荐的。</p>
+
+<p>《JavaScript高级程序设计》，是时候看看JS了，不懂JS的话，做Web开发是有点辛苦。</p>
+
+<p>还有把《Rails Cookbook》的笔记整理出来。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/01/10/thin%E7%AE%80%E4%BB%8B">Thin简洁</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-01-10T00:00:00+08:00" pubdate data-updated="true">Jan 10<span>th</span>, 2008</time>
+        
+         | <a href="/2008/01/10/thin%E7%AE%80%E4%BB%8B#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><img src="http://code.macournoyer.com/thin/images/logo.gif"/></p>
+
+<p>官方主页：<a href="http://code.macournoyer.com/thin/">http://code.macournoyer.com/thin/</a></p>
+
+<p>thin是个合成品，分别使用了来自mongrel的解析器，Every Machine的网络IO库，Rack的web服务器和Ruby框架的接口。</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/2008/01/10/thin%E7%AE%80%E4%BB%8B">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/01/09/rails20%E7%9A%84%E5%AE%98%E6%96%B9plugins%E5%88%97%E8%A1%A8-%E4%BB%8E12%E4%B8%AD%E5%88%86%E7%A6%BB%E5%87%BA%E6%9D%A5%E7%9A%84%E4%B8%80%E4%BA%9B%E5%8A%9F%E8%83%BD">Rails 2.0中分离出来的Plugins</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-01-09T00:00:00+08:00" pubdate data-updated="true">Jan 9<span>th</span>, 2008</time>
+        
+         | <a href="/2008/01/09/rails20%E7%9A%84%E5%AE%98%E6%96%B9plugins%E5%88%97%E8%A1%A8-%E4%BB%8E12%E4%B8%AD%E5%88%86%E7%A6%BB%E5%87%BA%E6%9D%A5%E7%9A%84%E4%B8%80%E4%BA%9B%E5%8A%9F%E8%83%BD#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Rails2.0中把Rails1.2中的一些功能分离出来作为插件。</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/2008/01/09/rails20%E7%9A%84%E5%AE%98%E6%96%B9plugins%E5%88%97%E8%A1%A8-%E4%BB%8E12%E4%B8%AD%E5%88%86%E7%A6%BB%E5%87%BA%E6%9D%A5%E7%9A%84%E4%B8%80%E4%BA%9B%E5%8A%9F%E8%83%BD">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2007/12/31/dmd%E5%9C%A8ubuntu%E4%B8%8B%E7%9A%84%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE">安装配置DMD</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2007-12-31T00:00:00+08:00" pubdate data-updated="true">Dec 31<span>st</span>, 2007</time>
+        
+         | <a href="/2007/12/31/dmd%E5%9C%A8ubuntu%E4%B8%8B%E7%9A%84%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>D语言是下一个主流静态语言霸主的强有力候选人。DMD是D语言的一个编译器。</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/2007/12/31/dmd%E5%9C%A8ubuntu%E4%B8%8B%E7%9A%84%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  <div class="pagination">
+    
+      <a class="prev" href="/blog/page/13/">&larr; Older</a>
+    
+    <a href="/blog/archives">Blog Archives</a>
+    
+    <a class="next" href="/blog/page/11/">Newer &rarr;</a>
+    
+  </div>
+</div>
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'thekaiway';
+      
+        
+        var disqus_script = 'count.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,1042 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="c.vim（C-support）是一个vim插件，C/Cpp开发的助推器，这个系列还有一个lua和Bash的版本。 不废话了，先看看它的主要功能先。 首先是代码模板： -- Statements &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io/blog/page/7">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div class="blog-index">
+  
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/05/28/%E8%AF%95%E7%94%A8cvim">c.vim简介</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-05-28T00:00:00+08:00" pubdate data-updated="true">May 28<span>th</span>, 2008</time>
+        
+         | <a href="/2008/05/28/%E8%AF%95%E7%94%A8cvim#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>c.vim（C-support）是一个vim插件，C/Cpp开发的助推器，这个系列还有一个lua和Bash的版本。</p>
+
+<p>不废话了，先看看它的主要功能先。</p>
+
+<p>首先是代码模板：</p>
+
+<pre><code>  -- Statements ---------------------------------------------------------
+
+  \sd       do { } while                        (n,v,i)
+  \sf       for                                 (n,i)
+  \sfo      for { }                             (n,v,i)
+  \si       if                                  (n,i)
+  \sif      if { }                              (n,v,i)
+  \sie      if else                             (n,v,i)
+  \sife     if { } else { }                     (n,v,i)
+  \sw       while                               (n,i)
+  \swh      while { }                           (n,v,i)
+  \ss       switch                              (n,v,i)
+  \sc       case                                (n,i)
+  \s{       { }                                 (n,v,i)
+
+  -- Preprocessor -------------------------------------------------------
+
+  \p&amp;lt;       #include &amp;lt;&amp;amp;gt;                         (n,i)
+  \p"       #include ""                         (n,i)
+  \pd       #define                             (n,i)
+  \pu       #undef                              (n,i)
+  \pie      #if  #else #endif                   (n,v,i)
+  \pid      #ifdef #else #endif                 (n,v,i)
+  \pin      #ifndef #else #endif                (n,v,i)
+  \pind     #ifndef #def #endif                 (n,v,i)
+  \pi0      #if 0 #endif                        (n,v,i)
+  \pr0      remove #if 0 #endif                 (n)
+  -- Idioms -------------------------------------------------------------
+
+  \if       function                            (n,v,i)
+  \isf      static function                     (n,v,i)
+  \im       main()                              (n,v,i)
+  \i0       for( x=0; x&amp;lt;n; x+=1 )               (n,v,i)
+  \in       for( x=n-1; x&amp;gt;=0; x-=1 )            (n,v,i)
+  \ie       enum   + typedef                    (n,i)
+  \is       struct + typedef                    (n,i)
+  \iu       union  + typedef                    (n,i)
+  \ip       printf()                            (n,i)
+  \isc      scanf()                             (n,i)
+  \ica      p=calloc()                          (n,i)
+  \ima      p=malloc()                          (n,i)
+  \isi      sizeof()                            (n,v,i)
+  \ias      assert()                            (n,v)
+  \ii       open input file                     (n,i)
+  \io       open output file                    (n,i)
+
+  -- Snippets -----------------------------------------------------------
+
+  \nr       read code snippet                   (n)
+  \nw       write code snippet                  (n,v)
+  \ne       edit code snippet                   (n)
+  \np       pick up prototype                   (n,v)
+  \ni       insert prototype(s)                 (n)
+  \nc       clear  prototype(s)                 (n)
+  \ns       show   prototype(s)                 (n)
+
+  -- C++ ----------------------------------------------------------------
+
+  \+c       class                               (n,i)
+  \+cn      class (using new)                   (n,i)
+  \+ci      class implementation                (n,i)
+  \+cni     class (using new) implementation    (n,i)
+  \+mi      method implementation               (n,i)
+  \+ai      accessor implementation             (n,i)
+
+  \+tc      template class                      (n,i)
+  \+tcn     template class (using new)          (n,i)
+  \+tci     template class implementation       (n,i)
+  \+tcni    template class (using new) impl.    (n,i)
+  \+tmi     template method implementation      (n,i)
+  \+tai     template accessor implementation    (n,i)
+
+  \+tf      template function                   (n,i)
+  \+ec      error class                         (n,i)
+  \+tr      try ... catch                       (n,v,i)
+  \+ca      catch                               (n,v,i)
+  \+c.      catch(...)                          (n,v,i)
+</code></pre>
+
+<p>这个表最左边的就是按键，中间就是对应的模板，最后面是对应的模式。n是normal，i就是插入模式，v是虚拟模式。展开的模板放在 ~/.vim/c-support/templates 这里，自己可以hack，比如第一件事就是把Templates中的个人资料改一下。我还把函数声明改了一下，默认是把返回值类型放到上一行，看起来不爽。</p>
+
+<p>然后就是编译链接和运行代码啦，我只用快捷键。</p>
+
+<pre><code>       F9   compile and link
+   Alt-F9   write buffer and compile
+  Ctrl-F9   run executable
+ Shift-F9   set command line arguments
+
+ Shift-F2   switch between source files and header files
+</code></pre>
+
+<p>有了这些快捷键之后加上Vim7本身就有的一点点补全功能，其实这个工具也有些IDEful了。</p>
+
+<p>最后看看一些实用功能，比如代码和注释的转化，还有行尾插入注释，插入注释行等等。</p>
+
+<pre><code>-- Comments -----------------------------------------------------------
+
+\cl       end-of-line comment                 (n,v,i)
+\cj       adjust end-of-line comment(s)       (n,v,i)
+\cs       set end-of-line comment column      (n)
+\c*       code -&amp;gt; comment /* */               (n,v)
+\c/       code -&amp;gt; comment //                  (n,v)
+\cc       code -&amp;gt; comment //                  (n,v)
+\co       comment -&amp;gt; code                     (n,v)
+\cfr      frame comment                       (n,i)
+\cfu      function comment                    (n,i)
+\cme      method description                  (n,i)
+\ccl      class description                   (n,i)
+\cd       date                                (n,i)
+\ct       date \&amp;amp; time                        (n,i)
+</code></pre>
+
+<p>有空试用一下lua-support和bash-support。其实一直想写篇rails.vim的配置和使用和一点点Src分析。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/05/28/tcpppl%E4%B8%AD%E7%9A%84%E4%B8%80%E6%AE%B5%E8%AF%9D">TCPPL的一段话</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-05-28T00:00:00+08:00" pubdate data-updated="true">May 28<span>th</span>, 2008</time>
+        
+         | <a href="/2008/05/28/tcpppl%E4%B8%AD%E7%9A%84%E4%B8%80%E6%AE%B5%E8%AF%9D#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>这是在B.Stroustrup的TCppPL中Chapter2最后结尾的一段话：</p>
+
+<blockquote><p>没有一种程序设计语言是完美无缺的。幸运的是，一种程序设计语言不必是完美无缺的，也可以成为构造伟大系统的良好工具。事实上，一种通用的程序设计语言根本不可能对它被用于的所有工作都是最完美的，对一项工作来说最完美的东西对于另外的工作就常常会表现出严重的缺陷，因为在一个领域中的最完美事物实际上也就是意味着专门化。Cpp的设计是想成为构造范围广泛多样的系统的良好工具，而且能够直接表达范围广泛多样的思想。<br /><br />并不是所有的东西都能直接通过语言的某些内部特征表述。事实上，这也不应该成为一种理想。语言特征的存在是为了支持各种各样的程序设计风格和技术，因此，学习一种语言的工作就应该集中于去把握对该语言而言固有的和自然的风格－－而不是去理解该语言所有语言特征的细枝末节。<br /><br />在实践性的程序设计中，理解语言中最晦涩难懂的语言特征，或者使用最大量的不同特征并不能获得什么利益。把一种特征孤立起来看并没有什么意思，只是在由技术和其他特征所形成的环境里，这一特征才获得了意义和趣味。因此，在阅读后面的章节时请牢记，考察Cpp的各种细节的真实目的在于能够应用它们，在有效的环境里，去支持良好的程序设计风格。</p></blockquote>
+
+<p>Bjarne真的是一个超人级的人物，很早就看清了程序设计语言的真谛。这段话的意思人人都懂吧。（还有赞叹一下裘掌门的翻译功力）</p>
+
+<p>上次Topcoder的比赛很失败，让我觉着自己。这让我又回过头来再看Cpp的书，看Cpp圣经－－TCppPL，看侯Sir的STL剖析。看着Cpp的代码有种亲切的感觉，书中Bjarne写出来的Sample，很优美干练，可读性也非常高。</p>
+
+<p>其实程序设计语言规格到底还是给人来描述现实问题的，描述后让计算机来处理问题，所以能更好地解决问题的语言就是一门不错的语言。RoR最能体现专门化解决问题的思想，Ruby的DSL能力不是盖的。而创造Ruby的这些DSL或者框架的超人们，他们都是掌握了良好程序设计风格的家伙。（说到最后知不到自己在说什么）</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/05/18/%E6%97%A0%E7%97%9B%E4%BD%93%E9%AA%8Crails21rc1">体验Rails 2.1.rc1</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-05-18T00:00:00+08:00" pubdate data-updated="true">May 18<span>th</span>, 2008</time>
+        
+         | <a href="/2008/05/18/%E6%97%A0%E7%97%9B%E4%BD%93%E9%AA%8Crails21rc1#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>无须升级整个系统的Rails，只需要在项目中的Rakefile中加入下面的代码，然后运行rake rails:freeze:edge：</p>
+
+<pre><code>namespace :rails do
+  namespace :freeze do
+    desc 'Lock to latest Edge Rails, for a specific release use RELEASE=1.2.0'
+    task :edge do
+      require 'open-uri'
+      version = ENV["RELEASE"] || "edge"
+      target = "rails_#{version}.zip"
+      url = "http://dev.rubyonrails.org/archives/#{target}"
+
+      chdir 'vendor' do
+        puts "Downloading Rails from #{url}"
+        File.open('rails.zip', 'wb') do |dst|
+          open url do |src|
+            while chunk = src.read(4096)
+            dst &amp;lt;&amp;lt; chunk
+          end
+        end
+      end
+
+      puts 'Unpacking Rails'
+      rm_rf 'rails'
+      `unzip rails.zip`
+      %w(rails.zip rails/Rakefile rails/cleanlogs.sh rails/pushgems.rb rails/release.rb).each do |goner|
+        rm_f goner
+      end
+    end
+
+    puts 'Updating current scripts, javascripts, and configuration settings'
+    Rake::Task['rails:update'].invoke
+    end
+  end
+end
+</code></pre>
+
+<p>这段代码其实是Rails2.1里的rails:freeze:edeg的Rake任务代码，因为Rails的代码库已经迁移至github，好像svn不提供新的版本，现在获取Rails最新版本的方法一是到github那里clone下来，要么就到<a href="http://dev.rubyonrails.org/archives/%E4%B8%8B%E8%BD%BD%E4%B8%80%E4%B8%AA%E6%89%93%E5%8C%85%E5%A5%BD%E7%9A%84zip%E6%96%87%E4%BB%B6%E3%80%82">http://dev.rubyonrails.org/archives/%E4%B8%8B%E8%BD%BD%E4%B8%80%E4%B8%AA%E6%89%93%E5%8C%85%E5%A5%BD%E7%9A%84zip%E6%96%87%E4%BB%B6%E3%80%82</a></p>
+
+<p>其实最傻瓜的方法就是直接下载<a href="http://dev.rubyonrails.org/archives/rails_edge.zip%E7%84%B6%E5%90%8E%E8%A7%A3%E5%8E%8B%E5%88%B0vendor/%E9%82%A3%E9%87%8C%EF%BC%8C%E5%85%B6%E5%AE%9E%E4%B8%8A%E9%9D%A2%E8%B4%B4%E7%9A%84rake%E8%84%9A%E6%9C%AC%E4%B9%9F%E6%98%AF%E5%81%9A%E4%BA%86%E8%BF%99%E4%B8%AA%E4%BA%8B%E6%83%85:-">http://dev.rubyonrails.org/archives/rails_edge.zip%E7%84%B6%E5%90%8E%E8%A7%A3%E5%8E%8B%E5%88%B0vendor/%E9%82%A3%E9%87%8C%EF%BC%8C%E5%85%B6%E5%AE%9E%E4%B8%8A%E9%9D%A2%E8%B4%B4%E7%9A%84rake%E8%84%9A%E6%9C%AC%E4%B9%9F%E6%98%AF%E5%81%9A%E4%BA%86%E8%BF%99%E4%B8%AA%E4%BA%8B%E6%83%85:-</a>)</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/05/18/shoulda-tutor4">[译文] Shoulda教程4 - Test Controller</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-05-18T00:00:00+08:00" pubdate data-updated="true">May 18<span>th</span>, 2008</time>
+        
+         | <a href="/2008/05/18/shoulda-tutor4#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>基本的控制助手方法</p>
+
+<p>如ActiveRecord宏一样，Shoulda 提供了一套测试控制器的宏，以尽可能简洁的方法进行测试。所有的这些方法都在Shoulda的Rdoc中，但这里再送上一个快捷的例子：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">UsersControllerTest</span> <span class="o">&lt;</span> <span class="ss">Test</span><span class="p">:</span><span class="ss">:Unit</span><span class="o">::</span><span class="no">TestCase</span>
+</span><span class='line'>    <span class="n">context</span> <span class="s2">&quot;on GET to :show&quot;</span> <span class="k">do</span>
+</span><span class='line'>        <span class="n">setup</span> <span class="p">{</span> <span class="n">get</span> <span class="ss">:show</span><span class="p">,</span> <span class="ss">:id</span> <span class="o">=&gt;</span> <span class="mi">1</span> <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">should_assign_to</span> <span class="ss">:user</span>
+</span><span class='line'>        <span class="n">should_respond_with</span> <span class="ss">:success</span>
+</span><span class='line'>        <span class="n">should_render_template</span> <span class="ss">:show</span>
+</span><span class='line'>        <span class="n">should_not_set_the_flash</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">should</span> <span class="s2">&quot;do something else really cool&quot;</span> <span class="k">do</span>
+</span><span class='line'>            <span class="n">assert_equal</span> <span class="mi">1</span><span class="p">,</span> <span class="n">assigns</span><span class="p">(</span><span class="ss">:user</span><span class="p">)</span><span class="o">.</span><span class="n">id</span>
+</span><span class='line'>        <span class="k">end</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">context</span> <span class="s2">&quot;on POST to :create&quot;</span> <span class="k">do</span>
+</span><span class='line'>        <span class="n">setup</span> <span class="p">{</span> <span class="n">post</span> <span class="ss">:create</span><span class="p">,</span> <span class="ss">:user</span> <span class="o">=&gt;</span> <span class="p">{</span><span class="ss">:name</span> <span class="o">=&gt;</span> <span class="s1">&#39;Ronald&#39;</span><span class="p">,</span> <span class="ss">:party</span> <span class="o">=&gt;</span> <span class="s1">&#39;Repukeulan&#39;</span> <span class="p">}</span> <span class="p">}</span>
+</span><span class='line'>        <span class="n">should_assign_to</span> <span class="ss">:user</span>
+</span><span class='line'>        <span class="n">should_redirect_to</span> <span class="s2">&quot;user_url(@user)&quot;</span>
+</span><span class='line'>        <span class="n">should_set_the_flash_to</span><span class="p">(</span><span class="sr">/created/i</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>应该RESTful</h2>
+
+<p>这里每个 should_xxx 宏都会产生一个单独的测试方法，编写起来又DRY。而should_be_restful 宏可以产生遵循基本的RESTful设计模式的控制器。should_be_restful 宏就像一个超级测试生成器，每次调用是都会产生40到50个测试方法。这里有个超简单的例子：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">UsersControllerTest</span> <span class="o">&lt;</span> <span class="ss">Test</span><span class="p">:</span><span class="ss">:Unit</span><span class="o">::</span><span class="no">TestCase</span>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">setup</span>
+</span><span class='line'>        <span class="vi">@user</span> <span class="o">=</span> <span class="no">User</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="ss">:first</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">should_be_restful</span> <span class="k">do</span> <span class="o">|</span><span class="n">resource</span><span class="o">|</span>
+</span><span class='line'>        <span class="n">resource</span><span class="o">.</span><span class="n">create</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="p">{</span> <span class="ss">:name</span> <span class="o">=&gt;</span> <span class="s2">&quot;Billy Bumbler&quot;</span><span class="p">,</span> <span class="ss">:party</span> <span class="o">=&gt;</span> <span class="s1">&#39;Sure do!&#39;</span><span class="p">}</span>
+</span><span class='line'>        <span class="n">resource</span><span class="o">.</span><span class="n">update</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="p">{</span> <span class="ss">:name</span> <span class="o">=&gt;</span> <span class="s2">&quot;Changed&quot;</span> <span class="p">}</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>这里会生成一整套包含全部CRUD行为的测试，也包括 :new 和 :edit 。对这个宏还有很多定义的空间，能让它处理各种情况的控制器，不过默认设置已经非常智能了。在上面的例子中，通过测试类名就能查找出如何处理User模型，users_url方法，params[:user]，@user 和@users实例变量等。</p>
+
+<h3>配置should_be_restful</h3>
+
+<p>来看看更改should-be_restful产生的测试的行为的方法。（这些也在Rdoc文档中有详细记录）</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'>  <span class="k">class</span> <span class="nc">UsersControllerTest</span> <span class="o">&lt;</span> <span class="ss">Test</span><span class="p">:</span><span class="ss">:Unit</span><span class="o">::</span><span class="no">TestCase</span>
+</span><span class='line'>      <span class="k">def</span> <span class="nf">setup</span>
+</span><span class='line'>          <span class="vi">@user</span> <span class="o">=</span> <span class="no">User</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="ss">:first</span><span class="p">)</span>
+</span><span class='line'>      <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="n">should_be_restful</span> <span class="k">do</span> <span class="o">|</span><span class="n">resource</span><span class="o">|</span>
+</span><span class='line'>          <span class="n">resource</span><span class="o">.</span><span class="n">klass</span>      <span class="o">=</span> <span class="no">User</span>
+</span><span class='line'>          <span class="n">resource</span><span class="o">.</span><span class="n">object</span>     <span class="o">=</span> <span class="ss">:user</span>
+</span><span class='line'>          <span class="n">resource</span><span class="o">.</span><span class="n">parent</span>     <span class="o">=</span> <span class="o">[]</span>
+</span><span class='line'>          <span class="n">resource</span><span class="o">.</span><span class="n">actions</span>    <span class="o">=</span> <span class="o">[</span><span class="ss">:index</span><span class="p">,</span> <span class="ss">:show</span><span class="p">,</span> <span class="ss">:new</span><span class="p">,</span> <span class="ss">:edit</span><span class="p">,</span> <span class="ss">:update</span><span class="p">,</span> <span class="ss">:create</span><span class="p">,</span> <span class="ss">:destroy</span><span class="o">]</span>
+</span><span class='line'>          <span class="n">resource</span><span class="o">.</span><span class="n">formats</span>    <span class="o">=</span> <span class="o">[</span><span class="ss">:html</span><span class="p">,</span> <span class="ss">:xml</span><span class="o">]</span>
+</span><span class='line'>
+</span><span class='line'>          <span class="n">resource</span><span class="o">.</span><span class="n">create</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="p">{</span> <span class="ss">:name</span> <span class="o">=&gt;</span> <span class="s2">&quot;bob&quot;</span><span class="p">,</span> <span class="ss">:email</span> <span class="o">=&gt;</span> <span class="s1">&#39;bob@bob.com&#39;</span><span class="p">,</span> <span class="ss">:age</span> <span class="o">=&gt;</span> <span class="mi">13</span><span class="p">}</span>
+</span><span class='line'>          <span class="n">resource</span><span class="o">.</span><span class="n">update</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="p">{</span> <span class="ss">:name</span> <span class="o">=&gt;</span> <span class="s2">&quot;sue&quot;</span> <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>          <span class="n">resource</span><span class="o">.</span><span class="n">create</span><span class="o">.</span><span class="n">redirect</span>  <span class="o">=</span> <span class="s2">&quot;user_url(@user)&quot;</span>
+</span><span class='line'>          <span class="n">resource</span><span class="o">.</span><span class="n">update</span><span class="o">.</span><span class="n">redirect</span>  <span class="o">=</span> <span class="s2">&quot;user_url(@user)&quot;</span>
+</span><span class='line'>          <span class="n">resource</span><span class="o">.</span><span class="n">destroy</span><span class="o">.</span><span class="n">redirect</span> <span class="o">=</span> <span class="s2">&quot;users_url&quot;</span>
+</span><span class='line'>
+</span><span class='line'>          <span class="n">resource</span><span class="o">.</span><span class="n">create</span><span class="o">.</span><span class="n">flash</span>  <span class="o">=</span> <span class="sr">/created/i</span>
+</span><span class='line'>          <span class="n">resource</span><span class="o">.</span><span class="n">update</span><span class="o">.</span><span class="n">flash</span>  <span class="o">=</span> <span class="sr">/updated/i</span>
+</span><span class='line'>          <span class="n">resource</span><span class="o">.</span><span class="n">destroy</span><span class="o">.</span><span class="n">flash</span> <span class="o">=</span> <span class="sr">/removed/i</span>
+</span><span class='line'>      <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>下面是参数的具体解释：</p>
+
+<ul>
+<li>klass：要处理的模型类。</li>
+<li>objuect：用于#edit，#update和#destroy测试的对象的名字。所以如果在setup中实例化@user，那么res.object 应该设置为 :user。</li>
+<li>parent：嵌套资源中的上级对象名字。这是要传入到嵌套资源url助手方法的参数。如果不需要用到嵌套资源，可以忽略这个参数。如果使用嵌套资源，路由设置中:users置于:cities之下，那么user测速中res.parent设置应为:city。实际上，parent参数是User模型类的关联对象引用。所以如果当User belongs_to :location，class_name => &ldquo;City&rdquo;，那么应该把这个参数设置为:city。</li>
+<li>actions：要测试的行为列表。这个值应该是[:index, :show, :new, :edit, :create, :update, :destroy]（默认）的子集或全集。如果控制器是read_only的，那么可能需要设置这个值为[:index, :show]。</li>
+<li>formats：测试控制器支持的格式列表。默认值为:html和 :xml，以后会加入JSON，CSV和其他。添加上其他的新格式也是非常简单的，可以参考ThoughtBot::Shoulda::Controller::XML文件。</blockquote></li>
+</ul>
+
+
+<p>在#create，#update和#destory测试中可以附上一些参数：</p>
+
+<ul>
+<li>params：要传给行为的参数。</li>
+<li>flash：在行为完成之后在flash中预期得到的值。可以是字符串或者正则表达式。</li>
+<li>redirect：在行为完成之后应该重定向到方向。这里有些巧妙&hellip;在测试运行时才会解释设置的字符串。这个延后解析的字符串将会遍历所有的命名路由和所有控制器创建的实例变量。</li>
+</ul>
+
+
+<h3>Denied行为</h3>
+
+<p>RESTful控制器的部分或全部的行为在大多数场景里是有访问限制的（比如需要用户认证的时候）。resource.denied选项让should_be_restful原生地支持行为的访问限制。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">UsersControllerTest</span> <span class="o">&lt;</span> <span class="ss">Test</span><span class="p">:</span><span class="ss">:Unit</span><span class="o">::</span><span class="no">TestCase</span>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">setup</span>
+</span><span class='line'>    <span class="vi">@user</span> <span class="o">=</span> <span class="no">User</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="ss">:first</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">should_be_restful</span> <span class="k">do</span> <span class="o">|</span><span class="n">resource</span><span class="o">|</span>
+</span><span class='line'>        <span class="n">resource</span><span class="o">.</span><span class="n">create</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="p">{</span> <span class="ss">:name</span> <span class="o">=&gt;</span> <span class="s2">&quot;bob&quot;</span><span class="p">,</span> <span class="ss">:email</span> <span class="o">=&gt;</span> <span class="s1">&#39;bob@bob.com&#39;</span><span class="p">,</span> <span class="ss">:age</span> <span class="o">=&gt;</span> <span class="mi">13</span><span class="p">}</span>
+</span><span class='line'>        <span class="n">resource</span><span class="o">.</span><span class="n">update</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="p">{</span> <span class="ss">:name</span> <span class="o">=&gt;</span> <span class="s2">&quot;sue&quot;</span> <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">resource</span><span class="o">.</span><span class="n">denied</span><span class="o">.</span><span class="n">actions</span>  <span class="o">=</span> <span class="o">[</span><span class="ss">:new</span><span class="p">,</span> <span class="ss">:create</span><span class="p">,</span> <span class="ss">:edit</span><span class="p">,</span> <span class="ss">:update</span><span class="p">,</span> <span class="ss">:destroy</span><span class="o">]</span>
+</span><span class='line'>        <span class="n">resource</span><span class="o">.</span><span class="n">denied</span><span class="o">.</span><span class="n">redirect</span> <span class="o">=</span> <span class="s2">&quot;new_session_url&quot;</span>
+</span><span class='line'>        <span class="n">resource</span><span class="o">.</span><span class="n">denied</span><span class="o">.</span><span class="n">flash</span>    <span class="o">=</span> <span class="sr">/administrator/i</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>每个列在resource.denied.actions的行为（默认为空）将测试行为被限制访问，相关的记录不会被触及。 :redirect 和 :flash 参数和上面的 resource.create 和 resource.update 一样。</p>
+
+<h3>混合使用should_be_restful和上下文</h3>
+
+<p>测试每个控制器和所有控制器行为时，混合should_be_restful和上下文代码块是一个非常强大的方法。下面的代码是在我们（作者）的应用的测试中很常见到。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">PostsControllerTest</span> <span class="o">&lt;</span> <span class="ss">Test</span><span class="p">:</span><span class="ss">:Unit</span><span class="o">::</span><span class="no">TestCase</span>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">setup</span>
+</span><span class='line'>        <span class="vi">@user</span> <span class="o">=</span> <span class="n">users</span><span class="p">(</span><span class="ss">:bob</span><span class="p">)</span>
+</span><span class='line'>        <span class="vi">@post</span> <span class="o">=</span> <span class="vi">@user</span><span class="o">.</span><span class="n">posts</span><span class="o">.</span><span class="n">first</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">context</span> <span class="s2">&quot;An administrator&quot;</span> <span class="k">do</span>
+</span><span class='line'>        <span class="n">setup</span> <span class="p">{</span> <span class="n">login_as</span> <span class="n">users</span><span class="p">(</span><span class="ss">:admin</span><span class="p">)</span> <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">should_be_restful</span> <span class="k">do</span> <span class="o">|</span><span class="n">resource</span><span class="o">|</span>
+</span><span class='line'>            <span class="n">resource</span><span class="o">.</span><span class="n">create</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="p">{</span> <span class="ss">:subject</span> <span class="o">=&gt;</span> <span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="ss">:body</span> <span class="o">=&gt;</span> <span class="s2">&quot;message&quot;</span> <span class="p">}</span>
+</span><span class='line'>            <span class="n">resource</span><span class="o">.</span><span class="n">update</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="p">{</span> <span class="ss">:subject</span> <span class="o">=&gt;</span> <span class="s2">&quot;changed&quot;</span> <span class="p">}</span>
+</span><span class='line'>        <span class="k">end</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">context</span> <span class="s2">&quot;A user&quot;</span> <span class="k">do</span>
+</span><span class='line'>        <span class="n">setup</span> <span class="p">{</span> <span class="n">login_as</span> <span class="vi">@user</span> <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">should_be_restful</span> <span class="k">do</span> <span class="o">|</span><span class="n">resource</span><span class="o">|</span>
+</span><span class='line'>            <span class="n">resource</span><span class="o">.</span><span class="n">create</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="p">{</span> <span class="ss">:subject</span> <span class="o">=&gt;</span> <span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="ss">:body</span> <span class="o">=&gt;</span> <span class="s2">&quot;message&quot;</span> <span class="p">}</span>
+</span><span class='line'>            <span class="n">resource</span><span class="o">.</span><span class="n">update</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="p">{</span> <span class="ss">:subject</span> <span class="o">=&gt;</span> <span class="s2">&quot;changed&quot;</span> <span class="p">}</span>
+</span><span class='line'>        <span class="k">end</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">context</span> <span class="s2">&quot;A stranger&quot;</span> <span class="k">do</span>
+</span><span class='line'>        <span class="n">setup</span> <span class="p">{</span> <span class="n">login_as</span> <span class="n">users</span><span class="p">(</span><span class="ss">:sally</span><span class="p">)</span> <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">should_be_restful</span> <span class="k">do</span> <span class="o">|</span><span class="n">resource</span><span class="o">|</span>
+</span><span class='line'>            <span class="n">resource</span><span class="o">.</span><span class="n">create</span><span class="o">.</span><span class="n">params</span>   <span class="o">=</span> <span class="p">{</span> <span class="ss">:subject</span> <span class="o">=&gt;</span> <span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="ss">:body</span> <span class="o">=&gt;</span> <span class="s2">&quot;message&quot;</span> <span class="p">}</span>
+</span><span class='line'>            <span class="n">resource</span><span class="o">.</span><span class="n">denied</span><span class="o">.</span><span class="n">actions</span>  <span class="o">=</span> <span class="o">[</span><span class="ss">:edit</span><span class="p">,</span> <span class="ss">:update</span><span class="p">,</span> <span class="ss">:destroy</span><span class="o">]</span>
+</span><span class='line'>            <span class="n">resource</span><span class="o">.</span><span class="n">denied</span><span class="o">.</span><span class="n">redirect</span> <span class="o">=</span> <span class="s2">&quot;login_url&quot;</span>
+</span><span class='line'>            <span class="n">resource</span><span class="o">.</span><span class="n">denied</span><span class="o">.</span><span class="n">flash</span>    <span class="o">=</span> <span class="sr">/only the owner can/i</span>
+</span><span class='line'>        <span class="k">end</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">context</span> <span class="s2">&quot;The public&quot;</span> <span class="k">do</span>
+</span><span class='line'>        <span class="n">setup</span> <span class="p">{</span> <span class="n">logout</span> <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">should_be_restful</span> <span class="k">do</span> <span class="o">|</span><span class="n">resource</span><span class="o">|</span>
+</span><span class='line'>            <span class="n">resource</span><span class="o">.</span><span class="n">denied</span><span class="o">.</span><span class="n">actions</span>  <span class="o">=</span> <span class="o">[</span><span class="ss">:new</span><span class="p">,</span> <span class="ss">:create</span><span class="p">,</span> <span class="ss">:edit</span><span class="p">,</span> <span class="ss">:update</span><span class="p">,</span> <span class="ss">:destroy</span><span class="o">]</span>
+</span><span class='line'>            <span class="n">resource</span><span class="o">.</span><span class="n">denied</span><span class="o">.</span><span class="n">redirect</span> <span class="o">=</span> <span class="s2">&quot;signup_url&quot;</span>
+</span><span class='line'>            <span class="n">resource</span><span class="o">.</span><span class="n">denied</span><span class="o">.</span><span class="n">flash</span>    <span class="o">=</span> <span class="sr">/must be a member/i</span>
+</span><span class='line'>        <span class="k">end</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>混合与匹配</h3>
+
+<p>最后，记住更好的测试在should_be_restful助手之外的额外行为，或者在Shoulda中加入一般的test_xxx方法。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">UsersControllerTest</span> <span class="o">&lt;</span> <span class="ss">Test</span><span class="p">:</span><span class="ss">:Unit</span><span class="o">::</span><span class="no">TestCase</span>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">setup</span>
+</span><span class='line'>        <span class="vi">@user</span> <span class="o">=</span> <span class="no">User</span><span class="o">.</span><span class="n">find</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">should_be_restful</span> <span class="k">do</span> <span class="o">|</span><span class="n">resource</span><span class="o">|</span>
+</span><span class='line'>        <span class="n">resource</span><span class="o">.</span><span class="n">create</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="p">{</span> <span class="ss">:name</span> <span class="o">=&gt;</span> <span class="s2">&quot;Billy Bumbler&quot;</span><span class="p">,</span> <span class="ss">:party</span> <span class="o">=&gt;</span> <span class="s1">&#39;Sure do!&#39;</span><span class="p">}</span>
+</span><span class='line'>        <span class="n">resource</span><span class="o">.</span><span class="n">update</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="p">{</span> <span class="ss">:name</span> <span class="o">=&gt;</span> <span class="s2">&quot;Changed&quot;</span> <span class="p">}</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">context</span> <span class="s2">&quot;on GET to /users/:id;activate&quot;</span>
+</span><span class='line'>        <span class="n">setup</span> <span class="p">{</span> <span class="n">get</span> <span class="ss">:activate</span><span class="p">,</span> <span class="ss">:id</span> <span class="o">=&gt;</span> <span class="vi">@user</span><span class="o">.</span><span class="n">id</span> <span class="p">}</span>
+</span><span class='line'>        <span class="n">should_render_template</span> <span class="ss">:activate</span>
+</span><span class='line'>        <span class="c1"># etc.</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">test_normal_stuff</span>
+</span><span class='line'>        <span class="n">assert</span> <span class="kp">true</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/05/18/shoulda-index">Shoulda教程索引</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-05-18T00:00:00+08:00" pubdate data-updated="true">May 18<span>th</span>, 2008</time>
+        
+         | <a href="/2008/05/18/shoulda-index#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>终于把这个框架的文档翻译完了。最后一篇的缩进真是搞死我了，如果wp的编辑器更加强些就好了。</p>
+
+<ul>
+<li><a href="/2008/05/10/shoulda-tutor1">Shoulda教程之一—基本的should语句</a></li>
+<li><a href="/2008/05/10/shoulda-tutor2">Shoulda教程之二—上下文</a></li>
+<li><a href="2008/05/11/shoulda-tutor3">Shoulda教程之三—测试ActiveRecord模型</a></li>
+<li><a href="/2008/05/18/shoulda-tutor4">Shoulda教程之四—测试控制器</a></li>
+</ul>
+
+
+<p>其实看到Shoulda这个框架之后我会有很多思考，思考之前的BDD或TDD是不是太麻烦了，比如每次Fun Test都是要些mock Model，然后才能测试每次每次都是在重复，而每次页面的测试（Rspec里才有分离出来的测试）每次都要先构造出页面中要调用的对象，再assigns页面要调用到的元素之后再测试。整个过程非常繁琐，虽然这样可以很细粒度地测试到整个应用，但一点也不DRY（或许我的水平还不够）。</p>
+
+<p>再抱怨一点，很多有名的Rails开源应用（如Beast，Redmind，Typo等等）很多都还未迁移到Rspec，虽然他们的项目目录中很多都有了spec这个目录，可是一般都是空的。想看到的Rspec的用于集成测试的Stroy框架的实例也没有，这个只能在教程中看到。Rspec的教程也太少，Rdoc中基本没有什么解释，代码里也是，如果对一些东西不知道怎么用就要去看代码，有些代码只是包装了Rails中的assist方法的还要去查Rails的方法代码（如果对Rails的一些assist不熟的话）。虽然这个过程可以看很多代码，学到更多，可是也太费时间了。</p>
+
+<p>最后如果能把Shoulda的一些强大的宏移植到Rspec那就好了。当然，我会继续研究Shoulda源码，还要下一步要看看merb。</p>
+
+<p>翻译完最后生成PDF在这里可以下载：<a href="http://download.csdn.net/source/458857">http://download.csdn.net/source/458857</a></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/05/18/rails-2-1-changelog">Rails 2.1.rc1 Changelog</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-05-18T00:00:00+08:00" pubdate data-updated="true">May 18<span>th</span>, 2008</time>
+        
+         | <a href="/2008/05/18/rails-2-1-changelog#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Rails2.1RC1的Changelog也是满有趣的。</p>
+
+<p><a href="http://api.rubyonrails.org/files/vendor/rails/railties/CHANGELOG.html">http://api.rubyonrails.org/files/vendor/rails/railties/CHANGELOG.html</a></p>
+
+<p>可以看到最下面这里有写着兼容Ruby1.9，另一个比较重大的特性就是Timezone的加入，另外还有对于Rails应用程序的依赖包的管理。其它都是小改动或者修补Bug。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/05/14/bea-java2soa-dev2dev-techdays">参加BEA JAVA2SOA DEV2DEV Techdays</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-05-14T00:00:00+08:00" pubdate data-updated="true">May 14<span>th</span>, 2008</time>
+        
+         | <a href="/2008/05/14/bea-java2soa-dev2dev-techdays#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><img src="http://lh3.ggpht.com/chenk85/SCq44eDvyBI/AAAAAAAAACg/NRZLptA0tRA/SNV81056.JPG?imgmax=720" alt="" /></p>
+
+<p><img src="http://lh5.ggpht.com/chenk85/SCq44-DvyCI/AAAAAAAAACo/m0VLYd_4JcE/SNV81057.JPG?imgmax=720" alt="" /></p>
+
+<p><img src="http://lh3.ggpht.com/chenk85/SCq45eDvyDI/AAAAAAAAACw/krxRCgW1gy0/SNV81061.JPG?imgmax=720" alt="" /></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/05/13/%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90de%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0">持续集成笔记本</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-05-13T00:00:00+08:00" pubdate data-updated="true">May 13<span>th</span>, 2008</time>
+        
+         | <a href="/2008/05/13/%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90de%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>五一的两天空余时间，读完了<a href="http://www.amazon.com/Continuous-Integration-Improving-Addison-Wesley-Signature/dp/0321336380/ref=sr_11_1?ie=UTF8&amp;qid=1200534624&amp;sr=11-1">持续集成</a>这本书。</p>
+
+<p>Continuous Integration，持续集成，简称CI。这是一项业界推荐的软件开发实践，是XP中提到的实践之一。CI有四个特征：</p>
+
+<blockquote><p>与版本控制系统的连接
+构建脚本
+某种类型的反馈机制
+集成源代码变更的过程</p></blockquote>
+
+<p>CI的价值在于：</p>
+
+<blockquote><p>减少风险
+减少重复过程
+在随时随地生成可部署的软件
+对开发团队的软件产品建立起更大的产品信心</p></blockquote>
+
+<p>CI的步骤：</p>
+
+<blockquote><p>“I Build So Consistently”。四个步骤：“Identify”，“Build”，“Share”，“Continuous”。</p></blockquote>
+
+<p>CI的实践：</p>
+
+<p>经常提交代码</p>
+
+<blockquote><p>不要提交无法构建的代码
+立即修复无法集成的构建
+编写自动化的开发者测试
+必须通过所有测试和审查
+执行私有构建
+避免签出无法构建的代码</p></blockquote>
+
+<p>CI可以缓解一些关键的风险：</p>
+
+<blockquote><p>没有可部署的软件
+很晚才发现缺陷
+缺乏项目可见性
+低品质的软件</p></blockquote>
+
+<p>CI系统的创建：</p>
+
+<blockquote><p>持续数据库集成
+持续测试
+持续审查
+持续部署
+持续反馈</p></blockquote>
+
+<p>Rails 的CI系统有来自TW的<a href="http://cruisecontrolrb.thoughtworks.com/">cruisecontrolrb</a></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  <div class="pagination">
+    
+      <a class="prev" href="/blog/page/8/">&larr; Older</a>
+    
+    <a href="/blog/archives">Blog Archives</a>
+    
+    <a class="next" href="/blog/page/6/">Newer &rarr;</a>
+    
+  </div>
+</div>
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'thekaiway';
+      
+        
+        var disqus_script = 'count.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

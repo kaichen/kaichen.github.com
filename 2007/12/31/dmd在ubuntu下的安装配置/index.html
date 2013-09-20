@@ -1,0 +1,275 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>安装配置DMD - The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="D语言是下一个主流静态语言霸主的强有力候选人。DMD是D语言的一个编译器。
+到下面的地址下载dmd，后解压。（其中dmd/src/dmd是dmd的源码，dmd/sample/d是d语言的几个简单示例。） http://www.digitalmars.com/d/dcompiler.html &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io/2007/12/31/dmd%E5%9C%A8ubuntu%E4%B8%8B%E7%9A%84%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">安装配置DMD</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2007-12-31T00:00:00+08:00" pubdate data-updated="true">Dec 31<span>st</span>, 2007</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>D语言是下一个主流静态语言霸主的强有力候选人。DMD是D语言的一个编译器。<!--more-->
+到下面的地址下载dmd，后解压。（其中dmd/src/dmd是dmd的源码，dmd/sample/d是d语言的几个简单示例。）</p>
+
+<p><a href="http://www.digitalmars.com/d/dcompiler.html">http://www.digitalmars.com/d/dcompiler.html</a></p>
+
+<ul>
+<li>安装配置文件，复制<code>dmd/bin/dmd.conf</code>到<code>/usr/local/bin</code>下。</li>
+<li>为dmd/bin下的这几个文件添加执行权限，dmd,dumpobj,obj2asm,rdmd。</li>
+<li>安装编译器，复制上面的几个文件到 /usr/local/bin</li>
+<li>安装lib，复制<code>dmd/lib/libphobos2.a</code> 到 /usr/local/lib</li>
+<li>安装源码，复制dmd/src/phobos到/usr/local/src</li>
+<li>安装man，复制dmd/man/man1下的所有文件到/usr/local/man/man1下。</li>
+</ul>
+
+
+<p>这样就OK了。</p>
+
+<p>dmd.conf也可以放在/etc下不过要把lib和src的路径改为绝对路径，原文件中的路径是用%@P%来标示当前路径。</p>
+
+<p>测试一下编译，没有报找不到文件就OK了。</p>
+
+<p>其实D语言也是红色的。。。D语言应该是接任 Java和C#的下个静态语言王者。现在几个主流的编辑器都支持D语言，比如vim，emacs，scite。</p>
+
+<p>dmd中带的几个例子中有几个是只能在windows下运行的，有点不爽。</p>
+
+<p>D语言的几个资源：</p>
+
+<ul>
+<li><a href="http://www.digitalmars.com/d/index.html">http://www.digitalmars.com/d/index.html</a></li>
+<li><a href="http://www.dnaic.com/d/doc/d/index.html">http://www.dnaic.com/d/doc/d/index.html</a></li>
+<li><a href="http://www.dsource.org">http://www.dsource.org</a></li>
+</ul>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Kai Chen</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2007-12-31T00:00:00+08:00" pubdate data-updated="true">Dec 31<span>st</span>, 2007</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://kaichen.github.io/2007/12/31/dmd%E5%9C%A8ubuntu%E4%B8%8B%E7%9A%84%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE" data-via="" data-counturl="http://kaichen.github.io/2007/12/31/dmd%E5%9C%A8ubuntu%E4%B8%8B%E7%9A%84%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2007/11/29/%E5%BA%B7%E6%8A%BD%E8%A5%BF" title="Previous Post: 康抽C">&laquo; 康抽C</a>
+      
+      
+        <a class="basic-alignment right" href="/2008/01/09/rails20%E7%9A%84%E5%AE%98%E6%96%B9plugins%E5%88%97%E8%A1%A8-%E4%BB%8E12%E4%B8%AD%E5%88%86%E7%A6%BB%E5%87%BA%E6%9D%A5%E7%9A%84%E4%B8%80%E4%BA%9B%E5%8A%9F%E8%83%BD" title="Next Post: Rails 2.0中分离出来的Plugins">Rails 2.0中分离出来的Plugins &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'thekaiway';
+      
+        
+        var disqus_script = 'count.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

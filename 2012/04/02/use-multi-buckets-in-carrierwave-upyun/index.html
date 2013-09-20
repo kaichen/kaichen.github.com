@@ -1,0 +1,326 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>carrierwave-upyun配置多个不同buckets - The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="背景 carrierwave是RubyOnRails社区中比较
+流行的文件上传插件，carrierwave-upyun
+是集成upyun服务的插件。 把不同类型的文件存放到upyun不同的bucket上 使用upyun时有个常见的需求就是把不同类型的图片分开放到不同的bucket当中，但在 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io/2012/04/02/use-multi-buckets-in-carrierwave-upyun">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Carrierwave-upyun配置多个不同buckets</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-04-02T00:00:00+08:00" pubdate data-updated="true">Apr 2<span>nd</span>, 2012</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h1>背景</h1>
+
+<p><a href="https://github.com/jnicklas/carrierwave/">carrierwave</a>是RubyOnRails社区中比较
+流行的文件上传插件，<a href="https://github.com/nowa/carrierwave-upyun">carrierwave-upyun</a>
+是集成<a href="https://github.com/nowa/carrierwave-upyun">upyun</a>服务的插件。</p>
+
+<h1>把不同类型的文件存放到upyun不同的bucket上</h1>
+
+<p>使用upyun时有个常见的需求就是把不同类型的图片分开放到不同的bucket当中，但在
+carreirwave-upyun的文档当中并没有提到这点，只是给出了怎么配置全局参数的例子：</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="no">CarrierWave</span><span class="o">.</span><span class="n">configure</span> <span class="k">do</span> <span class="o">|</span><span class="n">config</span><span class="o">|</span>
+</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">storage</span> <span class="o">=</span> <span class="ss">:upyun</span>
+</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">upyun_username</span> <span class="o">=</span> <span class="s2">&quot;xxxxxx&quot;</span>
+</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">upyun_password</span> <span class="o">=</span> <span class="s1">&#39;xxxxxx&#39;</span>
+</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">upyun_bucket</span> <span class="o">=</span> <span class="s2">&quot;my_bucket&quot;</span>
+</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">upyun_bucket_domain</span> <span class="o">=</span> <span class="s2">&quot;my_bucket.files.example.com&quot;</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h1>解决</h1>
+
+<p>而实际上，可以这么去做：</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">CoverUploader</span> <span class="o">&lt;</span> <span class="ss">CarrierWave</span><span class="p">:</span><span class="ss">:Uploader</span><span class="o">::</span><span class="no">Base</span>
+</span><span class='line'>  <span class="n">storage</span> <span class="ss">:upyun</span>
+</span><span class='line'>  <span class="nb">self</span><span class="o">.</span><span class="n">upyun_bucket</span> <span class="o">=</span> <span class="s2">&quot;my-covers&quot;</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'><span class="k">class</span> <span class="nc">AttachementUploader</span> <span class="o">&lt;</span> <span class="ss">CarrierWave</span><span class="p">:</span><span class="ss">:Uploader</span><span class="o">::</span><span class="no">Base</span>
+</span><span class='line'>  <span class="n">storage</span> <span class="ss">:upyun</span>
+</span><span class='line'>  <span class="nb">self</span><span class="o">.</span><span class="n">upyun_bucket</span> <span class="o">=</span> <span class="s2">&quot;my-attachements&quot;</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>这样简单地在Uploader里assign一下就可以解决问题。</p>
+
+<h1>为什么以上的解决方法行得通？</h1>
+
+<p>Carreirwave的各种Configuration都是通过这里的<code>add_config</code>方法加入的。代码可以看以下的链接</p>
+
+<p><a href="https://github.com/jnicklas/carrierwave/blob/master/lib/carrierwave/uploader/configuration.rb#L75-L94">https://github.com/jnicklas/carrierwave/blob/master/lib/carrierwave/uploader/configuration.rb#L75-L94</a></p>
+
+<p><code>add_config</code>为每个Uploader实例添加了直接访问Class variable的方法，Uploader中
+的各种Configuration 项（比如这里的<code>upyun_bucket</code>）都是存储在Uploader的Class
+中。</p>
+
+<p>而所有默认的Configuration项都是存储在<code>CarrierWave::Uploader::Base</code>，所以在我们
+自定义的Uploader可以通过<code>add_config</code>为我们加入的<a href="https://github.com/jnicklas/carrierwave/blob/master/lib/carrierwave/uploader/configuration.rb#L98-L92"><code>self.#{config_item}=</code></a>
+去修改Configuration项。</p>
+
+<p>也就是说Carrierwave一早就实现了这样的机制让不同的Uploader天生可以具有配置能力。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Kai Chen</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-04-02T00:00:00+08:00" pubdate data-updated="true">Apr 2<span>nd</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/ruby/'>Ruby</a>, <a class='category' href='/blog/categories/ruby-on-rails/'>Ruby on Rails</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://kaichen.github.io/2012/04/02/use-multi-buckets-in-carrierwave-upyun" data-via="" data-counturl="http://kaichen.github.io/2012/04/02/use-multi-buckets-in-carrierwave-upyun" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2012/03/11/use-weekly-to-fetch-tech-updates" title="Previous Post: Use Weekly to fetch tech updates">&laquo; Use Weekly to fetch tech updates</a>
+      
+      
+        <a class="basic-alignment right" href="/2012/04/06/web-resources-help-you-fight-with-older-IE" title="Next Post: Web Resources Help You Fight with Older IEs">Web Resources Help You Fight with Older IEs &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'thekaiway';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://kaichen.github.io/2012/04/02/use-multi-buckets-in-carrierwave-upyun.html';
+        var disqus_url = 'http://kaichen.github.io/2012/04/02/use-multi-buckets-in-carrierwave-upyun';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

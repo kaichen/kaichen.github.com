@@ -1,0 +1,330 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Story on Rspec - The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="Stroy框架是一个在应用程序级别对测试进行描述的框架。Rspec的BDD测试中其实缺少了一个像Rails传统测试中的集成测试（integration tests）那样的东西，Rspec::Strop就是为了补上这个部分而产生的。 Stroy格式： Title (故事标题) 故事的描述: &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io/2008/05/01/rspec%E7%9A%84stroy%E6%A1%86%E6%9E%B6">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Story on Rspec</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-05-01T00:00:00+08:00" pubdate data-updated="true">May 1<span>st</span>, 2008</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>Stroy框架是一个在应用程序级别对测试进行描述的框架。Rspec的BDD测试中其实缺少了一个像Rails传统测试中的集成测试（integration tests）那样的东西，Rspec::Strop就是为了补上这个部分而产生的。</p>
+
+<p>Stroy格式：</p>
+
+<pre><code>Title (故事标题)
+
+故事的描述:
+作为一个怎样的角色
+我想要什么样
+最后得到怎样的结果
+
+验证故事的标准: (以场景(Scenario)的形式提出)
+
+Scenario: 场景标题
+Given [场景内容]
+  And [场景附加内容]…
+When  [发生事件]
+Then  [产生的后果]
+  And [其它后果]…
+
+Scenario: …
+</code></pre>
+
+<p>以上就是故事编写的基本结构，Given后可以加多个And，Then也是。故事直接保存为文本文件就可以了。然后开始编写故事的验证机制（其实就是针对上面描述的场景以代码来表示）。</p>
+
+<p>故事验证格式：</p>
+
+<pre><code>steps_for(:故事名)  do
+  Given("场景内容") do |占位符|
+    代码描述
+  end
+  When("发生事件") do |占位符|
+    代码描述
+  end
+  Then("产生的后果") do |占位符|
+    代码描述
+  end
+end
+</code></pre>
+
+<p>解释下，Given块的个数应该与故事清单中的Given语句加后面的And的个数相当，Then块也是。</p>
+
+<p>例子：
+故事login</p>
+
+<pre><code>Story: 以存在的用户身份登录
+作为一个未认证的用户
+我想要登录到网站
+那么我能看见我的账户信息
+
+Scenario: 正常登录
+    Given 我的账户为test@example.org
+    When 我用邮箱为test@example.org和密码是foofoo进行登录
+    Then 我能够登录
+    And 我会看到账户页面
+</code></pre>
+
+<p>故事验证login.rb：</p>
+
+<pre><code>require 'rubygems'
+require 'spec/story'
+steps_for(:login) do
+  Given "我的账户为$email" do |email|
+    @user = find_or_create_user_by_email({:email =&amp;gt; email,
+    :password =&amp;gt; 'foofoo',
+    :password_confirmation =&amp;gt; 'foofoo'})
+  end
+
+  When "我用邮箱为$email和密码是$password进行登录" do |email, password|
+    post '/login', :user =&amp;gt; \{:email =&amp;gt; email, :password =&amp;gt; password\}
+  end
+
+  Then("我能够登录") do
+  end
+
+  Then("我会看到账户页面") do
+  end
+end
+
+with_steps_for(:login) do
+  run "login"
+end
+</code></pre>
+
+<p>参考：
+* <a href="http://rspec.info/">http://rspec.info/</a>
+* <a href="http://blog.davidchelimsky.net/articles/2007/10/22/plain-text-stories-on-rails">http://blog.davidchelimsky.net/articles/2007/10/22/plain-text-stories-on-rails</a>
+* <a href="http://dannorth.net/whats-in-a-story">http://dannorth.net/whats-in-a-story</a>
+* <a href="http://www.letrails.cn/archives/rspec-story-tutorials">http://www.letrails.cn/archives/rspec-story-tutorials</a></p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Kai Chen</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-05-01T00:00:00+08:00" pubdate data-updated="true">May 1<span>st</span>, 2008</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://kaichen.github.io/2008/05/01/rspec%E7%9A%84stroy%E6%A1%86%E6%9E%B6" data-via="" data-counturl="http://kaichen.github.io/2008/05/01/rspec%E7%9A%84stroy%E6%A1%86%E6%9E%B6" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2008/04/28/txt2html%E8%84%9A%E6%9C%AC" title="Previous Post: txt2html Script">&laquo; txt2html Script</a>
+      
+      
+        <a class="basic-alignment right" href="/2008/05/01/%E7%BF%BB%E8%AF%91arch-wiki%E4%B8%8A%E7%9A%84wicd%E9%A1%B5" title="Next Post: 翻译了一篇ArchLinux">翻译了一篇ArchLinux &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'thekaiway';
+      
+        
+        var disqus_script = 'count.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

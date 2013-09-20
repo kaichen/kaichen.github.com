@@ -1,0 +1,298 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>ActionView基本架构 - The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="本文是Inspect Rails的一部分, Inspect Rails是由我正在编写的讲解Rails内部实现与设计的一本书, 欢迎阅读 ActionView是MVC中最后一公里, 将内容拼装完成, 等待服务器将其最终结果传输到用户端。 注 下文中ActionView在作为命名空间时全部简写为AV &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io/2013/08/10/actionview-architect">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">ActionView基本架构</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-08-10T09:43:00+08:00" pubdate data-updated="true">Aug 10<span>th</span>, 2013</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><blockquote><p>本文是<a href="/inspect-rails">Inspect Rails</a>的一部分, <a href="/inspect-rails">Inspect Rails</a>是由我正在编写的讲解Rails内部实现与设计的一本书, 欢迎阅读</p></blockquote>
+
+<p><code>ActionView</code>是MVC中最后一公里, 将内容拼装完成, 等待服务器将其最终结果传输到用户端。</p>
+
+<p><strong>注</strong> 下文中<code>ActionView</code>在作为命名空间时全部简写为<code>AV</code>。</p>
+
+<p>在开发者的角度看来, <code>ActionView</code>的处理过程似乎没有太多值得一提的事情, 大部分情况下需要关心的只是某个Helper要传哪些参数进去。但实际其中ActionView完成的事情并不简单, 这里主要有4个步骤</p>
+
+<ol>
+<li>需要将路由生成方法和各种Helper方法绑定到渲染的上下文中, 并绑定在当前Controller中的实例变量</li>
+<li>需要有对象负责知道怎么去找到对应的模版。Rails能做到的查找规则极为灵活, 可以查找某个对应Format（如json）, 对应Locale（如zh-CN）, 从文件系统或数据库里找到这个对应的模版。</li>
+<li>找到了这个模版后, 需要知道怎样去编译这个模版。Ruby世界有很多的模板语言, 比如Erb, Builder, Haml和Slim等等, Rails需要找到对应的编译方式去编译它们。</li>
+<li>将编译好的模版, 加上之前的渲染上下文, 拼装得到最后的结果。</li>
+</ol>
+
+
+<p>在Controller里调用到ActionView接口只有以下三个</p>
+
+<ul>
+<li>AV::Base 维护整个渲染过程的上下文(View Context)</li>
+<li>AV::LookupContext 维护模版查找的上下文</li>
+<li>AV::Renderer 渲染接口</li>
+</ul>
+
+
+<p>渲染的调用逻辑基本集中在<code>AbstractController::Rendering</code>这个模组, 下图为其中大概的逻辑关系</p>
+
+<p><img src="/images/action_view_arch.png" alt="av" /></p>
+
+<p>图中的View Context就是上文提到的<code>AV::Base</code>, View Assigns指的是在Controller中设置的各种实例变量。最后Controller通过调用<code>AV::Renderer#render</code>去渲染出最终的结果。</p>
+
+<p>关于ActionView内部具体的各个机制会在后续章节中一一讲解。</p>
+
+<h2>参考</h2>
+
+<p>Rails Core Team里的<a href="https://twitter.com/josevalim">José Valim</a>可能是对ActionPack中大部分实现最为熟悉的人之一, 以下列出的书以及Presentation就讲到了这部分内容。</p>
+
+<ul>
+<li><a href="http://pragprog.com/book/jvrails2/crafting-rails-4-applications">Crafting Rails 4 Applications</a></li>
+<li><a href="http://www.youtube.com/watch?v=TslkdT3PfKc">Rails Conf 2013 You&rsquo;ve got a Sinatra on your Rails by José Valim</a></li>
+</ul>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Kai Chen</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-08-10T09:43:00+08:00" pubdate data-updated="true">Aug 10<span>th</span>, 2013</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/ruby/'>Ruby</a>, <a class='category' href='/blog/categories/ruby-on-rails/'>Ruby on Rails</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://kaichen.github.io/2013/08/10/actionview-architect" data-via="" data-counturl="http://kaichen.github.io/2013/08/10/actionview-architect" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2013/07/30/config-your-git-push-strategy" title="Previous Post: 配置Git Push策略">&laquo; 配置Git Push策略</a>
+      
+      
+        <a class="basic-alignment right" href="/2013/08/16/rails-ujs" title="Next Post: Rails ujs">Rails ujs &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'thekaiway';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://kaichen.github.io/2013/08/10/actionview-architect.html';
+        var disqus_url = 'http://kaichen.github.io/2013/08/10/actionview-architect';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

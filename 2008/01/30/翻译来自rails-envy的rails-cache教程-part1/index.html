@@ -1,0 +1,516 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>译文 Rails Cache教程1 - The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="原文来自Rails Envy
+http://railsenvy.com/2007/2/28/rails-caching-tutorial 整个教程有两部份，第一部分也就是这篇讲page cache，第二篇讲其它的cache。这篇文章其实主要还是讲基础，不过结合了一些示例，并配上生动的语言。 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io/2008/01/30/%E7%BF%BB%E8%AF%91%E6%9D%A5%E8%87%AArails-envy%E7%9A%84rails-cache%E6%95%99%E7%A8%8B-part1">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">译文 Rails Cache教程1</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-01-30T00:00:00+08:00" pubdate data-updated="true">Jan 30<span>th</span>, 2008</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>原文来自Rails Envy
+<a href="http://railsenvy.com/2007/2/28/rails-caching-tutorial">http://railsenvy.com/2007/2/28/rails-caching-tutorial</a></p>
+
+<p>整个教程有两部份，第一部分也就是这篇讲page cache，第二篇讲其它的cache。这篇文章其实主要还是讲基础，不过结合了一些示例，并配上生动的语言。</p>
+
+<p>合适的缓存机制可以提升Rails应用的性能。而Page Cache就是Rails中最高效的缓存。Page Cahe机制可以让每次请求不用进行数据库查询，甚至不用触动到Ruby解析器，完全由前端web服务器来进行服务。</p>
+
+<p>配置</p>
+
+<p>如果你想在devlopment模式启用cache机制，就需要修改<code>/config/environments/development.rb</code>文件，找到下面这行并把配置项改为true：</p>
+
+<pre><code>config.action_controller.perform_caching = true
+</code></pre>
+
+<p>页面缓存</p>
+
+<p>两种很适合缓存页面的情况：</p>
+
+<ol>
+<li>当页面对于所有用户都是相同的</li>
+<li>当页面是公开的，而且无须用户认证</li>
+</ol>
+
+
+<p>假设环境是在一个不经常改动的Blog页面中。。。Controller的代码应该貌似这样：</p>
+
+<pre><code>class BlogController &amp;lt; ApplicationController
+  def list
+     Post.find(:all, :order =&amp;gt; "created_on desc", :limit =&amp;gt; 10)
+  end
+  ...
+</code></pre>
+
+<p>如果想要缓存list action中显示的页面就在代码中加入：</p>
+
+<pre><code>class BlogController &amp;lt; ApplicationController
+   caches_page :list
+
+   def list
+     Post.find(:all, :order =&amp;gt; "created_on desc", :limit =&amp;gt; 10)
+   end
+  ...
+</code></pre>
+
+<p>这样，在下次请求时就会生成并返回缓存好的list.html页面，下下次的话就是直接返回缓存页面。</p>
+
+<p>如果使用的是mongrel，对list action进行配置后的第一次请求时，/logs/development.log会有貌似以下的记录：</p>
+
+<pre><code>Processing BlogController#list (for 127.0.0.1 at 2007-02-23 00:58:56) [GET]
+Parameters: {"action"=&amp;gt;"list", "controller"=&amp;gt;"blog"}
+SELECT * FROM posts ORDER BY created_on LIMIT 10
+Rendering blog/list
+Cached page: /blog/list.html (0.00000)
+Completed in 0.18700 (5 reqs/sec) | Rendering: 0.10900 (58%) | DB: 0.00000 (0%) | 200 OK [http://localhost/blog/list]
+</code></pre>
+
+<p>Cached page: <code>/blog/list.html</code></p>
+
+<p>这行记录表明了页面已被导入，并存放在<code>/public/blog/list.html</code>位置下。在这个文件中没有一丁点Ruby代码。下一次请求到来时又会绕过Rails再次返回这个静态页面，这就提升了效率，降低了服务器的开销。</p>
+
+<p>这样的话，如果是有动态表单的页面和经常更新的页面，Page Cache就不太适合了。不过还可以采用其它的缓存机制，请留意本教程的Part2。（卖广告:&gt;）如果在代码里再加上这一句：</p>
+
+<pre><code>caches_page :show
+</code></pre>
+
+<p>当URL指向<code>/blog/show/5</code>访问id为5的blog日志时，请问调用的是哪个缓存文件（或其文件名为什么）？</p>
+
+<p>答案是：<code>/public/blog/show/5.html</code></p>
+
+<p>看看下面的例子（URL和对应的缓存文件）：</p>
+
+<pre><code>http://localhost:3000/blog/list =&amp;gt; /public/blog/list.html
+http://localhost:3000/blog/edit/5 =&amp;gt; /public/edit/5.html
+http://localhost:3000/blog =&amp;gt; /public/blog.html
+http://localhost:3000/ =&amp;gt; /public/index.html
+http://localhost:3000/blog/list?page=2 =&amp;gt; /public/blog/list.html
+</code></pre>
+
+<p>伊，等等，不太对阿。第一行和最后一行怎么返回的缓存文件一样？Page Cache忽略了URL附带的参数了。</p>
+
+<p>在采用分页的页面怎么使用Page Cahe</p>
+
+<p>要缓存不同的文件，只能创建不同格式的URL了。使用<code>/blog/list?page=2</code>的话会出问题，那就使用<code>/blog/list/2</code>吧。这样子的话，数字2就是作为params[:id]了，那就要修改路由规则（<code>/config/routes.rb</code>）了：</p>
+
+<pre><code>map.connect 'blog/list/:page',
+    :controller =&amp;gt; 'blog',
+    :action =&amp;gt; 'list',
+    :requirements =&amp;gt; { :page =&amp;gt; /\d+/},
+    :page =&amp;gt; nil
+</code></pre>
+
+<p>配合新的路由，页面的链接也要改一下：</p>
+
+<pre><code>&amp;lt;%= link_to "Next Page", :controller =&amp;gt; 'blog', :action =&amp;gt; 'list', :page =&amp;gt; 2 %&amp;gt;
+</code></pre>
+
+<p>上面这句生成的URL就是<code>/blog/list/2</code>了，访问这 URL时会以下两件事会发生：</p>
+
+<p>Rails应用把数字2作为params[:page]</p>
+
+<p>这个页面被缓存为<code>/public/blog/list/2.html</code></p>
+
+<p>上面这个示例告诉我们，如果要使用PageCache机制的话，那就要对附加参数做一下处理，让附加参数成为URL的一部分。</p>
+
+<p>清理Cache</p>
+
+<p>页面失效了怎么办？那就清理掉失效页面呗！</p>
+
+<p>以下两行代码可以清除上面例子中生成的Cache：</p>
+
+<pre><code># This will remove /blog/list.html
+expire_page(:controller =&amp;gt; 'blog', :action =&amp;gt; 'list')
+# This will remove /blog/show/5.html
+expire_page(:controller =&amp;gt; 'blog', :action =&amp;gt; 'show', :id =&amp;gt; 5)
+</code></pre>
+
+<p>那就要在每次添加/改动/删除blog日志时都进行这些操作。要把这两行代码加入action中吗？不，有优雅的解决方法。。。</p>
+
+<p>Sweepers</p>
+
+<p>Sweepers是一些能在页面失效是删除旧的缓存的代码。Sweepers监视Model的一举一动，当Model进行CRUD时，Sweepers得知后就会去把相应的缓存删除掉。</p>
+
+<p>Sweepers的操作应该放在一个Controller中，而且作者认为还应该与其它的controller分离开。那就要改动配置文件<code>/config/environment.rb</code>：</p>
+
+<pre><code>Rails::Initializer.run do |config|
+   # ...
+   config.load_paths += %W( #{RAILS_ROOT}/app/sweepers )
+   # ...
+end
+</code></pre>
+
+<p>友情提示，改动环境变量之后记得重启服务器。</p>
+
+<p>如上改动后在/app/sweepers创建sweepers，文件<code>/app/sweepers/blog_sweeper.rb</code>应该是这样：</p>
+
+<pre><code>class BlogSweeper &amp;lt; ActionController::Caching::Sweeper
+  observe Post # This sweeper is going to keep an eye on the Post model
+  # If our sweeper detects that a Post was created call this
+  def after_create(post)
+          expire_cache_for(post)
+  end
+
+  # If our sweeper detects that a Post was updated call this
+  def after_update(post)
+          expire_cache_for(post)
+  end
+
+  # If our sweeper detects that a Post was deleted call this
+  def after_destroy(post)
+          expire_cache_for(post)
+  end
+
+  private
+  def expire_cache_for(record)
+    # Expire the list page now that we posted a new blog entry
+    expire_page(:controller =&amp;gt; 'blog', :action =&amp;gt; 'list')
+
+    # Also expire the show page, incase we just edited a blog entry
+    expire_page(:controller =&amp;gt; 'blog', :action =&amp;gt; 'show', :id =&amp;gt; record.id)&amp;lt;
+  end
+end
+</code></pre>
+
+<p>生成Sweepers可以使用插件Sweeper Generator，可以参看<a href="http://www.ruby-lang.org.cn/forums/thread-1085-1-5.html">martin的介绍</a>。</p>
+
+<p>友情提示：用after_save方法可以代替上面的after_create和after_update两个方法。</p>
+
+<p>要调用Sweepers，在文件<code>/app/controllers/BlogController.rb</code>中应这些写代码：</p>
+
+<pre><code>class BlogController &amp;lt; ApplicationController
+   caches_page :list, :show
+   cache_sweeper :blog_sweeper, :only =&amp;gt; [:create, :update, :destroy]
+   ...
+</code></pre>
+
+<p>当创建一个Blog日志时，会在<code>logs/development.log</code>中发现这样的记录：</p>
+
+<pre><code>Expired page: /blog/list.html (0.00000)
+Expired page: /blog/show/3.html (0.00000)
+</code></pre>
+
+<p>hoho~ sweepers生效了。</p>
+
+<p>在Apache/Lighttpd的漂亮演出</p>
+
+<p>许多Rails应用都会使用Apache作为前端，用Mongrel / Lighttpd处理动态的RoR请求。要使Rails的Page Cache机制生效，告诉服务器当请求来的时候去哪里查找缓存页面。下面是配置Apache为例，修改<code>httpd.conf</code>文件：</p>
+
+<pre><code>&amp;lt;VirtualHost *:80&amp;gt;
+  ...
+  # Configure mongrel_cluster
+  &amp;lt;Proxy balancer://blog_cluster&amp;gt;
+    BalancerMember [url]http://127.0.0.1:8030[/url]
+  &amp;lt;/Proxy&amp;gt;
+  RewriteEngine On
+  # Rewrite index to check for static
+  RewriteRule ^/$ /index.html [QSA]
+  # Rewrite to check for Rails cached page
+  RewriteRule ^([^.]+)$ $1.html [QSA]
+  # Redirect all non-static requests to cluster
+  RewriteCond %{DOCUMENT_ROOT}/%{REQUEST_FILENAME} !-f
+  RewriteRule ^/(.*)$ balancer://blog_cluster%{REQUEST_URI} [P,QSA,L]
+  ...
+&amp;lt;/VirtualHost&amp;gt;
+</code></pre>
+
+<p>在lighttpd中应该是类似这样：</p>
+
+<pre><code>server.modules = ( "mod_rewrite", ... )
+url.rewrite += ( "^/$" =&amp;gt; "/index.html" )
+url.rewrite += ( "^([^.]+)$" =&amp;gt; "$1.html" )
+</code></pre>
+
+<p>这样代理服务器就会/public目录下查询cache文件，这样你可能会想要修改cache文件的目录。</p>
+
+<p>把Cache文件分离处理</p>
+
+<p>首先这样修改<code>/config/environment.rb</code>：</p>
+
+<pre><code>config.action_controller.page_cache_directory = RAILS_ROOT + "/public/cache/"
+</code></pre>
+
+<p>这样就让Rails在<code>/public/cache/</code> 下生成缓存文件了。接着就修改前端服务器Apache的配置文件<code>httpd.conf</code>：</p>
+
+<pre><code>  # Rewrite index to check for static
+  RewriteRule ^/$ cache/index.html [QSA]
+  # Rewrite to check for Rails cached page
+  RewriteRule ^([^.]+)$ cache/$1.html [QSA]
+</code></pre>
+
+<p>清理单个局部或者全部缓存</p>
+
+<p>当开始使用页面缓存的时候可能会发现，一旦对模型有CRUD操作，基本上所有的缓存都要被清除掉。那直接删除了生成的缓存文件岂不是更好更快。</p>
+
+<p>首先要把cache文件分离出来，这在上一步已经做了。下面的代码直接删除cache文件夹下的所有文件，并记录事件到日志中：</p>
+
+<pre><code>    class BlogSweeper &amp;lt; ActionController::Caching::Sweeper
+      observe Post
+      def after_save(record)
+        self.class::sweep
+      end
+
+      def after_destroy(record)
+        self.class::sweep
+      end
+
+      def self.sweep
+        cache_dir = ActionController::Base.page_cache_directory
+        unless cache_dir == RAILS_ROOT+"/public"
+          FileUtils.rm_r(Dir.glob(cache_dir+"/*")) rescue Errno::ENOENT
+          RAILS_DEFAULT_LOGGER.info("Cache directory '#{cache_dir}' fully sweeped.")
+        end
+      end
+    end
+</code></pre>
+
+<p>FileUtils.rm_r 方法删除目录下所有文件。这就相当于执行了多次的expire操作。也可以删词cache目录的子目录下的文件，如下面代码展示的对 /public/blog目录下所有文件进行删除：</p>
+
+<pre><code>    cache_dir = ActionController::Base.page_cache_directory
+    FileUtils.rm_r(Dir.glob(cache_dir+"/blog/*")) rescue Errno::ENOENT
+</code></pre>
+
+<p>更高级的Page Cache技巧？</p>
+
+<p>在大型Web应用中Page Cache的处理将会是非常复杂的。</p>
+
+<p>Rick Olson写了<a href="http://svn.techno-weenie.net/projects/plugins/referenced_page_caching/">Referenced Page Caching Plugin</a>用数据库来对缓存页面进行跟踪。README中有一些示例展示。</p>
+
+<p>Max Dunn写了篇文章<a href="http://blog.maxdunn.com/articles/2006/09/16/ruby-on-rails-advanced-page-caching">Advanced Page Caching</a>，向我们展示了他如何使用cookies动态地改变页面缓存处理基于用户角色的wiki页面。</p>
+
+<p>最后，Page Cache还无法解决缓存xml文件，Mike Zornek讲述了这个问题并提出了一些方法，详见<a href="http://clickablebliss.com/blog/2006/02/17/rails_caching_xml_bad_mime_types/">http://clickablebliss.com/blog/2006/02/17/rails_caching_xml_bad_mime_types/</a>。</p>
+
+<p>Page Cache怎么测试？</p>
+
+<p>Rails本身并没有提供给我们。Damien Merenne写了一个插件<a href="http://blog.cosinux.org/pages/page-cache-test">http://blog.cosinux.org/pages/page-cache-test</a>试图解决这个问题。试一下。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Kai Chen</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-01-30T00:00:00+08:00" pubdate data-updated="true">Jan 30<span>th</span>, 2008</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://kaichen.github.io/2008/01/30/%E7%BF%BB%E8%AF%91%E6%9D%A5%E8%87%AArails-envy%E7%9A%84rails-cache%E6%95%99%E7%A8%8B-part1" data-via="" data-counturl="http://kaichen.github.io/2008/01/30/%E7%BF%BB%E8%AF%91%E6%9D%A5%E8%87%AArails-envy%E7%9A%84rails-cache%E6%95%99%E7%A8%8B-part1" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2008/01/28/Rails%E7%94%A8%E6%88%B7%E8%AE%A4%E8%AF%81" title="Previous Post: Rails的用户认证">&laquo; Rails的用户认证</a>
+      
+      
+        <a class="basic-alignment right" href="/2008/01/30/%E7%BF%BB%E8%AF%91%E6%9D%A5%E8%87%AArails-envy%E7%9A%84rails-cache%E6%95%99%E7%A8%8B-part2" title="Next Post: 译文 Rails Cache教程2">译文 Rails Cache教程2 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'thekaiway';
+      
+        
+        var disqus_script = 'count.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

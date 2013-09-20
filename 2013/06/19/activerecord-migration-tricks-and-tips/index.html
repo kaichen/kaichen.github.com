@@ -1,0 +1,464 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>你可能不知道的ActiveRecord Migration小技巧 - The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="ActiveRecord的Migration是ActiveRecord用来维护RDBMS Schema的工具，
+使开发者的机器和服务器上的Schema保持同步。其原理在于将每次对数据库的改动都保存为一个脚本，
+并以改动内容以及时间戳命名防止重复。 以下我分享一些关于Migration的小技巧。 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io/2013/06/19/activerecord-migration-tricks-and-tips">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">你可能不知道的ActiveRecord Migration小技巧</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-06-19T10:22:00+08:00" pubdate data-updated="true">Jun 19<span>th</span>, 2013</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>ActiveRecord的Migration是ActiveRecord用来维护RDBMS Schema的工具，
+使开发者的机器和服务器上的Schema保持同步。其原理在于将每次对数据库的改动都保存为一个脚本，
+并以改动内容以及时间戳命名防止重复。</p>
+
+<p>以下我分享一些关于Migration的小技巧。</p>
+
+<h2>say/say_with_time</h2>
+
+<p>我们有时会在Migration里执行数据的改动或更新，而此时最好能在输出里打印一些对应的信息，或者记录下对应的代码的执行时间。</p>
+
+<p><a href="http://api.rubyonrails.org/classes/ActiveRecord/Migration.html#method-i-say">say</a>和
+<a href="http://api.rubyonrails.org/classes/ActiveRecord/Migration.html#method-i-say_with_time">say_with_time</a>就是为了上述需求而诞生的。对比使用<code>puts</code>之类的方法的优点是，这类输出会带有缩进或对应的与
+Migration各种API更一致的输出。</p>
+
+<p>下次需要在Migration里输出点什么的话，请用<code>say</code>以及<code>say_with_time</code>吧。</p>
+
+<h2>references/belongs_to</h2>
+
+<p>很多时候我们会创建互相关联的表，这就需要在表里加入一些引用到其它表的外键字段，这时我们一般会以添加一个
+integer类型的字段，并赋以对应的名字(一般为对应模型的单数形式再加上<code>_id</code>)。ActiveRecord提供了<a href="http://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/TableDefinition.html#method-i-references">references</a>API帮助我们更快捷地处理这种情况。</p>
+
+<p>这里列出文档中的一个非常好的例子，这个例子非常明显地体现了使用这个API的好处。</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">create_table</span> <span class="ss">:taggings</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+</span><span class='line'>  <span class="n">t</span><span class="o">.</span><span class="n">references</span> <span class="ss">:tag</span><span class="p">,</span> <span class="ss">index</span><span class="p">:</span> <span class="p">{</span> <span class="nb">name</span><span class="p">:</span> <span class="s1">&#39;index_taggings_on_tag_id&#39;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="n">t</span><span class="o">.</span><span class="n">references</span> <span class="ss">:tagger</span><span class="p">,</span> <span class="ss">polymorphic</span><span class="p">:</span> <span class="kp">true</span><span class="p">,</span> <span class="ss">index</span><span class="p">:</span> <span class="kp">true</span>
+</span><span class='line'>  <span class="n">t</span><span class="o">.</span><span class="n">references</span> <span class="ss">:taggable</span><span class="p">,</span> <span class="ss">polymorphic</span><span class="p">:</span> <span class="p">{</span> <span class="ss">default</span><span class="p">:</span> <span class="s1">&#39;Photo&#39;</span> <span class="p">}</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>以上的代码等价于下面较长的代码：</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">create_table</span> <span class="ss">:taggings</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+</span><span class='line'>  <span class="n">t</span><span class="o">.</span><span class="n">integer</span> <span class="ss">:tag_id</span><span class="p">,</span> <span class="ss">:tagger_id</span><span class="p">,</span> <span class="ss">:taggable_id</span>
+</span><span class='line'>  <span class="n">t</span><span class="o">.</span><span class="n">string</span>  <span class="ss">:tagger_type</span>
+</span><span class='line'>  <span class="n">t</span><span class="o">.</span><span class="n">string</span>  <span class="ss">:taggable_type</span><span class="p">,</span> <span class="ss">default</span><span class="p">:</span> <span class="s1">&#39;Photo&#39;</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'><span class="n">add_index</span> <span class="ss">:taggings</span><span class="p">,</span> <span class="ss">:tag_id</span><span class="p">,</span> <span class="nb">name</span><span class="p">:</span> <span class="s1">&#39;index_taggings_on_tag_id&#39;</span>
+</span><span class='line'><span class="n">add_index</span> <span class="ss">:taggings</span><span class="p">,</span> <span class="o">[</span><span class="ss">:tagger_id</span><span class="p">,</span> <span class="ss">:tagger_type</span><span class="o">]</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>此外，<code>references</code>这个API也被alias为更容易记住的<code>belongs_to</code>。</p>
+
+<h2>change_table</h2>
+
+<p>在Migration里提供了Schema操作的API都操作了两种形式，比如<code>add_column</code>和<code>column</code>。在<code>create_table</code>里
+可以使用如<code>column</code>比较简短形式的API，这与Form Helper在Form Buildler里可以使用不带<code>_tag</code>后缀的API一致。</p>
+
+<p>当我们需要去对同一个表做多次操作的时候，可以通过<code>change_table</code>来化简代码，在<code>change_table</code>的代码块中，
+可以使用简短形式的API</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">change_table</span><span class="p">(</span><span class="ss">:suppliers</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+</span><span class='line'>  <span class="n">t</span><span class="o">.</span><span class="n">column</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">:string</span><span class="p">,</span> <span class="ss">limit</span><span class="p">:</span> <span class="mi">60</span>
+</span><span class='line'>  <span class="n">t</span><span class="o">.</span><span class="n">remove</span> <span class="ss">:company_id</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>create_join_table/drop_join_table</h2>
+
+<p>当我们使用多对多(has_and_belongs_to_many)关联时需要创建关联表，而关联Schema很简单，只是
+需要把关联的两张表的ID字段分别记录下来，而其中涉及了ActiveRecord的命名规范。这时使用
+<a href="http://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-create_join_table">create_join_table</a>这个API就能很方便地帮我们去处理命名的事情，
+只需要将对应两个表的表名作为参数传进去。</p>
+
+<p>对应的也有一个<a href="http://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-drop_join_table">drop_join_table</a>API去帮我们删除这种关联表。</p>
+
+<h2>change_column_default/change_column_null</h2>
+
+<p>业务总是在不断变化的，有时数据库里一些字段可能会由非空改为允许为空，修改默认值。当你把这些规则放到数据库时就
+需要修改对应的字段和数据。</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">change_column_null</span><span class="p">(</span><span class="ss">:users</span><span class="p">,</span> <span class="ss">:nickname</span><span class="p">,</span> <span class="kp">false</span><span class="p">)</span>
+</span><span class='line'><span class="n">change_column_default</span><span class="p">(</span><span class="ss">:accounts</span><span class="p">,</span> <span class="ss">:authorized</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><code>change_column_default</code>会做两个事情，首先是把对应的字段填上指定的默认值，之后再修改Schema。</p>
+
+<h2>reversible</h2>
+
+<p>我们知道Migration提供了Up/Down两个方向，相当于do和undo。随着<code>change</code>API的流行，很多时候我们不会去写
+up和down两个方法，但有时就是需要写两个方向的代码。比如下面这个例子，在添加了first_name和last_name两个字段
+后，在up这个方法上需要从full_name字段提取出first_name和last_name，而down的方法又需要合并出full_name的数据，这就是<a href="http://api.rubyonrails.org/classes/ActiveRecord/Migration.html#method-i-reversible">reversible</a>的使用场景。</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">SplitNameMigration</span> <span class="o">&lt;</span> <span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Migration</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">change</span>
+</span><span class='line'>    <span class="n">add_column</span> <span class="ss">:users</span><span class="p">,</span> <span class="ss">:first_name</span><span class="p">,</span> <span class="ss">:string</span>
+</span><span class='line'>    <span class="n">add_column</span> <span class="ss">:users</span><span class="p">,</span> <span class="ss">:last_name</span><span class="p">,</span> <span class="ss">:string</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">reversible</span> <span class="k">do</span> <span class="o">|</span><span class="n">dir</span><span class="o">|</span>
+</span><span class='line'>      <span class="no">User</span><span class="o">.</span><span class="n">reset_column_information</span>
+</span><span class='line'>      <span class="no">User</span><span class="o">.</span><span class="n">all</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">u</span><span class="o">|</span>
+</span><span class='line'>        <span class="n">dir</span><span class="o">.</span><span class="n">up</span>   <span class="p">{</span> <span class="n">u</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">last_name</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">full_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span> <span class="p">}</span>
+</span><span class='line'>        <span class="n">dir</span><span class="o">.</span><span class="n">down</span> <span class="p">{</span> <span class="n">u</span><span class="o">.</span><span class="n">full_name</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">u</span><span class="o">.</span><span class="n">first_name</span><span class="si">}</span><span class="s2"> </span><span class="si">#{</span><span class="n">u</span><span class="o">.</span><span class="n">last_name</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">}</span>
+</span><span class='line'>        <span class="n">u</span><span class="o">.</span><span class="n">save</span>
+</span><span class='line'>      <span class="k">end</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">revert</span> <span class="p">{</span> <span class="n">add_column</span> <span class="ss">:users</span><span class="p">,</span> <span class="ss">:full_name</span><span class="p">,</span> <span class="ss">:string</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>revert</h2>
+
+<p>某些时候写反向的逻辑会比正向的逻辑好写一点，比如有时我们会用<code>unless</code>而不是<code>if</code>。Migration里的
+<a href="http://api.rubyonrails.org/classes/ActiveRecord/Migration.html#method-i-revert">revert</a>方法就能提供这样的形式去编写数据库改动。</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">FixTLMigration</span> <span class="o">&lt;</span> <span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Migration</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">change</span>
+</span><span class='line'>    <span class="n">revert</span> <span class="k">do</span>
+</span><span class='line'>      <span class="n">create_table</span><span class="p">(</span><span class="ss">:horses</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+</span><span class='line'>        <span class="n">t</span><span class="o">.</span><span class="n">text</span> <span class="ss">:content</span>
+</span><span class='line'>        <span class="n">t</span><span class="o">.</span><span class="n">datetime</span> <span class="ss">:remind_at</span>
+</span><span class='line'>      <span class="k">end</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>    <span class="n">create_table</span><span class="p">(</span><span class="ss">:apples</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+</span><span class='line'>      <span class="n">t</span><span class="o">.</span><span class="n">string</span> <span class="ss">:variety</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>同时<code>revert</code>这个方法也支持传入一个Migration的名字，其作用是执行该Migration的down方法，当某个Migration已经同步上代码库后，希望撤销这个Migration时特别有用。</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">require_relative</span> <span class="s1">&#39;2012121212_tenderlove_migration&#39;</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">FixupTLMigration</span> <span class="o">&lt;</span> <span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Migration</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">change</span>
+</span><span class='line'>    <span class="n">revert</span> <span class="no">TenderloveMigration</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">create_table</span><span class="p">(</span><span class="ss">:apples</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+</span><span class='line'>      <span class="n">t</span><span class="o">.</span><span class="n">string</span> <span class="ss">:variety</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>At the end</h2>
+
+<p>最后，提示一下，以上的API有些在Rails 3.x中没有加入，在Rails 4.0上以上的API可以找到。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Kai Chen</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-06-19T10:22:00+08:00" pubdate data-updated="true">Jun 19<span>th</span>, 2013</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/activerecord/'>ActiveRecord</a>, <a class='category' href='/blog/categories/ruby/'>Ruby</a>, <a class='category' href='/blog/categories/ruby-on-rails/'>Ruby on Rails</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://kaichen.github.io/2013/06/19/activerecord-migration-tricks-and-tips" data-via="" data-counturl="http://kaichen.github.io/2013/06/19/activerecord-migration-tricks-and-tips" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2013/06/14/rails-internal-hierarchy" title="Previous Post: Rails Internal Hierarchy">&laquo; Rails Internal Hierarchy</a>
+      
+      
+        <a class="basic-alignment right" href="/2013/07/04/code-loading-of-rails" title="Next Post: Code loading of Rails">Code loading of Rails &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'thekaiway';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://kaichen.github.io/2013/06/19/activerecord-migration-tricks-and-tips.html';
+        var disqus_url = 'http://kaichen.github.io/2013/06/19/activerecord-migration-tricks-and-tips';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

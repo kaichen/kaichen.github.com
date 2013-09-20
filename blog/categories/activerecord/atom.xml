@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: ActiveRecord | The Kai Way]]></title>
+  <link href="http://kaichen.github.io/blog/categories/activerecord/atom.xml" rel="self"/>
+  <link href="http://kaichen.github.io/"/>
+  <updated>2013-09-20T23:29:29+08:00</updated>
+  <id>http://kaichen.github.io/</id>
+  <author>
+    <name><![CDATA[Kai Chen]]></name>
+    <email><![CDATA[kaichenxyz@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[你可能不知道的ActiveRecord Migration小技巧]]></title>
+    <link href="http://kaichen.github.io/2013/06/19/activerecord-migration-tricks-and-tips"/>
+    <updated>2013-06-19T10:22:00+08:00</updated>
+    <id>http://kaichen.github.io/2013/06/19/activerecord-migration-tricks-and-tips</id>
+    <content type="html"><![CDATA[<p>ActiveRecord的Migration是ActiveRecord用来维护RDBMS Schema的工具，
+使开发者的机器和服务器上的Schema保持同步。其原理在于将每次对数据库的改动都保存为一个脚本，
+并以改动内容以及时间戳命名防止重复。</p>
+
+<p>以下我分享一些关于Migration的小技巧。</p>
+
+<h2>say/say_with_time</h2>
+
+<p>我们有时会在Migration里执行数据的改动或更新，而此时最好能在输出里打印一些对应的信息，或者记录下对应的代码的执行时间。</p>
+
+<p><a href="http://api.rubyonrails.org/classes/ActiveRecord/Migration.html#method-i-say">say</a>和
+<a href="http://api.rubyonrails.org/classes/ActiveRecord/Migration.html#method-i-say_with_time">say_with_time</a>就是为了上述需求而诞生的。对比使用<code>puts</code>之类的方法的优点是，这类输出会带有缩进或对应的与
+Migration各种API更一致的输出。</p>
+
+<p>下次需要在Migration里输出点什么的话，请用<code>say</code>以及<code>say_with_time</code>吧。</p>
+
+<h2>references/belongs_to</h2>
+
+<p>很多时候我们会创建互相关联的表，这就需要在表里加入一些引用到其它表的外键字段，这时我们一般会以添加一个
+integer类型的字段，并赋以对应的名字(一般为对应模型的单数形式再加上<code>_id</code>)。ActiveRecord提供了<a href="http://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/TableDefinition.html#method-i-references">references</a>API帮助我们更快捷地处理这种情况。</p>
+
+<p>这里列出文档中的一个非常好的例子，这个例子非常明显地体现了使用这个API的好处。</p>
+
+<p>{% codeblock lang:ruby %}
+create_table :taggings do |t|
+  t.references :tag, index: { name: &lsquo;index_taggings_on_tag_id&rsquo; }
+  t.references :tagger, polymorphic: true, index: true
+  t.references :taggable, polymorphic: { default: &lsquo;Photo&rsquo; }
+end
+{% endcodeblock %}</p>
+
+<p>以上的代码等价于下面较长的代码：</p>
+
+<p>{% codeblock lang:ruby %}
+create_table :taggings do |t|
+  t.integer :tag_id, :tagger_id, :taggable_id
+  t.string  :tagger_type
+  t.string  :taggable_type, default: &lsquo;Photo&rsquo;
+end
+add_index :taggings, :tag_id, name: &lsquo;index_taggings_on_tag_id&rsquo;
+add_index :taggings, [:tagger_id, :tagger_type]
+{%  endcodeblock %}</p>
+
+<p>此外，<code>references</code>这个API也被alias为更容易记住的<code>belongs_to</code>。</p>
+
+<h2>change_table</h2>
+
+<p>在Migration里提供了Schema操作的API都操作了两种形式，比如<code>add_column</code>和<code>column</code>。在<code>create_table</code>里
+可以使用如<code>column</code>比较简短形式的API，这与Form Helper在Form Buildler里可以使用不带<code>_tag</code>后缀的API一致。</p>
+
+<p>当我们需要去对同一个表做多次操作的时候，可以通过<code>change_table</code>来化简代码，在<code>change_table</code>的代码块中，
+可以使用简短形式的API</p>
+
+<p>{% codeblock lang:ruby %}
+change_table(:suppliers) do |t|
+  t.column :name, :string, limit: 60<br/>
+  t.remove :company_id
+end
+{% endcodeblock %}</p>
+
+<h2>create_join_table/drop_join_table</h2>
+
+<p>当我们使用多对多(has_and_belongs_to_many)关联时需要创建关联表，而关联Schema很简单，只是
+需要把关联的两张表的ID字段分别记录下来，而其中涉及了ActiveRecord的命名规范。这时使用
+<a href="http://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-create_join_table">create_join_table</a>这个API就能很方便地帮我们去处理命名的事情，
+只需要将对应两个表的表名作为参数传进去。</p>
+
+<p>对应的也有一个<a href="http://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-drop_join_table">drop_join_table</a>API去帮我们删除这种关联表。</p>
+
+<h2>change_column_default/change_column_null</h2>
+
+<p>业务总是在不断变化的，有时数据库里一些字段可能会由非空改为允许为空，修改默认值。当你把这些规则放到数据库时就
+需要修改对应的字段和数据。</p>
+
+<p>{% codeblock lang:ruby %}
+change_column_null(:users, :nickname, false)
+change_column_default(:accounts, :authorized, 1)
+{% endcodeblock %}</p>
+
+<p><code>change_column_default</code>会做两个事情，首先是把对应的字段填上指定的默认值，之后再修改Schema。</p>
+
+<h2>reversible</h2>
+
+<p>我们知道Migration提供了Up/Down两个方向，相当于do和undo。随着<code>change</code>API的流行，很多时候我们不会去写
+up和down两个方法，但有时就是需要写两个方向的代码。比如下面这个例子，在添加了first_name和last_name两个字段
+后，在up这个方法上需要从full_name字段提取出first_name和last_name，而down的方法又需要合并出full_name的数据，这就是<a href="http://api.rubyonrails.org/classes/ActiveRecord/Migration.html#method-i-reversible">reversible</a>的使用场景。</p>
+
+<p>{% codeblock lang:ruby %}
+class SplitNameMigration &lt; ActiveRecord::Migration
+  def change
+    add_column :users, :first_name, :string
+    add_column :users, :last_name, :string</p>
+
+<pre><code>reversible do |dir|
+  User.reset_column_information
+  User.all.each do |u|
+    dir.up   { u.first_name, u.last_name = u.full_name.split(' ') }
+    dir.down { u.full_name = "#{u.first_name} #{u.last_name}" }
+    u.save
+  end
+end
+
+revert { add_column :users, :full_name, :string }
+</code></pre>
+
+<p>  end
+end
+{% endcodeblock %}</p>
+
+<h2>revert</h2>
+
+<p>某些时候写反向的逻辑会比正向的逻辑好写一点，比如有时我们会用<code>unless</code>而不是<code>if</code>。Migration里的
+<a href="http://api.rubyonrails.org/classes/ActiveRecord/Migration.html#method-i-revert">revert</a>方法就能提供这样的形式去编写数据库改动。</p>
+
+<p>{% codeblock lang:ruby %}
+class FixTLMigration &lt; ActiveRecord::Migration
+  def change
+    revert do
+      create_table(:horses) do |t|
+        t.text :content
+        t.datetime :remind_at
+      end
+    end
+    create_table(:apples) do |t|
+      t.string :variety
+    end
+  end
+end
+{% endcodeblock %}</p>
+
+<p>同时<code>revert</code>这个方法也支持传入一个Migration的名字，其作用是执行该Migration的down方法，当某个Migration已经同步上代码库后，希望撤销这个Migration时特别有用。</p>
+
+<p>{% codeblock lang:ruby %}
+require_relative &lsquo;2012121212_tenderlove_migration&rsquo;</p>
+
+<p>class FixupTLMigration &lt; ActiveRecord::Migration
+  def change
+    revert TenderloveMigration</p>
+
+<pre><code>create_table(:apples) do |t|
+  t.string :variety
+end
+</code></pre>
+
+<p>  end
+end
+{% endcodeblock %}</p>
+
+<h2>At the end</h2>
+
+<p>最后，提示一下，以上的API有些在Rails 3.x中没有加入，在Rails 4.0上以上的API可以找到。</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[[译文] Rails 2.1 dbconsole]]></title>
+    <link href="http://kaichen.github.io/2008/05/12/rails-2-1-script-dbconsole"/>
+    <updated>2008-05-12T00:00:00+08:00</updated>
+    <id>http://kaichen.github.io/2008/05/12/rails-2-1-script-dbconsole</id>
+    <content type="html"><![CDATA[<p>原文连接：<a href="http://blog.codefront.net/2008/05/11/living-on-the-edge-of-rails-20-scriptdbconsole-and-flashnow-now-test-able/">http://blog.codefront.net/2008/05/11/living-on-the-edge-of-rails-20-scriptdbconsole-and-flashnow-now-test-able/</a></p>
+
+<p>script/dbconsole 脚本允许用户使用Rails的控制台客户端连接到数据库。</p>
+
+<p>如果需要连接到MySQL的生产数据库作一些操作，直接运行 RAILS_ENV=production script/dbconsole 就能登录到数据库服务器上并使用MySQL的命令行客户端。当然，这个脚本也同样在 PostgreSQL 和 SQLite 数据库运行。</p>
+
+<p>要在当前Rails应用程序中使用这个新脚本，就要先升级到edge Rails，再运行 rake rails:update:script 。好好享受这个脚本的便利吧。</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[[译文] New Feature on Rails 2.1: change_table]]></title>
+    <link href="http://kaichen.github.io/2008/05/12/rails-2-1-migrations-change_table"/>
+    <updated>2008-05-12T00:00:00+08:00</updated>
+    <id>http://kaichen.github.io/2008/05/12/rails-2-1-migrations-change_table</id>
+    <content type="html"><![CDATA[<p>原文：<a href="http://blog.codefront.net/2008/05/04/living-on-the-edge-of-rails-19-change_table-for-migrations-and-more/">http://blog.codefront.net/2008/05/04/living-on-the-edge-of-rails-19-change_table-for-migrations-and-more/</a></p>
+
+<p>现在可以通过 change_table 代码块来完成对数据库表的修改。</p>
+
+<p>{% codeblock lang:ruby %}
+change_table :videos do |t|
+  t.add_timestamps
+  t.add_belongs_to :goat
+  t.add_string :name, :email, :limit =&gt; 20
+  t.remove_column :name, :email # takes multiple arguments
+  t.rename :new_name
+  t.string :new_string_column # executes against the renamed table name
+end
+{% endcodeblock %}</p>
+
+<p>补充些要注意的事情：</p>
+
+<ul>
+<li>add_XXX 方法会添加一个新列，比如 add_string 会添加一个新的 string 类型的字段。</li>
+<li>Of course, add_timestamps 会添加神奇的 created_at 和 updated_at 的 datetime 类型的字段。</li>
+<li>remove_column 现在可以接受多个参数。</li>
+<li>rename 方法会重命名数据库表。</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[[译文] Rails 2.1 ActiveRecord的Create方法支持Block]]></title>
+    <link href="http://kaichen.github.io/2008/05/12/rails-2-1-activerecord-basecreate-changes"/>
+    <updated>2008-05-12T00:00:00+08:00</updated>
+    <id>http://kaichen.github.io/2008/05/12/rails-2-1-activerecord-basecreate-changes</id>
+    <content type="html"><![CDATA[<p>ActiveRecord::Base.create 现在可以像 ActiveRecord::Base.new 一样带上一个代码块参数了。</p>
+
+<p>{% codeblock lang:ruby %}
+@person = Person.create(params[:person]) do |p|
+  p.name = &lsquo;Konata Izumi&rsquo;
+  p.age = 17
+end
+{% endcodeblock %}</p>
+]]></content>
+  </entry>
+  
+</feed>

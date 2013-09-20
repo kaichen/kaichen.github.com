@@ -1,0 +1,259 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>完全用Linux工作 - The Kai Way</title>
+  <meta name="author" content="Kai Chen">
+
+  
+  <meta name="description" content="此文抄袭兼模仿http://www.cqacmm.com/myweb/teach/workinlinux.htm 下午闲着无事，又跑到Ubuntu论坛的吵架版看猴子戏，并且自己也过了一回当猴子的瘾。。。 用Ubuntu下半年了，感觉回到win下有种别扭的感觉。有个喜欢重装suse的同学问我， &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kaichen.github.io/2008/02/03/%E7%BF%BB%E7%89%88%E5%AE%8C%E5%85%A8%E4%BD%BF%E7%94%A8linux%E5%B7%A5%E4%BD%9C">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="The Kai Way" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-16480900-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">The Kai Way</a></h1>
+  
+    <h2>Pragmaticly hacking</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:kaichen.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/inspect-rails">Inspect Rails</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">完全用Linux工作</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-02-03T00:00:00+08:00" pubdate data-updated="true">Feb 3<span>rd</span>, 2008</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>此文抄袭兼模仿<a href="http://www.cqacmm.com/myweb/teach/workinlinux.htm">http://www.cqacmm.com/myweb/teach/workinlinux.htm</a></p>
+
+<p>下午闲着无事，又跑到Ubuntu论坛的吵架版看猴子戏，并且自己也过了一回当猴子的瘾。。。</p>
+
+<p>用Ubuntu下半年了，感觉回到win下有种别扭的感觉。有个喜欢重装suse的同学问我，你平时用Linux做什么？我那时愣了一下，想想回答说，上网。。。</p>
+
+<!--more-->
+
+
+<p>在12月底时就把硬盘中win在玩了一次实况之后删了，因为又用不到win了所以删了。现在在VBox里开win也是上网银或者改doc（在永中里编辑后看看有没有问题）。</p>
+
+<p>最近才看了LFS和Gentoo的文档，知道了它们是怎么安装的，好像都是满麻烦的，把系统里每个部分，包括基本的内核，常用的工具，每个核心的库都自己编译出来。虽然麻烦但是真正的自定义Linux，真正的是玩Linux。有些人说自己整出一个LFS可以用一辈子。。。</p>
+
+<p>现在开始有空的时候就用Ubuntu的apt-get source来自己编译软件和每个库，一个一个编译构建包，试试感觉，等以后换个Gentoo做准备。</p>
+
+<p>其实用什么OS，自己喜欢就好。我想用Linux就用嘛。</p>
+
+<p>我就是喜欢用Linux，因为编码是utf8，因为有多个实用Unix工具，因为写代码的时候完全用鼠标，因为平时WM操作的时候可以尽量不用鼠标，因为不会中病毒，因为不用时不时就清理系统，因为不用重装系统，因为在不同的电脑上只要把硬盘插上就可以用。。。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Kai Chen</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-02-03T00:00:00+08:00" pubdate data-updated="true">Feb 3<span>rd</span>, 2008</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://kaichen.github.io/2008/02/03/%E7%BF%BB%E7%89%88%E5%AE%8C%E5%85%A8%E4%BD%BF%E7%94%A8linux%E5%B7%A5%E4%BD%9C" data-via="" data-counturl="http://kaichen.github.io/2008/02/03/%E7%BF%BB%E7%89%88%E5%AE%8C%E5%85%A8%E4%BD%BF%E7%94%A8linux%E5%B7%A5%E4%BD%9C" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2008/02/03/%E5%BE%88%E5%A5%BD%E5%BE%88%E5%BC%BA%E5%A4%A7%E7%9A%84vim4ruby" title="Previous Post: 用Vim做Ruby开发">&laquo; 用Vim做Ruby开发</a>
+      
+      
+        <a class="basic-alignment right" href="/2008/02/08/%E8%BF%87%E5%B9%B4%E5%90%8C%E5%AD%A6%E4%BC%9A" title="Next Post: 2008同学会">2008同学会 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/08/read-write-activerecord-attribute">Read and Write Activerecord Attribute</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/17/actionview-safe-buffer">ActionView Safe Buffer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/16/rails-ujs">Rails ujs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/08/10/actionview-architect">ActionView基本架构</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/07/30/config-your-git-push-strategy">配置Git Push策略</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Kai Chen -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'thekaiway';
+      
+        
+        var disqus_script = 'count.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>
