@@ -61,7 +61,7 @@ def clear
 end
 {% endcodeblock %}
 
-另外，由于不是所有的代码都是通过这种自动加载的方法，那么利用`require`和`load`手动显式加载的。因此必须替换系统的`require`和`load`，以记录哪些代码已经被加载进来，实现之后的代码重载。这个就是最开始提到的`Dependenciese.hook!`里include到Object类中的`Loadable`模组做的事情。
+另外，由于不是所有的代码都是通过这种自动加载的方法，有些是开发者通过`require`和`load`手动显式加载的。因此必须替换系统的`require`和`load`，记录下哪些代码已经被加载进来，并以前面提到的相同的方法加载代码。这个就是最开始提到的`Dependenciese.hook!`里include到Object类中的`Loadable`模组做的事情。
 
 ## 生产模式的代码预加载
 

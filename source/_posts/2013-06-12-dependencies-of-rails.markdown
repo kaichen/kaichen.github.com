@@ -56,7 +56,7 @@ s.add_dependency 'sprockets-rails', '~> 2.0.0.rc4'
 ## 必要组件
 
 Rails在gemspec里声明是核心组件，但并非是必要的组件，比如Assets Pipeline，
-ActiveRecord和AtionMailer不是一定需要包含在你的Rails Application里。
+ActiveRecord和ActionMailer不是一定需要包含在你的Rails Application里。
 
 Rails 应用程序首先必须是个Rails Application，所以需要railites去维护整个程序的
 加载和目录结构等。除此以外，Rails是个Web Framework，所以actionpack也是其必要的
