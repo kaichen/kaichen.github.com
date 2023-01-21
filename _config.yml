@@ -42,7 +42,7 @@ paths:
 paginate: 8
 
 # Plugins
-theme: jekyll-text-theme
+remotetheme: kitian616/jekyll-TeXt-theme
 plugins:
   - jekyll-paginate
   - jekyll-feed
