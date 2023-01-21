@@ -12,7 +12,7 @@ Rails 内部有清晰的层级结构，以实现Rails应用程序和Rails插件�
 
 > 本文是[Inspect Rails](/inspect-rails)的一部分，[Inspect Rails](/inspect-rails)是由我正在编写的讲解Rails内部的实现与设计的一本书，欢迎阅读
 
-{% graphviz %}
+```graphviz
 digraph rails_hierarchy {
     label = "Rails Hierarchy";
 
@@ -33,7 +33,7 @@ digraph rails_hierarchy {
     railtie -> rengine;
     rengine -> rapp;
 }
-{% endgraphviz %}
+```
 
 如上图所示，所有Rails Application继承自Rails Engine，而Rails Engine继承自Railtie，这套继承体系的实现全部都封装在railties这个Rubygem里。值得一提的是，Railtie和Rails Engine的子类都是[Singleton][4]，Rails Application本身就是[Singleton][4]，所以在一个程序里Rails Application只有一个实例。
 
