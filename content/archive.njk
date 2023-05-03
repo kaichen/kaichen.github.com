@@ -1,0 +1,38 @@
+---
+layout: layouts/home.njk
+permalink: /blog/archives
+eleventyNavigation:
+  key: Archive
+  order: 2
+---
+
+<h1>Archive</h1>
+{% set postslist = collections.post %}
+{%- css %}.postlist { counter-reset: start-from {{ postslist.length + 1 }} }{% endcss %}
+{% for post in postslist | reverse %}
+  {% set this_year = post.date | readableDate("yyyy") %}
+  {% if year != this_year %}
+    {% set year = this_year %}
+    <h2>{{ year }}</h2>
+  {% endif %}
+  <article class="postlist-item{% if post.url == url %} postlist-item-active{% endif %}">
+    <a href="{{ post.url }}" class="postlist-link">
+      {% if post.data.title %}
+        {{ post.data.title }}
+      {% else %}
+        <code>{{ post.url }}</code>
+      {% endif %}
+    </a>
+    <time class="postlist-date" datetime="{{ post.date | htmlDateString }}">{{ post.date | readableDate("LLLL dd, yyyy") }}</time>
+    {% set tags = post.data.tags | filterTagList %}
+    {% if tags.length > 0 %}
+      <div class="postlist-taglist">
+        {% for tag in post.data.tags | filterTagList %}
+          <span class="postlist-tag">
+            <a href="/blog/categories/{{ tag | slugify }}">#{{ tag }}</a>
+          </span>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </article>
+{% endfor %}

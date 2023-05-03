@@ -6,6 +6,5 @@
 .jekyll-cache
 _deploy
 _site
-public
 vendor
 node_modules

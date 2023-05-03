@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="{{ metadata.language }}" domain="{{ metadata.domain }}" {% if googleanalytics %}ga-id="{{ googleanalytics }}"{% endif %}>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="robots" content="max-snippet:-1, max-image-preview: large, max-video-preview: -1">
+        <title>{{ title or metadata.title }}</title>
+        <link rel="icon" href="/favicon.ico" sizes="any">
+		<meta property="og:title" content="{{ renderData.title or title or metadata.title | escape  }}">
+		{% set desc = renderData.description or description %}
+		{% if not desc %}
+			{% set desc = content | striptags | truncate(140) %}
+		{% endif %}
+		{% if desc %}
+			<meta name="description" content="{{ desc | escape  }}">
+			<meta property="og:description" content="{{ desc | escape }}">
+		{% endif %}
+		<meta name="twitter:card" content="summary_large_image">
+		<meta name="twitter:site" content="@{{ metadata.author.twitterHandle }}">
+		<meta name="twitter:creator" content="@{{ metadata.author.twitterHandle }}">
+		{% if image %}
+			<meta property="og:image" content="{{ image | absoluteUrl(metadata.url) }}">
+		{% endif %}
+
+		<link rel="canonical" href="{{ metadata.url }}{{ canonicalUrl or page.url }}">
+		<meta name="referrer" content="no-referrer-when-downgrade">
+
+        <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="{{ metadata.title }}">
+        <link rel="alternate" href="/feed.json" type="application/json" title="{{ metadata.title }}">
+        <meta name="generator" content="{{ eleventy.generator }}">
+		<link rel="preconnect" href="/" crossorigin>
+
+		{#-
+		CSS bundles are provided via the `eleventy-plugin-bundle` plugin:
+		1. You can add to them using `{% css %}`
+		2. You can get from them using `{% getBundle "css" %}` or `{% getBundleFileUrl "css" %}`
+		3. You can do the same for JS: {% js %}{% endjs %} and <script>{% getBundle "js" %}</script>
+		4. Learn more: https://github.com/11ty/eleventy-plugin-bundle
+		#}
+        {#- Add an arbitrary string to the bundle #}{%- css %} * { box-sizing: border-box; }{% endcss %}
+        {#- Add the contents of a file to the bundle #}{%- css %}
+        {% include "public/css/index.css" %}
+        {% endcss %}
+        {#- Or add from node_modules #}
+        {# {%- css %}{% include "node_modules/prismjs/themes/prism-okaidia.css" %}{% endcss %} #}
+            {#- Render the CSS bundle using Inlined CSS (for the fastest site performance in production) #}
+        <style>
+        {% getBundle "css" %}</style>
+        {#- Renders the CSS bundle using a separate file, if you can't set CSP directive style-src: 'unsafe-inline' #}
+        {#- <link rel="stylesheet" href="{% getBundleFileUrl "css" %}"> #}
+
+		{% if googleanalytics %}
+		<script async defer src="https://www.googletagmanager.com/gtag/js?id={{googleanalytics}}"> </script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() {
+                dataLayer.push(arguments);
+            }
+            gtag('js', new Date());
+            gtag('config', '{{googleanalytics}}');
+        </script>
+		{% endif %}
+    </head>
+    <body>
+        <a href="#skip" class="visually-hidden">Skip to main content</a>
+        <header>
+            <a href="/" class="home-link">{{ metadata.title }}</a>
+            {#- Read more about `eleventy-navigation` at https://www.11ty.dev/docs/plugins/navigation/ #}
+            <nav>
+                <h2 class="visually-hidden">Top level navigation menu</h2>
+                <ul class="nav">
+                    {%- for entry in collections.all | eleventyNavigation %}
+                        <li class="nav-item">
+                            <a href="{{ entry.url }}" {% if entry.url == page.url %} aria-current="page" {% endif %}>{{ entry.title }}</a>
+                        </li>
+                    {%- endfor %}
+                </ul>
+            </nav>
+        </header>
+        <main id="skip">
+            {{ content | safe }}
+        </main>
+        <footer>Copyright © 2023 - Kai Chen - Powered by
+            <a href="https://www.11ty.dev/" target="blank">11ty</a>
+        </footer>
+        <!-- Current page: {{ page.url | htmlBaseUrl }} -->
+    </body>
+</html>
