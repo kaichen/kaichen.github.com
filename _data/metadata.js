@@ -6,8 +6,8 @@ module.exports = {
 	author: {
 		name: "Kai",
 		email: "kai@thekaiway.com",
-		url: "https://thekaiway.com/about/"
+		url: "https://thekaiway.com/about/",
+		twitterHandle: "_kaichen"
 	},
-	googleAnalyticsId: "UA-16480900-1",
-	twitterHandle: "_kaichen"
+	googleAnalyticsId: "UA-16480900-1"
 }
