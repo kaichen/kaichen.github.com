@@ -1,11 +1,12 @@
 ---
-layout: layouts/post.njk
+layout: layouts/base.njk
 title: "Inspect Rails"
 date: 2013-06-12
 description: "About rails framework implementation under the hook"
-permalink: /inspect-rails
 tags: ["series"]
 ---
+
+# Inspect Rails
 
 这是一本关于Ruby on Rails框架内部实现的书，目标针对中高级开发者，帮助大家去理解Rails的实现和设计，在阅读本书之后能一直跟进Rails框架的源码更新。本书是基于Rails 4.0 stable编写的。
 

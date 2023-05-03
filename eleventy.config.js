@@ -81,7 +81,9 @@ module.exports = function(eleventyConfig) {
 	eleventyConfig.addFilter("rewriteSlug", function rewriteSlug(filename) {
 		const re = /\/(\d+)-(\d+)-(\d+)-(.+).md$/
 		const matches = re.exec(filename);
-		return "/" + matches[1] + "/" + matches[2] + "/" + matches[3] + "/" + matches[4];
+		const slugify = eleventyConfig.getFilter("slugify");
+		if (matches) return "/" + matches[1] + "/" + matches[2] + "/" + matches[3] + "/" + matches[4];
+		return null
 	});
 
 	// Customize Markdown library settings:
