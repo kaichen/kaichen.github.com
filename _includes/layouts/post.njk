@@ -21,9 +21,9 @@ permalink: /{{ page.inputPath | rewriteSlug }}/
     {%- endfor %}
 </ul>
 {{ content | safe }}
-{%- if collections.posts %}
-    {%- set previousPost = collections.posts | getPreviousCollectionItem %}
-    {%- set nextPost = collections.posts | getNextCollectionItem %}
+{%- if collections.post %}
+    {%- set previousPost = collections.post | getPreviousCollectionItem %}
+    {%- set nextPost = collections.post | getNextCollectionItem %}
     {%- if nextPost or previousPost %}
         <ul class="links-nextprev">
             {%- if previousPost %}
