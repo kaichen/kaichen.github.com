@@ -1,0 +1,9 @@
+# Blog http requests
+
+// home page
+http://localhost:8080/
+
+###
+
+// atom feed
+http://localhost:8080/atom.xml
