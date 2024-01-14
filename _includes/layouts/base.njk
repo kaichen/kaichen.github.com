@@ -43,12 +43,7 @@
 		{#- Renders the CSS bundle using a separate file, if you can't set CSP directive style-src: 'unsafe-inline' #}
 		{#- <link rel="stylesheet" href="{% getBundleFileUrl "css" %}"> #}
 
-		{% if googleanalytics %}
-            {%- js %}{% include "public/js/cached.js" %}{% endjs %}
-            <script async defer>
-                {% getBundle "js" %}
-            </script>
-		{% endif %}
+		<script defer src="https://us.umami.is/script.js" data-website-id="523b8a8a-d5ac-467d-8a2d-16ce38a86f2b"></script>
     </head>
     <body>
         <a href="#skip" class="visually-hidden">Skip to main content</a>
