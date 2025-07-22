@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="robots" content="max-snippet:-1, max-image-preview: large, max-video-preview: -1">
+        <title>{{ block "title" . }}{{ .Title }} - {{ .Site.Title }}{{ end }}</title>
+
+        <link rel="icon" href="/favicon.ico" sizes="any">
+        <meta property="og:title" content="{{ .Title }}">
+        {{ with .Description }}
+        <meta name="description" content="{{ . }}">
+        <meta property="og:description" content="{{ . }}">
+        {{ else }}
+        <meta name="description" content="{{ .Summary | truncate 160 }}">
+        <meta property="og:description" content="{{ .Summary | truncate 160 }}">
+        {{ end }}
+        <meta name="twitter:card" content="summary_large_image">
+        {{ with .Params.image }}
+        <meta property="og:image" content="{{ . | absURL }}">
+        {{ end }}
+
+        <link rel="canonical" href="{{ .Permalink }}">
+        <meta name="referrer" content="no-referrer-when-downgrade">
+
+        <link rel="alternate" href="/atom.xml" type="application/atom+xml" title="{{ .Site.Title }}">
+        <link rel="alternate" href="/feed.json" type="application/json" title="{{ .Site.Title }}">
+        <meta name="generator" content="Hugo {{ hugo.Version }}">
+
+        <link rel="stylesheet" href="/css/index.css">
+        <link rel="stylesheet" href="/css/prism-okaidia.css">
+
+        {{ if .Site.Params.analytics.provider }}
+        <script defer src="https://us.umami.is/script.js" data-website-id="523b8a8a-d5ac-467d-8a2d-16ce38a86f2b"></script>
+        {{ end }}
+    </head>
+    <body>
+        <a href="#skip" class="visually-hidden">Skip to main content</a>
+        <header>
+            <a href="/" class="home-link">{{ .Site.Title }}</a>
+            <nav>
+                <h2 class="visually-hidden">Top level navigation menu</h2>
+                <ul class="nav">
+                    {{ range .Site.Menus.main }}
+                    <li class="nav-item">
+                        <a href="{{ .URL }}"{{ if $.IsMenuCurrent "main" . }} aria-current="page"{{ end }}>{{ .Name }}</a>
+                    </li>
+                    {{ end }}
+                </ul>
+            </nav>
+        </header>
+        <main id="skip">
+            {{ block "main" . }}{{ end }}
+        </main>
+        <footer>Copyright © 2023 - {{ .Site.Params.author }} - Powered by
+            <a href="https://gohugo.io/" target="blank">Hugo</a>
+        </footer>
+    </body>
+</html>

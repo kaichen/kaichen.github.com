@@ -1,0 +1,34 @@
+{{ define "main" }}
+<div>
+Hey, I'm Kai.
+</div>
+
+<h2>Latest {{ .Site.Params.numberOfLatestPostsToShow | default 8 }} Posts</h2>
+
+{{ $posts := where .Site.RegularPages "Type" "posts" }}
+{{ $postsToShow := .Site.Params.numberOfLatestPostsToShow | default 8 }}
+{{ $posts := first $postsToShow $posts }}
+<ol class="postlist">
+{{ range $posts }}
+<li class="postlist-item">
+    <a href="{{ .Permalink }}" class="postlist-link">
+        {{ if .Title }}
+        <code class="postlist-item-title">{{ .Title }}</code>
+        {{ else }}
+        <code class="postlist-item-title">{{ .RelPermalink }}</code>
+        {{ end }}
+    </a>
+    <time class="postlist-date" datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "Jan 2, 2006" }}</time>
+    {{ range .Params.tags }}
+    <a href="/tags/{{ . | urlize }}/" class="post-tag">{{ . }}</a>
+    {{ end }}
+</li>
+{{ end }}
+</ol>
+
+{{ $totalPosts := len (where .Site.RegularPages "Type" "posts") }}
+{{ $morePosts := sub $totalPosts (.Site.Params.numberOfLatestPostsToShow | default 8) }}
+{{ if gt $morePosts 0 }}
+<p style="font-size:small">{{ $morePosts }} more post{{ if ne $morePosts 1 }}s{{ end }}.</p>
+{{ end }}
+{{ end }}

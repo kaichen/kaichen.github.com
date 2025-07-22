@@ -1,0 +1,27 @@
+{{- $pages := where .Site.RegularPages "Type" "posts" -}}
+{{- $limit := .Site.Config.Services.RSS.Limit -}}
+{{- if ge $limit 1 -}}
+{{- $pages = $pages | first $limit -}}
+{{- end -}}
+{
+  "version": "https://jsonfeed.org/version/1",
+  "title": "{{ .Site.Title }}",
+  "home_page_url": "{{ .Site.BaseURL }}",
+  "feed_url": "{{ .Site.BaseURL }}feed.json",
+  "description": "{{ .Site.Params.description }}",
+  "author": {
+    "name": "{{ .Site.Params.author }}"{{ with .Site.Params.email }},
+    "email": "{{ . }}"{{ end }}
+  },
+  "items": [{{ range $index, $page := $pages }}{{ if $index }},{{ end }}
+    {
+      "id": "{{ $page.Permalink }}",
+      "url": "{{ $page.Permalink }}",
+      "title": "{{ $page.Title }}",
+      "content_html": {{ $page.Content | jsonify }},
+      "date_published": "{{ $page.Date.Format "2006-01-02T15:04:05-07:00" }}"{{ if $page.Lastmod }},
+      "date_modified": "{{ $page.Lastmod.Format "2006-01-02T15:04:05-07:00" }}"{{ end }}{{ with $page.Params.tags }},
+      "tags": {{ . | jsonify }}{{ end }}
+    }{{ end }}
+  ]
+}

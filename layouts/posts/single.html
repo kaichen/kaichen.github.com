@@ -1,0 +1,47 @@
+{{ define "main" }}
+<article>
+<h1>{{ .Title }}</h1>
+<ul class="post-metadata">
+    <li>
+        <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "January 2, 2006" }}</time>
+    </li>
+    {{ range .Params.tags }}
+    <li>
+        <a href="/tags/{{ . | urlize }}/" class="post-tag">#{{ . }}</a>{{ if not (eq . (index $.Params.tags (sub (len $.Params.tags) 1))) }},{{ end }}
+    </li>
+    {{ end }}
+</ul>
+{{ .Content }}
+
+{{ if or .PrevInSection .NextInSection }}
+<ul class="links-nextprev">
+    {{ with .PrevInSection }}
+    <li>Previous:
+        <a href="{{ .Permalink }}">{{ .Title }}</a>
+    </li>
+    {{ end }}
+    {{ with .NextInSection }}
+    <li>Next:
+        <a href="{{ .Permalink }}">{{ .Title }}</a>
+    </li>
+    {{ end }}
+</ul>
+{{ end }}
+
+{{ if .Site.Params.comments.provider }}
+<div id="disqus_thread"></div>
+<script>
+    var disqus_config = function () {
+    this.page.identifier = "{{ .RelPermalink }}";
+    };
+    (function() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://{{ .Site.Params.comments.disqus }}.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+{{ end }}
+</article>
+{{ end }}

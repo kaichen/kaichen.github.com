@@ -1,0 +1,80 @@
+baseURL = "https://thekaiway.com/"
+languageCode = "en-us"
+title = "The Kai Way"
+subtitle = "Pragmaticly hacking"
+author = "Kai Chen"
+
+# Enable Git info for last modified dates
+enableGitInfo = true
+
+# Pagination
+[pagination]
+  pagerSize = 8
+
+# Taxonomies
+[taxonomies]
+  category = "categories"
+  tag = "tags"
+
+# Permalinks - Match existing URL structure
+[permalinks]
+  posts = "/:year/:month/:day/:slug/"
+
+# RSS Output
+[outputFormats.RSS]
+  mediatype = "application/rss+xml"
+  baseName = "atom"
+  
+# Configure RSS limit
+[services]
+  [services.rss]
+    limit = 12
+
+# Menu configuration
+[[menu.main]]
+  name = "Archive"
+  url = "/archive/"
+  weight = 10
+
+[[menu.main]]
+  name = "About"
+  url = "/about/"
+  weight = 20
+
+# Params
+[params]
+  description = "Pragmaticly hacking"
+  author = "Kai Chen"
+  email = "kai@thekaiway.com"
+  github = "kaichen"
+  
+  # Comments
+  [params.comments]
+    provider = "disqus"
+    disqus = "thekaiway"
+  
+  # Analytics
+  [params.analytics]
+    provider = "umami"
+
+# Markup configuration
+[markup]
+  [markup.highlight]
+    style = "monokai"
+    lineNos = false
+    lineNumbersInTable = true
+    tabWidth = 4
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+
+# Output formats
+[outputFormats.JSON]
+  mediatype = "application/json"
+  baseName = "feed"
+  isPlainText = true
+  notAlternative = true
+
+[outputs]
+  home = ["HTML", "RSS", "JSON"]
+  section = ["HTML", "RSS"]

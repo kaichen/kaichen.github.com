@@ -1,10 +1,30 @@
-.bundle
+# Hugo
+public/
+resources/
+.hugo_build.lock
+
+# Legacy Jekyll/11ty
+_site/
+.jekyll-cache
+
+# Dependencies
+node_modules/
+vendor/
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Other
+.bundle
 .sass-cache
 .gist-cache
 .pygments-cache
-.jekyll-cache
 _deploy
-_site
-vendor
-node_modules
