@@ -1,5 +1,4 @@
 --- 
-tags: ['posts']
 title: open source camp guangzhou小记
 date: 2008-09-23
 ---

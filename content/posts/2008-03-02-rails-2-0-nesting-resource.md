@@ -3,7 +3,7 @@ title: "Rails 2.0: Nested Resource"
 slug: rails-2-0-nesting-resource
 date: 2008-03-02
 comments: true
-tags: ['posts', 'Ruby on Rails', 'Ruby']
+tags: ['Ruby on Rails', 'Ruby']
 ---
 
 Rails2.0中提供了一套更好的嵌套资源的处理方法（更加形象化）。

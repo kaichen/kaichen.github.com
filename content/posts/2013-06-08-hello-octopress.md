@@ -1,5 +1,4 @@
 ---
-tags: ['posts']
 title: "Hello Octopress"
 slug: hello-octopress
 date: 2013-06-08

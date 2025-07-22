@@ -1,9 +1,9 @@
 ---
-layout: layouts/base.njk
 title: "Inspect Rails"
 date: 2013-06-12
 description: "About rails framework implementation under the hook"
 tags: ["series"]
+slug: "inspect-rails"
 ---
 
 # Inspect Rails
@@ -13,7 +13,7 @@ tags: ["series"]
 目前完成度已经有40%，已停止更新
 
 - Framework Structure
-  - [Components](/2013-06-12-dependencies-of-rails)
+  - [Components](/2013/06/12/dependencies-of-rails/)
     <br>Rails有多少个组件，每个组件还有哪些依赖
   - Assets Pipeline Dependences
     <br>Assets Pipeline为Rails带来了哪些依赖
@@ -35,20 +35,20 @@ tags: ["series"]
   - Middlewares
   - Routing
 - ActionView
-  - [Rendering Stack](/2013/08/10/actionview-architect)
+  - [Rendering Stack](/2013/08/10/actionview-architect/)
     <br>整个ActionView的Stack是怎么组织
   - Renderers
   - Template Lookup
     <br>ActionView是如何找到正确的模版
   - Handle Template
-  - [Safe Output Buffer](/2013/08/17/actionview-safe-buffer)
+  - [Safe Output Buffer](/2013/08/17/actionview-safe-buffer/)
     <br>ActionView的Buffer机制怎样处理
 - ActiveRecord
-  - [Assemble ActiveRecord Object](/2013/07/26/assemble-ar-object)
+  - [Assemble ActiveRecord Object](/2013/07/26/assemble-ar-object/)
     <br>数据记录如何变成AR对象
   - Table Mapping
     <br>数据库表结构怎样映射到AR模型
-  - [Read and Write Attribute](/2013/09/08/read-write-activerecord-attribute)
+  - [Read and Write Attribute](/2013/09/08/read-write-activerecord-attribute/)
     <br>关于属性的读写和方法生成
   - Dynamic Finder
     <br>被最多人谈论的动态查询方法是怎么生成出来的

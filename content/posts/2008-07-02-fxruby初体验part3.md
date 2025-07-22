@@ -1,5 +1,4 @@
 --- 
-tags: ['posts']
 title: FxRuby Part3
 date: 2008-07-02
 ---

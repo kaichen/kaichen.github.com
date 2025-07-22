@@ -1,5 +1,4 @@
 --- 
-tags: ['posts']
 title: Story on Rspec
 date: 2008-05-01
 ---

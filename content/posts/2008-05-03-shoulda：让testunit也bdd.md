@@ -1,5 +1,4 @@
 --- 
-tags: ['posts']
 title: 初试Should
 date: 2008-05-03
 ---

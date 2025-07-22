@@ -3,7 +3,7 @@ title: "你可能不知道的ActiveRecord Migration小技巧"
 slug: activerecord-migration-tricks-and-tips
 date: 2013-06-19
 comments: true
-tags: ["ActiveRecord", "Ruby on Rails", "Ruby", "posts"]
+tags: ["ActiveRecord", "Ruby on Rails", "Ruby"]
 category: "inspect-rails"
 ---
 

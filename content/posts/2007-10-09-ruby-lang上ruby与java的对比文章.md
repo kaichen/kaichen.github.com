@@ -1,5 +1,4 @@
 --- 
-tags: ['posts']
 title: Ruby与Java对比
 date: 2007-10-09
 ---

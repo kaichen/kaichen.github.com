@@ -1,5 +1,4 @@
 --- 
-tags: ['posts']
 title: Skinny Spec的小技巧
 date: 2008-06-26
 ---

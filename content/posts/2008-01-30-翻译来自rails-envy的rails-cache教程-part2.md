@@ -1,5 +1,4 @@
 --- 
-tags: ['posts']
 title: 译文 Rails Cache教程2
 date: 2008-01-30
 ---
@@ -118,7 +117,7 @@ Fragment Caching
 
     def list
       unless read_fragment({:page =&gt; params[:page] || 1})  # Add the page param to the cache naming
-        @post_pages, @posts = paginate :posts, :per_page =&gt; 10
+        @post_pages, @posts = paginate ::per_page =&gt; 10
       end
     end
 

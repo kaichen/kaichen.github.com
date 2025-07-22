@@ -1,5 +1,4 @@
 ---
-tags: ['posts']
 title: FxRuby Part4
 slug: fxruby初体验part4
 date: 2008-07-02

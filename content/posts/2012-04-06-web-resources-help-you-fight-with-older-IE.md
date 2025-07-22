@@ -2,7 +2,7 @@
 title: Web Resources Help You Fight with Older IEs
 slug: web-resources-help-you-fight-with-older-IE
 date: 2012-04-06
-tags: ["Browser", "posts"]
+tags: ["Browser"]
 comments: true
 ---
 

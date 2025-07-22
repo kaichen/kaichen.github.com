@@ -1,5 +1,4 @@
 --- 
-tags: ['posts']
 title: runtime error words file not found of DataMapper
 date: 2009-01-30
 ---

@@ -1,5 +1,4 @@
 --- 
-tags: ['posts']
 title: After Eager Loading
 date: 2008-03-13
 ---

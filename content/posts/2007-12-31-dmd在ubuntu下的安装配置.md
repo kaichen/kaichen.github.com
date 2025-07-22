@@ -1,5 +1,4 @@
 --- 
-tags: ['posts']
 title: 安装配置DMD
 date: 2007-12-31
 ---

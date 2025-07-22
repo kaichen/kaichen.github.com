@@ -1,5 +1,4 @@
 --- 
-tags: ['posts']
 title: Pacman in ArchLinux
 date: 2008-02-14
 ---

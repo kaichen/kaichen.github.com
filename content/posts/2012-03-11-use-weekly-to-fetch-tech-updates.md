@@ -1,5 +1,4 @@
 ---
-tags: ['posts']
 title: Use Weekly to fetch tech updates
 slug: use-weekly-to-fetch-tech-updates
 date: 2012-03-11

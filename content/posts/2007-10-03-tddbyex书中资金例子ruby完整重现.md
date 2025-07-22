@@ -1,5 +1,4 @@
 --- 
-tags: ['posts']
 title: TDD by Example书中的例子Ruby版
 date: 2007-10-03
 ---

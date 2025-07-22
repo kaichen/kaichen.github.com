@@ -1,5 +1,4 @@
 --- 
-tags: ['posts']
 title: rails i18n feature
 date: 2008-09-11
 ---

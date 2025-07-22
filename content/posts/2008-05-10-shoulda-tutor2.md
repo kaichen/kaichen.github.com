@@ -1,5 +1,4 @@
 ---
-tags: ['posts']
 title: "[译文] Shoulda教程2 - Context & Nesting"
 slug: shoulda-tutor2
 date: 2008-05-10

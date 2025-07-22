@@ -1,5 +1,4 @@
 --- 
-tags: ['posts']
 title: check spelling on rails
 date: 2008-09-11
 ---

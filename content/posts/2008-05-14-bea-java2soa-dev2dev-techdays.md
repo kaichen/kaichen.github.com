@@ -1,5 +1,4 @@
 --- 
-tags: ['posts']
 title: 参加BEA JAVA2SOA DEV2DEV Techdays
 date: 2008-05-14
 ---

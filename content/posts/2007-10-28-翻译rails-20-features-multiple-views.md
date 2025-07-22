@@ -1,5 +1,4 @@
 --- 
-tags: ['posts']
 title: Rails 2.0 Multiple View
 date: 2007-10-28
 ---

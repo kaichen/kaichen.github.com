@@ -1,5 +1,4 @@
 --- 
-tags: ['posts']
 title: GAE开放
 date: 2008-05-29
 ---

@@ -1,5 +1,4 @@
 ---
-tags: ['posts']
 title: Shoulda教程索引
 slug: shoulda-index
 date: 2008-05-18

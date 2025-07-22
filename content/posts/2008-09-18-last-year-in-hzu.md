@@ -1,5 +1,4 @@
 --- 
-tags: ['posts']
 title: last year in hzu
 date: 2008-09-18
 ---

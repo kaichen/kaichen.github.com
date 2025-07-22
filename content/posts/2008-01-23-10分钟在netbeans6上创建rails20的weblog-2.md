@@ -1,5 +1,4 @@
 --- 
-tags: ['posts']
 title: 10分钟在Netbean 6上完成Rails 2.0的Weblog
 date: 2008-01-23
 ---

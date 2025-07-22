@@ -13,8 +13,8 @@ enableGitInfo = true
 
 # Taxonomies
 [taxonomies]
-  category = "categories"
-  tag = "tags"
+  categories = "blog/categories"
+  tags = "blog/categories"
 
 # Permalinks - Match existing URL structure
 [permalinks]

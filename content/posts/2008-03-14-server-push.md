@@ -1,5 +1,4 @@
 --- 
-tags: ['posts']
 title: Push Server
 date: 2008-03-14
 ---

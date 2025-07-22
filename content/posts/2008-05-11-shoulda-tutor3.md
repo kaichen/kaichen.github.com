@@ -1,5 +1,4 @@
 ---
-tags: ['posts']
 title: "[译文] Shoulda教程3 - Model Helpers"
 slug: shoulda-tutor3
 date: 2008-05-11

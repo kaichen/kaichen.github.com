@@ -3,7 +3,7 @@ title: Play a HTTP toy server with EventMachine
 slug: play-a-http-toy-server-with-eventmachine
 date: 2012-01-08
 comments: true
-tags: [Ruby, EventMachine, posts]
+tags: [Ruby, EventMachine]
 ---
 ![EventMachine](http://www.faconneurs.enligne-fr.com/__/logos_clients/event_machine.JPG)
 

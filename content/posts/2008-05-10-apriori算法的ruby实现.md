@@ -1,5 +1,4 @@
 --- 
-tags: ['posts']
 title: Apriori算法的Ruby实现
 date: 2008-05-10
 ---

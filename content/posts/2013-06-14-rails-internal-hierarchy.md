@@ -3,7 +3,7 @@ title: "Rails Internal Hierarchy"
 slug: rails-internal-hierarchy
 date: 2013-06-14
 comments: true
-tags: ["Ruby on Rails", "Ruby", "posts"]
+tags: ["Ruby on Rails", "Ruby"]
 category: "inspect-rails"
 ---
 

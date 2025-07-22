@@ -1,5 +1,4 @@
 --- 
-tags: ['posts']
 title: Get Start Java Network App Dev
 date: 2008-08-06
 ---

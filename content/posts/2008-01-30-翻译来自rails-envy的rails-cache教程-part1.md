@@ -1,5 +1,4 @@
 --- 
-tags: ['posts']
 title: 译文 Rails Cache教程1
 date: 2008-01-30
 ---

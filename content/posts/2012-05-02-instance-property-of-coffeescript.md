@@ -2,7 +2,7 @@
 title: Instance Property of CoffeeScript
 slug: instance-property-of-coffeescript
 date: 2012-05-02
-tags: [CoffeeScript, JavaScript, posts]
+tags: [CoffeeScript, JavaScript]
 comments: true
 ---
 

@@ -1,5 +1,4 @@
 ---
-tags: ['posts']
 title: "[译文]Shoulda教程1 - Should语法"
 slug: shoulda-tutor1
 date: 2008-05-10

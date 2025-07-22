@@ -1,5 +1,4 @@
 --- 
-tags: ['posts']
 title: 翻译了一篇ArchLinux
 date: 2008-05-01
 ---

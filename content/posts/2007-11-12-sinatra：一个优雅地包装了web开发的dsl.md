@@ -1,5 +1,4 @@
 --- 
-tags: ['posts']
 title: 简洁的Sinatra
 date: 2007-11-12
 ---

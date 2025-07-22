@@ -1,0 +1,12 @@
+{{ define "main" }}
+<h1>Series</h1>
+{{ $series := where .Site.RegularPages "Params.tags" "intersect" (slice "series") }}
+{{ range $series }}
+<article class="postlist-item">
+    <a href="{{ .Permalink }}" class="postlist-link">{{ .Title }}</a>
+    {{ with .Description }}
+    <div class="postlist-description">{{ . }}</div>
+    {{ end }}
+</article>
+{{ end }}
+{{ end }}

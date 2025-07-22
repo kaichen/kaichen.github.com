@@ -3,7 +3,7 @@ title: carrierwave-upyun配置多个不同buckets
 slug: use-multi-buckets-in-carrierwave-upyun
 date: 2012-04-02
 comments: true
-tags: ["Ruby", "Ruby on Rails", "posts"]
+tags: ["Ruby", "Ruby on Rails"]
 ---
 
 # 背景

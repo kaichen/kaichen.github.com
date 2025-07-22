@@ -1,5 +1,4 @@
 --- 
-tags: ['posts']
 title: 惊艳的Compiz Fusion
 date: 2007-10-09
 ---

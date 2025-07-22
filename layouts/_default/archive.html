@@ -19,7 +19,7 @@
         <div class="postlist-taglist">
             {{ range .Params.tags }}
             <span class="postlist-tag">
-                <a href="/tags/{{ . | urlize }}/">#{{ . }}</a>
+                <a href="/blog/categories/{{ . | urlize }}/">#{{ . }}</a>
             </span>
             {{ end }}
         </div>

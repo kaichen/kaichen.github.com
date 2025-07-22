@@ -7,7 +7,7 @@
     </li>
     {{ range .Params.tags }}
     <li>
-        <a href="/tags/{{ . | urlize }}/" class="post-tag">#{{ . }}</a>{{ if not (eq . (index $.Params.tags (sub (len $.Params.tags) 1))) }},{{ end }}
+        <a href="/blog/categories/{{ . | urlize }}/" class="post-tag">#{{ . }}</a>{{ if not (eq . (index $.Params.tags (sub (len $.Params.tags) 1))) }},{{ end }}
     </li>
     {{ end }}
 </ul>

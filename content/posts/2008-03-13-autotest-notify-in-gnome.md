@@ -1,5 +1,4 @@
 --- 
-tags: ['posts']
 title: autotest in Gnome"
 date: 2008-03-13
 ---

@@ -1,5 +1,4 @@
 --- 
-tags: ['posts']
 title: a few interesting rails plugin
 date: 2008-08-06
 ---

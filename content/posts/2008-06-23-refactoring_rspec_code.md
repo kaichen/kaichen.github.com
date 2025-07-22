@@ -1,5 +1,4 @@
 --- 
-tags: ['posts']
 title: 重构Rspec测试代码
 date: 2008-06-23
 ---

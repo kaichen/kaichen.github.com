@@ -1,5 +1,4 @@
 ---
-tags: ['posts']
 title: "[译文] Shoulda教程4 - Test Controller"
 slug: shoulda-tutor4
 date: 2008-05-18

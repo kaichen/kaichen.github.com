@@ -1,5 +1,4 @@
 --- 
-tags: ['posts']
 title: a rspec cheetsheet
 date: 2008-08-22
 ---

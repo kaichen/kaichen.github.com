@@ -1,5 +1,4 @@
 ---
-tags: ['posts']
 title: Rails 2.1.rc1 Changelog
 slug: rails-2-1-changelog
 date: 2008-05-18
