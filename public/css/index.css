@@ -276,3 +276,82 @@ a[href].header-anchor:focus,
 h2 + .header-anchor {
 	font-size: 1.5em;
 }
+
+/* Hero Section */
+.hero {
+	padding: 2rem 1.5rem;
+	margin: 0 0 1rem 0;
+	background-color: var(--background-color);
+	color: var(--text-color);
+}
+
+.hero-content {
+	max-width: 800px;
+	margin: 0 auto;
+	display: flex;
+	align-items: center;
+	gap: 2rem;
+}
+
+.hero-avatar {
+	flex-shrink: 0;
+	width: 150px;
+	height: 150px;
+}
+
+.hero-avatar img {
+	width: 100%;
+	height: 100%;
+	border-radius: 50%;
+	object-fit: cover;
+	border: 2px solid var(--color-gray-20);
+}
+
+.hero-text {
+	flex: 1;
+	text-align: left;
+}
+
+.hero-title {
+	font-size: 1.75rem;
+	margin: 0 0 0.75rem 0;
+	font-weight: 700;
+}
+
+.hero-description {
+	font-size: 1rem;
+	line-height: 1.6;
+}
+
+.hero-description p {
+	margin: 0.25rem 0;
+}
+
+@media (max-width: 768px) {
+	.hero {
+		padding: 1.5rem 1rem;
+	}
+	
+	.hero-content {
+		flex-direction: column;
+		text-align: center;
+		gap: 1.5rem;
+	}
+	
+	.hero-avatar {
+		width: 120px;
+		height: 120px;
+	}
+	
+	.hero-text {
+		text-align: center;
+	}
+	
+	.hero-title {
+		font-size: 1.5rem;
+	}
+	
+	.hero-description {
+		font-size: 0.9375rem;
+	}
+}

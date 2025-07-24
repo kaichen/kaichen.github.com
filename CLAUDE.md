@@ -53,3 +53,6 @@ This site was migrated from 11ty, important considerations:
 - The `public/` directory should not be committed (add to .gitignore)
 - Legacy 11ty files have been removed but some `.njk` files may remain in content/
 - Post dates in filenames are authoritative - front matter dates should match
+
+## Development Tips
+- Just use build to verify the changes
