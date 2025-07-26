@@ -21,9 +21,13 @@
   </div>
 </section>
 
-<hr style="border: none; border-top: 1px dashed var(--color-gray-20); margin: 2rem 0;">
+<div class="divider"></div>
 
-<h2>Latest {{ .Site.Params.numberOfLatestPostsToShow | default 8 }} Posts</h2>
+<div class="content-section">
+    <div class="section-header">
+        <h2 class="section-title">Latest Posts</h2>
+        <p class="section-subtitle">Recent thoughts and updates from my blog</p>
+    </div>
 
 {{ $posts := where .Site.RegularPages "Type" "posts" }}
 {{ $postsToShow := .Site.Params.numberOfLatestPostsToShow | default 8 }}
@@ -55,6 +59,7 @@
 {{ $totalPosts := len (where .Site.RegularPages "Type" "posts") }}
 {{ $morePosts := sub $totalPosts (.Site.Params.numberOfLatestPostsToShow | default 8) }}
 {{ if gt $morePosts 0 }}
-<p style="font-size:small">{{ $morePosts }} more post{{ if ne $morePosts 1 }}s{{ end }}.</p>
+<p class="text-center text-muted mt-8">{{ $morePosts }} more post{{ if ne $morePosts 1 }}s{{ end }} available in the <a href="/archive/">archive</a>.</p>
 {{ end }}
+</div>
 {{ end }}
