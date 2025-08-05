@@ -2,6 +2,7 @@
 date: 2023-01-19
 title: 10 Years Since Last Post
 slug: blog-over-a-decade
+tags: ["个人经历"]
 ---
 
 距离上一篇博文已经是10年之前，归来的这一篇对这中间空缺时间做个回顾总结。

@@ -2,6 +2,7 @@
 date: 2023-12-05
 title: AGI 曙光 ChatGPT
 slug: the-dawn-of-agi-chatgpt
+tags: ["AI"]
 ---
 ## ChatGPT 是什么？
 GPT，全称Generative Pre-trained Transformer，是基于Transformer模型训练的通用人工智能。当卷积网络的参数量达到数以亿计时，它展现出惊人的智能水平，已经能完成人类相对初级的工作。更令我震撼的是，这么强大的智能居然在 2022 年底被OpenAI发布出来，让普通大众触手可及。

@@ -2,6 +2,7 @@
 date: 2025-01-25
 title: 新智能引擎：基于思维链的强化学习
 slug: reasoning-model
+tags: ["AI"]
 ---
 
 从 AlphaZero 到思维链强化学习
